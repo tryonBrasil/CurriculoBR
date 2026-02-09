@@ -48,14 +48,14 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
     ${draggedSection === id ? 'opacity-20' : 'opacity-100'}
     ${dragOverSection === id ? 'border-t-2 border-blue-500 pt-2' : ''}
     transition-all duration-200 rounded-sm p-1
-    hover:bg-blue-50/10 hover:ring-1 hover:ring-blue-400/20
+    hover:bg-blue-50/10 hover:ring-1 hover:ring-blue-400/20 cursor-pointer
   `;
 
   const DragHandle = ({ id }: { id: SectionId }) => (
     <div 
       draggable
       onDragStart={(e) => handleDragStart(e, id)}
-      className="no-print absolute -left-6 top-1/2 -translate-y-1/2 w-5 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/section:opacity-100 transition-opacity bg-white/50 rounded shadow-sm border border-slate-200"
+      className="no-print absolute -left-6 top-1/2 -translate-y-1/2 w-5 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover/section:opacity-100 transition-opacity bg-white/50 rounded shadow-sm border border-slate-200 z-10"
     >
       <i className="fas fa-grip-vertical text-slate-400 text-[10px]"></i>
     </div>
@@ -165,9 +165,11 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
     }
   };
 
-  const a4ContainerStyle = "bg-white w-[210mm] h-[297mm] mx-auto shadow-2xl relative overflow-hidden flex flex-col print-container text-slate-900";
+  // Alterado: Removemos 'mx-auto' e adicionamos 'origin-top-left' para controle externo
+  // Adicionamos shadow apenas visualmente, o layout é controlado pelo pai
+  const a4ContainerStyle = "bg-white w-[210mm] h-[297mm] shadow-[0_0_50px_-12px_rgba(0,0,0,0.25)] relative overflow-hidden flex flex-col print-container text-slate-900 shrink-0";
 
-  // Template Managers
+  // Template Managers (Layouts permanecem os mesmos, mas encapsulados)
   const getTemplateLayout = () => {
     switch(template) {
       case 'modern_blue':

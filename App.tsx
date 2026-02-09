@@ -287,23 +287,29 @@ const App: React.FC = () => {
     updateData(prev => ({ ...prev, sectionOrder: newOrder }));
   }, [updateData]);
 
-  const resetZoom = () => {
+  const fitToScreen = useCallback(() => {
     if (!previewContainerRef.current) return;
     const containerHeight = previewContainerRef.current.clientHeight;
+    // 1123px is approx height of A4 at 96dpi
+    const scale = (containerHeight - 80) / 1123; 
+    setPreviewScale(Math.min(0.9, Math.max(0.3, scale)));
+  }, []);
+
+  const fitToWidth = useCallback(() => {
+    if (!previewContainerRef.current) return;
     const containerWidth = previewContainerRef.current.clientWidth;
-    const scaleY = (containerHeight - 140) / 1123;
-    const scaleX = (containerWidth - 100) / 794; 
-    const bestScale = Math.min(scaleX, scaleY);
-    setPreviewScale(Math.min(1.0, Math.max(0.3, bestScale)));
-  };
+    // 794px is approx width of A4 at 96dpi
+    const scale = (containerWidth - 80) / 794;
+    setPreviewScale(Math.min(1.0, Math.max(0.3, scale)));
+  }, []);
 
   useEffect(() => {
     if (view === 'editor') {
-      resetZoom();
-      window.addEventListener('resize', resetZoom);
-      return () => window.removeEventListener('resize', resetZoom);
+      fitToScreen();
+      window.addEventListener('resize', fitToScreen);
+      return () => window.removeEventListener('resize', fitToScreen);
     }
-  }, [view, isSidebarOpen]);
+  }, [view, isSidebarOpen, fitToScreen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -620,20 +626,47 @@ const App: React.FC = () => {
            </div>
         </div>
 
-        <div ref={previewContainerRef} className="flex-1 bg-[#f1f5f9] dark:bg-slate-950 relative flex flex-col items-center justify-center overflow-hidden paper-texture">
-           <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 z-[70] no-print">
-              <button onClick={() => setPreviewScale(p => Math.max(0.3, p - 0.1))} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"><i className="fas fa-minus text-xs"></i></button>
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-12 text-center">{Math.round(previewScale * 100)}%</span>
-              <button onClick={() => setPreviewScale(p => Math.min(1.5, p + 0.1))} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"><i className="fas fa-plus text-xs"></i></button>
+        {/* NOVA ÁREA DE PREVIEW REFORMULADA */}
+        <div ref={previewContainerRef} className="flex-1 bg-slate-200 dark:bg-slate-950/50 relative flex flex-col overflow-hidden">
+           
+           {/* Barra de Ferramentas Flutuante */}
+           <div className="no-print absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/50 dark:border-slate-800/50 z-[70] transition-all hover:scale-[1.02]">
+              <button onClick={() => setPreviewScale(p => Math.max(0.3, p - 0.1))} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Diminuir Zoom">
+                <i className="fas fa-minus text-xs"></i>
+              </button>
+              
+              <div className="px-3 min-w-[60px] text-center font-bold text-xs text-slate-600 dark:text-slate-300 select-none">
+                {Math.round(previewScale * 100)}%
+              </div>
+
+              <button onClick={() => setPreviewScale(p => Math.min(2.0, p + 0.1))} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Aumentar Zoom">
+                <i className="fas fa-plus text-xs"></i>
+              </button>
+              
+              <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+              <button onClick={fitToWidth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Ajustar à Largura">
+                <i className="fas fa-arrows-left-right text-xs"></i>
+              </button>
+
+              <button onClick={fitToScreen} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="Ajustar à Página">
+                <i className="fas fa-expand text-xs"></i>
+              </button>
+
+               <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+               <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`w-9 h-9 flex items-center justify-center rounded-xl transition-colors ${isSidebarOpen ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500'}`} title="Configurações">
+                 <i className="fas fa-cog text-xs"></i>
+               </button>
            </div>
 
-           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="absolute bottom-6 right-6 no-print w-12 h-12 bg-white dark:bg-slate-800 shadow-xl rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 z-[60] border border-slate-100 dark:border-slate-700 transition-all hover:text-blue-600 active:scale-90">
-             <i className={`fas ${isSidebarOpen ? 'fa-expand' : 'fa-cog'}`}></i>
-           </button>
-
-           <div className="print-container transition-transform duration-300 ease-out" style={{ transform: `scale(${previewScale})` }}>
-              <div className="bg-white shadow-2xl ring-1 ring-slate-200">
-                <ResumePreview data={data} template={template} fontSize={fontSize} onSectionClick={handleSectionClick} onReorder={handleReorder} />
+           {/* Área de Documento com Scroll Nativo */}
+           <div className="flex-1 overflow-auto custom-scrollbar flex justify-center p-8 md:p-12 pb-32">
+              <div 
+                className="print-container transition-transform duration-200 ease-out origin-top" 
+                style={{ transform: `scale(${previewScale})` }}
+              >
+                 <ResumePreview data={data} template={template} fontSize={fontSize} onSectionClick={handleSectionClick} onReorder={handleReorder} />
               </div>
            </div>
         </div>
