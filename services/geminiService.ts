@@ -202,7 +202,9 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
     });
 
     if (response.text) {
-      return JSON.parse(response.text);
+      // Limpeza de Markdown (```json ... ```) caso a API retorne mesmo com mimeType json
+      const cleanedText = response.text.replace(/```json|```/g, '').trim();
+      return JSON.parse(cleanedText);
     }
     return {};
   } catch (error) {
