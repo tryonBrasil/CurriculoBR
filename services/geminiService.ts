@@ -1,8 +1,8 @@
-
 import { GoogleGenAI } from "@google/genai";
 
 /* Updated to follow SDK initialization guidelines exactly */
 const getAI = () => {
+  // The API key must be obtained exclusively from the environment variable process.env.API_KEY
   return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
