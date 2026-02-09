@@ -69,3 +69,81 @@ export const suggestSkills = async (jobTitle: string): Promise<string[]> => {
     return [];
   }
 };
+
+export const parseResumeWithAI = async (text: string): Promise<any> => {
+  const ai = getAI();
+  try {
+    const prompt = `
+      Você é um especialista em análise de currículos (parser). 
+      Extraia as informações do texto abaixo e retorne APENAS um objeto JSON válido seguindo estritamente esta estrutura TypeScript:
+
+      interface ResumeData {
+        personalInfo: { 
+          fullName: string; 
+          email: string; 
+          phone: string; 
+          location: string; 
+          website: string; 
+          linkedin: string; 
+          jobTitle: string; 
+        };
+        summary: string;
+        experiences: { 
+          id: string; // Gere um ID aleatório
+          company: string; 
+          position: string; 
+          location: string; 
+          startDate: string; 
+          endDate: string; 
+          current: boolean; 
+          description: string; 
+        }[];
+        education: { 
+          id: string; // Gere um ID aleatório
+          institution: string; 
+          degree: string; 
+          field: string; 
+          location: string; 
+          startDate: string; 
+          endDate: string; 
+        }[];
+        skills: { 
+          id: string; // Gere um ID aleatório
+          name: string; 
+          level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'; // Use 'Intermediate' como padrão se não souber
+        }[];
+        languages: { 
+          id: string; // Gere um ID aleatório
+          name: string; 
+          level: string; 
+          percentage: number; // Estime de 0 a 100
+        }[];
+        courses: { 
+          id: string; // Gere um ID aleatório
+          name: string; 
+          institution: string; 
+          year: string; 
+        }[];
+      }
+
+      Texto do Currículo:
+      "${text}"
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        responseMimeType: 'application/json',
+      },
+    });
+
+    if (response.text) {
+      return JSON.parse(response.text);
+    }
+    return {};
+  } catch (error) {
+    console.error("Erro Gemini (Parse):", error);
+    throw error;
+  }
+};

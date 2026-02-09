@@ -9,7 +9,8 @@ import Toast from './components/Toast';
 import TemplateThumbnail from './components/TemplateThumbnail';
 import ConfirmModal from './components/ConfirmModal';
 import { useResumeHistory } from './hooks/useResumeHistory';
-import { enhanceText, generateSummary, suggestSkills } from './services/geminiService';
+import { enhanceText, generateSummary, suggestSkills, parseResumeWithAI } from './services/geminiService';
+import { extractTextFromPDF } from './services/pdfService';
 import { 
   validateEmailError, 
   validatePhoneError, 
@@ -57,6 +58,12 @@ const App: React.FC = () => {
   // Estado genérico para modal de confirmação
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
   
+  // Estados para Importação com IA
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExtractingPdf, setIsExtractingPdf] = useState(false);
+  
   // Usando o Hook de Histórico
   const { data, updateData, undo, redo, canUndo, canRedo, setHistoryDirect } = useResumeHistory(INITIAL_RESUME_DATA);
 
@@ -64,6 +71,7 @@ const App: React.FC = () => {
   const [tempImage, setTempImage] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorScrollRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +128,62 @@ const App: React.FC = () => {
         setConfirmModal(null);
       }
     });
+  };
+
+  // Função para processar o texto colado e transformar em currículo
+  const handleImportSubmit = async () => {
+    if (!importText.trim()) {
+      showToast("Por favor, cole o texto do seu currículo ou faça upload de um PDF.", "error");
+      return;
+    }
+    
+    setIsImporting(true);
+    try {
+      const parsedData = await parseResumeWithAI(importText);
+      
+      // Mescla os dados iniciais com os dados encontrados pela IA
+      updateData({
+        ...INITIAL_RESUME_DATA,
+        ...parsedData,
+      });
+      
+      setIsImportModalOpen(false);
+      setImportText('');
+      setView('editor'); // Redireciona para o editor
+      showToast("Currículo importado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao processar o texto. Tente novamente.", "error");
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      showToast("Por favor, selecione um arquivo PDF válido.", "error");
+      return;
+    }
+
+    setIsExtractingPdf(true);
+    try {
+      const text = await extractTextFromPDF(file);
+      if (text.trim().length === 0) {
+        showToast("Não foi possível ler o texto deste PDF. Ele pode ser uma imagem escaneada.", "error");
+      } else {
+        setImportText(text);
+        showToast("Texto extraído do PDF! Verifique abaixo.");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao ler o PDF.", "error");
+    } finally {
+      setIsExtractingPdf(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
+    }
   };
 
   const cvScore = useMemo(() => {
@@ -342,6 +406,7 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col relative overflow-hidden transition-colors duration-300">
         <div className="absolute top-[-10%] right-[-10%] w-[50%] aspect-square bg-blue-50 dark:bg-blue-900/20 rounded-full blur-[120px] opacity-60"></div>
         <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square bg-indigo-50 dark:bg-indigo-900/20 rounded-full blur-[120px] opacity-60"></div>
+        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         <header className="relative z-10 h-24 flex items-center justify-between px-8 md:px-20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3">
@@ -363,11 +428,84 @@ const App: React.FC = () => {
               <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Seu currículo perfeito, <br className="hidden md:block"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">em minutos.</span></h2>
               <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">Combine design profissional com o poder da Inteligência Artificial para conquistar a vaga dos seus sonhos.</p>
             </div>
-            <div className="flex items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <button onClick={() => setView('templates')} className="group bg-slate-900 dark:bg-blue-600 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 dark:hover:bg-blue-500 hover:scale-[1.05] transition-all shadow-2xl flex items-center gap-3">Criar Agora <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i></button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+              <button 
+                onClick={() => setView('templates')} 
+                className="group bg-blue-600 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 hover:scale-[1.05] transition-all shadow-2xl flex items-center gap-3"
+              >
+                Criar do Zero <i className="fas fa-magic"></i>
+              </button>
+              
+              <button 
+                onClick={() => setIsImportModalOpen(true)} 
+                className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xl flex items-center gap-3"
+              >
+                Importar Currículo <i className="fas fa-file-import"></i>
+              </button>
             </div>
           </div>
         </main>
+        
+        {/* Modal de Importação com IA e PDF */}
+        {isImportModalOpen && (
+          <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic">Importar com <span className="text-blue-600">IA</span></h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Faça upload do seu PDF ou cole o texto. Nossa IA organizará tudo.</p>
+                </div>
+                <button onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><i className="fas fa-times"></i></button>
+              </div>
+              
+              {/* Área de Upload PDF */}
+              <div 
+                className="mb-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-blue-400 transition-all group"
+                onClick={() => pdfInputRef.current?.click()}
+              >
+                 <input 
+                   type="file" 
+                   ref={pdfInputRef} 
+                   className="hidden" 
+                   accept="application/pdf"
+                   onChange={handlePdfUpload}
+                 />
+                 <div className="w-16 h-16 bg-blue-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
+                   {isExtractingPdf ? <i className="fas fa-circle-notch fa-spin text-xl"></i> : <i className="fas fa-file-pdf text-xl"></i>}
+                 </div>
+                 <p className="font-bold text-slate-700 dark:text-white text-sm uppercase tracking-widest">
+                    {isExtractingPdf ? "Lendo Arquivo..." : "Clique para enviar PDF"}
+                 </p>
+                 <p className="text-xs text-slate-400 mt-1">Extração automática de texto</p>
+              </div>
+
+              <div className="flex items-center gap-4 mb-4">
+                 <div className="h-px bg-slate-100 dark:bg-slate-700 flex-1"></div>
+                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ou cole o texto</span>
+                 <div className="h-px bg-slate-100 dark:bg-slate-700 flex-1"></div>
+              </div>
+
+              <textarea
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                placeholder="O texto extraído do PDF aparecerá aqui. Você também pode colar seu currículo manualmente..."
+                className="w-full h-40 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm mb-6 outline-none focus:ring-2 focus:ring-blue-500 dark:text-white resize-none"
+              />
+
+              <div className="flex gap-4">
+                <button onClick={() => setIsImportModalOpen(false)} className="flex-1 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-widest">Cancelar</button>
+                <button 
+                  onClick={handleImportSubmit} 
+                  disabled={isImporting || !importText.trim()}
+                  className="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {isImporting ? <i className="fas fa-circle-notch fa-spin mr-2"></i> : <i className="fas fa-bolt mr-2"></i>}
+                  {isImporting ? "Analisando Currículo..." : "Iniciar Importação"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
