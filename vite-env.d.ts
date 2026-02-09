@@ -1,3 +1,4 @@
+
 // /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
@@ -17,4 +18,9 @@ declare namespace NodeJS {
     API_KEY: string;
     [key: string]: string | undefined;
   }
+}
+
+// AdSense Global Object
+interface Window {
+  adsbygoogle: any[];
 }

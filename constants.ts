@@ -10,6 +10,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
     website: '',
     linkedin: '',
     jobTitle: '',
+    drivingLicense: '', // Inicializa vazio
     photoUrl: 'https://i.pravatar.cc/300?img=32',
   },
   summary: '',
@@ -30,6 +31,7 @@ export const MOCK_RESUME_DATA: ResumeData = {
     website: '',
     linkedin: 'linkedin.com/in/carla-gomes-cunha',
     jobTitle: 'Professora de Português',
+    drivingLicense: 'CNH B', // Exemplo
     photoUrl: 'https://i.pravatar.cc/300?img=32',
   },
   summary: 'Professora de Português dinâmica com mais de 3 anos de experiência lecionando no Ensino Fundamental. Aplico a metodologia sócio-interacionista para incentivar a participação ativa dos alunos. Na minha escola atual, fui avaliada pelos familiares com 95% de satisfação.',

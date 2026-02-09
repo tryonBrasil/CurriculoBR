@@ -1,9 +1,42 @@
+
 import { GoogleGenAI } from "@google/genai";
 
 /* Updated to follow SDK initialization guidelines exactly */
 const getAI = () => {
   // The API key must be obtained exclusively from the environment variable process.env.API_KEY
   return new GoogleGenAI({ apiKey: process.env.API_KEY });
+};
+
+// Streaming version for real-time feedback
+export const enhanceTextStream = async (text: string, context: string, onUpdate: (text: string) => void): Promise<void> => {
+  if (!text) return;
+  const ai = getAI();
+  try {
+    const response = await ai.models.generateContentStream({
+      model: 'gemini-3-flash-preview',
+      contents: { 
+        parts: [{ 
+          text: `Melhore este texto: "${text}"` 
+        }] 
+      },
+      config: {
+        /* Added systemInstruction to provide better persona context */
+        systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
+        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
+      },
+    });
+
+    let accumulated = '';
+    for await (const chunk of response) {
+      if (chunk.text) {
+        accumulated += chunk.text;
+        onUpdate(accumulated);
+      }
+    }
+  } catch (error) {
+    console.error("Erro Gemini (Enhance Stream):", error);
+    onUpdate(text); // Fallback logic
+  }
 };
 
 export const enhanceText = async (text: string, context: string): Promise<string> => {
@@ -18,14 +51,41 @@ export const enhanceText = async (text: string, context: string): Promise<string
         }] 
       },
       config: {
-        /* Added systemInstruction to provide better persona context */
         systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
+        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
       },
     });
     return response.text?.trim() || text;
   } catch (error) {
     console.error("Erro Gemini (Enhance):", error);
     return text;
+  }
+};
+
+// Streaming version for real-time feedback
+export const generateSummaryStream = async (jobTitle: string, skills: string[], experiences: string[], onUpdate: (text: string) => void): Promise<void> => {
+  const ai = getAI();
+  try {
+    const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
+    
+    const response = await ai.models.generateContentStream({
+      model: 'gemini-3-flash-preview',
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
+        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
+      },
+    });
+
+    let accumulated = '';
+    for await (const chunk of response) {
+      if (chunk.text) {
+        accumulated += chunk.text;
+        onUpdate(accumulated);
+      }
+    }
+  } catch (error) {
+    console.error("Erro Gemini (Summary Stream):", error);
   }
 };
 
@@ -39,6 +99,7 @@ export const generateSummary = async (jobTitle: string, skills: string[], experi
       contents: { parts: [{ text: prompt }] },
       config: {
         systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
+        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
       },
     });
     return response.text?.trim() || '';
@@ -60,6 +121,7 @@ export const suggestSkills = async (jobTitle: string): Promise<string[]> => {
       },
       config: {
         systemInstruction: "Sugira exatamente 10 habilidades (técnicas e interpessoais) fundamentais. Retorne apenas os nomes das habilidades separados por vírgula, sem explicações ou numeração.",
+        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
       },
     });
     const skillsText = response.text || '';
@@ -135,6 +197,7 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
       contents: { parts: [{ text: prompt }] },
       config: {
         responseMimeType: 'application/json',
+        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
       },
     });
 

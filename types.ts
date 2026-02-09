@@ -51,6 +51,7 @@ export interface ResumeData {
     website: string;
     linkedin: string;
     jobTitle: string;
+    drivingLicense: string; // Novo campo
     photoUrl?: string;
   };
   summary: string;

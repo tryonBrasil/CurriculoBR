@@ -8,8 +8,9 @@ import PhotoCropModal from './components/PhotoCropModal';
 import Toast from './components/Toast';
 import TemplateThumbnail from './components/TemplateThumbnail';
 import ConfirmModal from './components/ConfirmModal';
+import AdUnit from './components/AdUnit'; // Importação do AdUnit
 import { useResumeHistory } from './hooks/useResumeHistory';
-import { enhanceText, generateSummary, suggestSkills, parseResumeWithAI } from './services/geminiService';
+import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI } from './services/geminiService';
 import { extractTextFromPDF } from './services/pdfService';
 import { 
   validateEmailError, 
@@ -42,8 +43,8 @@ const TEMPLATES = [
 const STORAGE_KEY = 'curriculobr_data';
 
 const App: React.FC = () => {
-  // Adicionado estado 'templates'
-  const [view, setView] = useState<'home' | 'templates' | 'editor'>('home');
+  // Adicionado estado 'templates', 'privacy' e 'terms'
+  const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms'>('home');
   const [template, setTemplate] = useState<TemplateId>('modern_blue');
   const [currentStep, setCurrentStep] = useState(0);
   const [previewScale, setPreviewScale] = useState(0.55);
@@ -279,12 +280,13 @@ const App: React.FC = () => {
 
     setIsEnhancing(id || context);
     try {
-      const enhanced = await enhanceText(text, context);
-      if (listName && id) {
-        updateItem(listName, id, 'description', enhanced);
-      } else if (context === 'summary') {
-        updateData(prev => ({ ...prev, summary: enhanced }));
-      }
+      await enhanceTextStream(text, context, (currentText) => {
+          if (listName && id) {
+            updateItem(listName, id, 'description', currentText);
+          } else if (context === 'summary' || context === 'resumo') {
+            updateData(prev => ({ ...prev, summary: currentText }));
+          }
+      });
       showToast("Texto refinado pela IA!");
     } catch (err) {
       console.error(err);
@@ -300,8 +302,11 @@ const App: React.FC = () => {
     try {
       const skillNames = data.skills.map(s => s.name);
       const expPositions = data.experiences.map(e => e.position);
-      const generated = await generateSummary(data.personalInfo.jobTitle, skillNames, expPositions);
-      updateData(prev => ({ ...prev, summary: generated }));
+      
+      await generateSummaryStream(data.personalInfo.jobTitle, skillNames, expPositions, (currentText) => {
+         updateData(prev => ({ ...prev, summary: currentText }));
+      });
+      
       showToast("Resumo gerado com sucesso!");
     } catch (err) {
       console.error(err);
@@ -400,6 +405,96 @@ const App: React.FC = () => {
     setView('editor');
   };
 
+  // --- RENDERIZAÇÃO DAS PÁGINAS LEGAIS ---
+  const LegalPageLayout: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
+      <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
+            <i className="fas fa-arrow-left text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"></i>
+            <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Voltar</span>
+        </div>
+        <h1 className="font-black text-xl text-slate-800 dark:text-white uppercase tracking-tight">{title}</h1>
+        <div className="w-20"></div>
+      </header>
+      <main className="flex-1 p-8 md:p-12 overflow-y-auto">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 leading-relaxed">
+            {children}
+            <div className="mt-12 border-t border-slate-100 dark:border-slate-700 pt-8">
+               <AdUnit slotId="" format="horizontal" />
+            </div>
+        </div>
+      </main>
+    </div>
+  );
+
+  if (view === 'privacy') {
+    return (
+      <LegalPageLayout title="Política de Privacidade">
+         <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">Política Privacidade</h2>
+         <p className="mb-4">A sua privacidade é importante para nós. É política do CurriculoBR respeitar a sua privacidade em relação a qualquer informação sua que possamos coletar no site <a href="https://curriculo-br.vercel.app/" className="text-blue-600 hover:underline">CurriculoBR</a>, e outros sites que possuímos e operamos.</p>
+         <p className="mb-4">Solicitamos informações pessoais apenas quando realmente precisamos delas para lhe fornecer um serviço. Fazemo-lo por meios justos e legais, com o seu conhecimento e consentimento. Também informamos por que estamos coletando e como será usado.</p>
+         <p className="mb-4">Apenas retemos as informações coletadas pelo tempo necessário para fornecer o serviço solicitado. Quando armazenamos dados, protegemos dentro de meios comercialmente aceitáveis ​​para evitar perdas e roubos, bem como acesso, divulgação, cópia, uso ou modificação não autorizados.</p>
+         <p className="mb-4">Não compartilhamos informações de identificação pessoal publicamente ou com terceiros, exceto quando exigido por lei.</p>
+         <p className="mb-4">O nosso site pode ter links para sites externos que não são operados por nós. Esteja ciente de que não temos controle sobre o conteúdo e práticas desses sites e não podemos aceitar responsabilidade por suas respectivas <a href="https://politicaprivacidade.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">políticas de privacidade</a>.</p>
+         <p className="mb-4">Você é livre para recusar a nossa solicitação de informações pessoais, entendendo que talvez não possamos fornecer alguns dos serviços desejados.</p>
+         <p className="mb-4">O uso continuado de nosso site será considerado como aceitação de nossas práticas em torno de privacidade e informações pessoais. Se você tiver alguma dúvida sobre como lidamos com dados do usuário e informações pessoais, entre em contacto connosco.</p>
+         
+         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-8 mb-4">Compromisso do Usuário</h3>
+         <p className="mb-4">O usuário se compromete a fazer uso adequado dos conteúdos e da informação que o CurriculoBR oferece no site e com caráter enunciativo, mas não limitativo:</p>
+         <ul className="list-disc pl-6 mb-6 space-y-2">
+           <li>A) Não se envolver em atividades que sejam ilegais ou contrárias à boa fé a à ordem pública;</li>
+           <li>B) Não difundir propaganda ou conteúdo de natureza racista, xenofóbica, jogos de sorte ou azar, qualquer tipo de pornografia ilegal, de apologia ao terrorismo ou contra os direitos humanos;</li>
+           <li>C) Não causar danos aos sistemas físicos (hardwares) e lógicos (softwares) do CurriculoBR, de seus fornecedores ou terceiros, para introduzir ou disseminar vírus informáticos ou quaisquer outros sistemas de hardware ou software que sejam capazes de causar danos anteriormente mencionados.</li>
+         </ul>
+
+         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-8 mb-4">Mais informações</h3>
+         <p className="mb-4">Esperemos que esteja esclarecido e, como mencionado anteriormente, se houver algo que você não tem certeza se precisa ou não, geralmente é mais seguro deixar os cookies ativados, caso interaja com um dos recursos que você usa em nosso site.</p>
+         <p className="text-sm text-slate-400 mt-8 italic">Esta política é efetiva a partir de 9 February 2026 12:54</p>
+      </LegalPageLayout>
+    );
+  }
+
+  if (view === 'terms') {
+    return (
+      <LegalPageLayout title="Termos e Condições">
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">1. Termos</h2>
+        <p className="mb-4">Ao acessar ao site <a href="https://curriculo-br.vercel.app/" className="text-blue-600 hover:underline">CurriculoBR</a>, concorda em cumprir estes termos de serviço, todas as leis e regulamentos aplicáveis ​​e concorda que é responsável pelo cumprimento de todas as leis locais aplicáveis. Se você não concordar com algum desses termos, está proibido de usar ou acessar este site. Os materiais contidos neste site são protegidos pelas leis de direitos autorais e marcas comerciais aplicáveis.</p>
+
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-8 mb-6">2. Uso de Licença</h2>
+        <p className="mb-4">É concedida permissão para baixar temporariamente uma cópia dos materiais (informações ou software) no site CurriculoBR , apenas para visualização transitória pessoal e não comercial. Esta é a concessão de uma licença, não uma transferência de título e, sob esta licença, você não pode:</p>
+        <ol className="list-decimal pl-6 mb-6 space-y-2">
+          <li>modificar ou copiar os materiais;</li>
+          <li>usar os materiais para qualquer finalidade comercial ou para exibição pública (comercial ou não comercial);</li>
+          <li>tentar descompilar ou fazer engenharia reversa de qualquer software contido no site CurriculoBR;</li>
+          <li>remover quaisquer direitos autorais ou outras notações de propriedade dos materiais; ou</li>
+          <li>transferir os materiais para outra pessoa ou 'espelhe' os materiais em qualquer outro servidor.</li>
+        </ol>
+        <p className="mb-4">Esta licença será automaticamente rescindida se você violar alguma dessas restrições e poderá ser rescindida por CurriculoBR a qualquer momento. Ao encerrar a visualização desses materiais ou após o término desta licença, você deve apagar todos os materiais baixados em sua posse, seja em formato eletrónico ou impresso.</p>
+
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-8 mb-6">3. Isenção de responsabilidade</h2>
+        <ol className="list-decimal pl-6 mb-6 space-y-2">
+          <li>Os materiais no site da CurriculoBR são fornecidos 'como estão'. CurriculoBR não oferece garantias, expressas ou implícitas, e, por este meio, isenta e nega todas as outras garantias, incluindo, sem limitação, garantias implícitas ou condições de comercialização, adequação a um fim específico ou não violação de propriedade intelectual ou outra violação de direitos.</li>
+          <li>Além disso, o CurriculoBR não garante ou faz qualquer representação relativa à precisão, aos resultados prováveis ​​ou à confiabilidade do uso dos materiais em seu site ou de outra forma relacionado a esses materiais ou em sites vinculados a este site.</li>
+        </ol>
+
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-8 mb-6">4. Limitações</h2>
+        <p className="mb-4">Em nenhum caso o CurriculoBR ou seus fornecedores serão responsáveis ​​por quaisquer danos (incluindo, sem limitação, danos por perda de dados ou lucro ou devido a interrupção dos negócios) decorrentes do uso ou da incapacidade de usar os materiais em CurriculoBR, mesmo que CurriculoBR ou um representante autorizado da CurriculoBR tenha sido notificado oralmente ou por escrito da possibilidade de tais danos. Como algumas jurisdições não permitem limitações em garantias implícitas, ou limitações de responsabilidade por danos conseqüentes ou incidentais, essas limitações podem não se aplicar a você.</p>
+
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-8 mb-6">5. Precisão dos materiais</h2>
+        <p className="mb-4">Os materiais exibidos no site da CurriculoBR podem incluir erros técnicos, tipográficos ou fotográficos. CurriculoBR não garante que qualquer material em seu site seja preciso, completo ou atual. CurriculoBR pode fazer alterações nos materiais contidos em seu site a qualquer momento, sem aviso prévio. No entanto, CurriculoBR não se compromete a atualizar os materiais.</p>
+
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-8 mb-6">6. Links</h2>
+        <p className="mb-4">O CurriculoBR não analisou todos os sites vinculados ao seu site e não é responsável pelo conteúdo de nenhum site vinculado. A inclusão de qualquer link não implica endosso por CurriculoBR do site. O uso de qualquer site vinculado é por conta e risco do usuário.</p>
+
+        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-8 mb-4">Modificações</h3>
+        <p className="mb-4">O CurriculoBR pode revisar estes termos de serviço do site a qualquer momento, sem aviso prévio. Ao usar este site, você concorda em ficar vinculado à versão atual desses termos de serviço.</p>
+
+        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-8 mb-4">Lei aplicável</h3>
+        <p className="mb-4">Estes termos e condições são regidos e interpretados de acordo com as leis do CurriculoBR e você se submete irrevogavelmente à jurisdição exclusiva dos tribunais naquele estado ou localidade.</p>
+      </LegalPageLayout>
+    );
+  }
+
   // RENDERIZAÇÃO DA PÁGINA HOME
   if (view === 'home') {
     return (
@@ -443,8 +538,26 @@ const App: React.FC = () => {
                 Importar Currículo <i className="fas fa-file-import"></i>
               </button>
             </div>
+
+            {/* AD UNIT - HOME PAGE BOTTOM */}
+            <div className="mt-12 max-w-3xl mx-auto">
+               {/* 
+                  COLOQUE SEU DATA-AD-SLOT AQUI EMBAIXO 
+                  Exemplo: slotId="1234567890"
+               */}
+               <AdUnit slotId="" format="horizontal" />
+            </div>
           </div>
         </main>
+        
+        {/* FOOTER */}
+        <footer className="relative z-10 py-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center">
+          <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 mb-4">
+             <button onClick={() => setView('privacy')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Política de Privacidade</button>
+             <button onClick={() => setView('terms')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Termos e Condições</button>
+          </div>
+          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2024 CurriculoBR. Todos os direitos reservados.</p>
+        </footer>
         
         {/* Modal de Importação com IA e PDF */}
         {isImportModalOpen && (
@@ -523,9 +636,20 @@ const App: React.FC = () => {
           <div className="w-20"></div> {/* Spacer for centering */}
         </header>
 
-        <main className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+        <main className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar flex flex-col md:flex-row gap-8">
+          {/* SIDEBAR AD UNIT FOR TEMPLATES */}
+          <div className="hidden lg:block w-[300px] shrink-0">
+             <div className="sticky top-8">
+                {/* 
+                    COLOQUE SEU DATA-AD-SLOT AQUI 
+                    Exemplo: slotId="9876543210"
+                */}
+                <AdUnit slotId="" format="vertical" className="min-h-[600px]" />
+             </div>
+          </div>
+
+          <div className="flex-1 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
               {TEMPLATES.map((t) => (
                 <div key={t.id} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group border border-slate-100 dark:border-slate-700 flex flex-col">
                   <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
@@ -559,8 +683,9 @@ const App: React.FC = () => {
   }
 
   // RENDERIZAÇÃO DO EDITOR
+  // Adicionamos 'google-auto-ads-ignore' para evitar que o Auto Ads quebre o editor
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-slate-950 overflow-hidden transition-colors duration-300">
+    <div className="h-screen flex flex-col bg-white dark:bg-slate-950 overflow-hidden transition-colors duration-300 google-auto-ads-ignore">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
       {confirmModal && (
@@ -636,7 +761,10 @@ const App: React.FC = () => {
                       <Input label="E-mail" value={data.personalInfo.email} onChange={(v) => updatePersonalInfo('email', v)} placeholder="email@exemplo.com" error={errors.email} onBlur={() => validateField('email', data.personalInfo.email)} />
                       <Input label="Telefone" value={data.personalInfo.phone} onChange={(v) => updatePersonalInfo('phone', v)} placeholder="(11) 99999-9999" error={errors.phone} onBlur={() => validateField('phone', data.personalInfo.phone)} />
                     </div>
-                    <Input label="Localização" value={data.personalInfo.location} onChange={(v) => updatePersonalInfo('location', v)} placeholder="Cidade, Estado" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input label="Localização" value={data.personalInfo.location} onChange={(v) => updatePersonalInfo('location', v)} placeholder="Cidade, Estado" />
+                      <Input label="Carteira de Habilitação / CNH" value={data.personalInfo.drivingLicense} onChange={(v) => updatePersonalInfo('drivingLicense', v)} placeholder="Ex: CNH B" />
+                    </div>
                     <Input label="LinkedIn" value={data.personalInfo.linkedin} onChange={(v) => updatePersonalInfo('linkedin', v)} placeholder="linkedin.com/in/perfil" error={errors.linkedin} onBlur={() => validateField('linkedin', data.personalInfo.linkedin)} />
                   </div>
                 </div>
@@ -728,10 +856,10 @@ const App: React.FC = () => {
                     />
                     <button 
                       onClick={() => handleEnhance(data.summary, 'resumo')} 
-                      disabled={!data.summary || isEnhancing === 'summary'}
+                      disabled={!data.summary || isEnhancing === 'resumo'}
                       className="absolute bottom-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:text-blue-600 transition-all"
                     >
-                      <i className={`fas ${isEnhancing === 'summary' ? 'fa-circle-notch fa-spin' : 'fa-magic'} mr-1`}></i> Refinar
+                      <i className={`fas ${isEnhancing === 'resumo' ? 'fa-circle-notch fa-spin' : 'fa-magic'} mr-1`}></i> Refinar
                     </button>
                   </div>
                 </div>
