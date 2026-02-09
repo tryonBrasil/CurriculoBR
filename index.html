@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CurriculoBR - Gerador de Currículos Profissionais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                background: #fff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .no-print, nav, aside, footer, button, .adsbygoogle, .no-print-sidebar { 
+                display: none !important; 
+            }
+
+            .print-container {
+                display: block !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                z-index: 9999 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                transform: scale(1) !important;
+                transform-origin: top left !important;
+                background: white !important;
+                box-shadow: none !important;
+            }
+
+            #resume-preview {
+                width: 210mm !important;
+                height: 297mm !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        
+        .paper-texture {
+            background-image: url('https://www.transparenttextures.com/patterns/clean-gray-paper.png');
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes sectionHighlight {
+            0% { background-color: rgba(37, 99, 235, 0.15); transform: scale(1.02); }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+        .section-highlight {
+            animation: sectionHighlight 1.2s ease-out;
+            border-radius: 1rem;
+        }
+
+        .font-serif-premium {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Prevenir que anúncios automáticos quebrem o layout se ainda existirem scripts residuais no cache */
+        ins.adsbygoogle { display: none !important; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="text-slate-900">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
