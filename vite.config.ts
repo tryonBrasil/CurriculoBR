@@ -11,15 +11,16 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // AQUI ESTÁ O TRUQUE:
-      // Pegamos a variável VITE_GEMINI_API_KEY do arquivo .env
-      // E a injetamos como process.env.API_KEY para o SDK do Google funcionar corretamente.
       'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
     },
     build: {
       outDir: 'dist',
       rollupOptions: {
-        external: ['pdfjs-dist']
+        output: {
+          manualChunks: {
+             pdfjs: ['pdfjs-dist']
+          }
+        }
       }
     }
   }

@@ -2,13 +2,13 @@
 // @ts-ignore
 import * as pdfjsModule from 'pdfjs-dist';
 
-// Lógica robusta para obter a biblioteca, lidando com ESM default export vs Named exports
-// O esm.sh às vezes coloca tudo dentro de 'default'
+// Lógica para lidar com diferentes formatos de exportação (ESM vs CJS/UMD)
 const pdfjsLib = (pdfjsModule as any).default || pdfjsModule;
 
-// Configurando o worker com uma URL segura (CDNJS)
-// O worker precisa ser um script clássico (não-módulo) para funcionar com importScripts no navegador
-if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+// Configuração CRÍTICA do Worker
+// Define o caminho do worker para um arquivo hospedado em CDN que seja compatível com navegadores (formato clássico/UMD)
+// Isso evita o erro "Failed to execute 'importScripts'" e "Setting up fake worker failed"
+if (typeof window !== 'undefined' && pdfjsLib.GlobalWorkerOptions) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 
@@ -22,13 +22,11 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     
     let fullText = '';
     
-    // Itera sobre todas as páginas
     // @ts-ignore
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
       
-      // Concatena os itens de texto da página com espaço
       const pageText = textContent.items
         // @ts-ignore
         .map((item: any) => item.str)
@@ -39,7 +37,7 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     
     return fullText;
   } catch (error) {
-    console.error("Erro ao extrair texto do PDF:", error);
-    throw new Error("Não foi possível ler o arquivo PDF. O arquivo pode estar corrompido ou protegido por senha.");
+    console.error("Erro detalhado ao extrair PDF:", error);
+    throw new Error("Não foi possível ler o arquivo PDF. Verifique se ele não está protegido por senha ou corrompido.");
   }
 };

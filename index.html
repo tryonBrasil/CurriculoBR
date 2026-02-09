@@ -1,9 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google-adsense-account" content="ca-pub-1895006161330485">
     <title>CurriculoBR - Gerador de Currículos Profissionais</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1895006161330485" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -23,121 +26,6 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #2563eb;
-        }
-
-        @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            
-            html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                height: 100% !important;
-                width: 100% !important;
-                background: #fff !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                overflow: visible !important;
-            }
-
-            .no-print, nav, aside, footer, button, .adsbygoogle, .no-print-sidebar, .toast-container { 
-                display: none !important; 
-            }
-
-            .print-container {
-                display: block !important;
-                position: relative !important;
-                width: 210mm !important;
-                height: 297mm !important;
-                margin: 0 auto !important;
-                padding: 0 !important;
-                transform: none !important;
-                background: white !important;
-                box-shadow: none !important;
-                print-color-adjust: exact !important;
-                -webkit-print-color-adjust: exact !important;
-                page-break-after: avoid !important;
-                page-break-inside: avoid !important;
-            }
-
-            /* Força a impressão de backgrounds em Webkit/Chrome/Safari */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc;
-            overflow-x: hidden;
-        }
-        
-        /* Dark mode scrollbar */
-        .dark body {
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
-        
-        /* Scrollbar Cross-Browser (Firefox + Webkit) */
-        .custom-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: #e2e8f0 transparent;
-        }
-        .dark .custom-scrollbar {
-            scrollbar-color: #334155 transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
-        
-        .paper-texture {
-            background-image: url('https://www.transparenttextures.com/patterns/clean-gray-paper.png');
-        }
-        .dark .paper-texture {
-            background-image: none;
-            background-color: #020617;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes slideInUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .toast-animate {
-            animation: slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        @keyframes sectionHighlight {
-            0% { background-color: rgba(37, 99, 235, 0.15); transform: scale(1.02); }
-            100% { background-color: transparent; transform: scale(1); }
-        }
-        .section-highlight {
-            animation: sectionHighlight 1.2s ease-out;
-            border-radius: 1rem;
-        }
-
-        .font-serif-premium {
-            font-family: 'Playfair Display', serif;
-        }
-
-        ins.adsbygoogle { display: none !important; }
-    </style>
 <script type="importmap">
 {
   "imports": {
@@ -147,7 +35,7 @@
     "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
     "vite": "https://esm.sh/vite@^7.3.1",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.3",
-    "pdfjs-dist": "https://esm.sh/pdfjs-dist@3.11.174"
+    "pdfjs-dist": "https://esm.sh/pdfjs-dist@^5.4.624"
   }
 }
 </script>
