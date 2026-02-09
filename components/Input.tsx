@@ -10,17 +10,19 @@ interface InputProps {
   multiline?: boolean;
   error?: string | null;
   onBlur?: () => void;
+  disabled?: boolean;
 }
 
-const Input: React.FC<InputProps> = ({ 
-  label, 
-  value, 
-  onChange, 
-  type = 'text', 
-  placeholder, 
-  multiline, 
+const Input: React.FC<InputProps> = ({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  placeholder,
+  multiline,
   error,
-  onBlur 
+  onBlur,
+  disabled = false
 }) => {
   return (
     <div className="mb-4">
@@ -35,9 +37,12 @@ const Input: React.FC<InputProps> = ({
           onBlur={onBlur}
           placeholder={placeholder}
           rows={3}
+          disabled={disabled}
           className={`w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all resize-none leading-relaxed dark:bg-slate-800 dark:text-white ${
-            error 
-              ? 'border-red-300 bg-red-50 focus:ring-red-500/10 dark:border-red-800 dark:bg-red-900/20' 
+            disabled ? 'bg-slate-100 dark:bg-slate-700 opacity-50 cursor-not-allowed' : ''
+          } ${
+            error
+              ? 'border-red-300 bg-red-50 focus:ring-red-500/10 dark:border-red-800 dark:bg-red-900/20'
               : 'border-slate-200 focus:ring-blue-500/10 focus:border-blue-500 bg-white dark:border-slate-700 dark:focus:border-blue-400'
           }`}
         />
@@ -48,9 +53,12 @@ const Input: React.FC<InputProps> = ({
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           placeholder={placeholder}
+          disabled={disabled}
           className={`w-full px-4 py-3 border rounded-xl text-sm outline-none transition-all dark:bg-slate-800 dark:text-white ${
-            error 
-              ? 'border-red-300 bg-red-50 focus:ring-red-500/10 dark:border-red-800 dark:bg-red-900/20' 
+            disabled ? 'bg-slate-100 dark:bg-slate-700 opacity-50 cursor-not-allowed' : ''
+          } ${
+            error
+              ? 'border-red-300 bg-red-50 focus:ring-red-500/10 dark:border-red-800 dark:bg-red-900/20'
               : 'border-slate-200 focus:ring-blue-500/10 focus:border-blue-500 bg-white dark:border-slate-700 dark:focus:border-blue-400'
           }`}
         />
