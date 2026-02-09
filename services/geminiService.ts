@@ -201,11 +201,17 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
       },
     });
 
-    if (response.text) {
-      // Limpeza de Markdown (```json ... ```) caso a API retorne mesmo com mimeType json
-      const cleanedText = response.text.replace(/```json|```/g, '').trim();
-      return JSON.parse(cleanedText);
+    const responseText = response.text || "";
+    
+    // Extração robusta de JSON (encontra o primeiro { e o último })
+    const startIndex = responseText.indexOf('{');
+    const endIndex = responseText.lastIndexOf('}');
+
+    if (startIndex !== -1 && endIndex !== -1) {
+      const jsonString = responseText.substring(startIndex, endIndex + 1);
+      return JSON.parse(jsonString);
     }
+    
     return {};
   } catch (error) {
     console.error("Erro Gemini (Parse):", error);

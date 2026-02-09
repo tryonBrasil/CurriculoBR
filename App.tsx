@@ -556,7 +556,7 @@ const App: React.FC = () => {
              <button onClick={() => setView('privacy')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Política de Privacidade</button>
              <button onClick={() => setView('terms')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Termos e Condições</button>
           </div>
-          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2024 CurriculoBR. Todos os direitos reservados.</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2026 CurriculoBR. Todos os direitos reservados.</p>
         </footer>
         
         {/* Modal de Importação com IA e PDF */}

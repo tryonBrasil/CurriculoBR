@@ -214,12 +214,12 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
       case 'modern_blue':
         return (
           <div className="flex flex-row h-full">
-            <div className="w-[75mm] bg-[#1e40af] text-white p-10 flex flex-col shrink-0">
+            <div className="w-[75mm] bg-[#1e40af] text-white p-8 flex flex-col shrink-0">
               <div className="mb-10 text-center cursor-pointer" onClick={() => onSectionClick?.('info')}>
                 <div className="w-36 h-36 rounded-2xl overflow-hidden mx-auto mb-6 border-4 border-white/30 shadow-xl bg-[#1e3a8a] flex items-center justify-center">
                   {personalInfo.photoUrl ? <img src={personalInfo.photoUrl} className="w-full h-full object-cover" /> : <i className="fas fa-user text-5xl opacity-40"></i>}
                 </div>
-                <h1 className="text-[1.8em] font-black uppercase tracking-tight leading-tight">{personalInfo.fullName || 'Seu Nome'}</h1>
+                <h1 className="text-[1.8em] font-black uppercase tracking-tight leading-tight break-words">{personalInfo.fullName || 'Seu Nome'}</h1>
                 <p className="text-[0.9em] font-bold uppercase tracking-[0.1em] text-white mt-2">{personalInfo.jobTitle}</p>
               </div>
               <div className="space-y-8">
@@ -236,7 +236,7 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                 </section>
               </div>
             </div>
-            <div className="flex-1 p-14 bg-white overflow-hidden space-y-10">
+            <div className="flex-1 p-10 bg-white overflow-hidden space-y-6">
               {sectionOrder.map(id => renderSectionContent(id))}
             </div>
           </div>

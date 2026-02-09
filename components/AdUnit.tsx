@@ -26,11 +26,12 @@ const AdUnit: React.FC<AdUnitProps> = ({
     try {
       const adsbygoogle = window.adsbygoogle || [];
       // Verifica se o script do AdSense está carregado na página
-      // Empurra o anúncio para a fila de renderização
+      // Empurra o anúncio para a fila de renderização com tratamento de erro
       adsbygoogle.push({});
       initialized.current = true;
     } catch (e) {
-      console.error("AdSense Error:", e);
+      // Ignora erros comuns de desenvolvimento do AdSense
+      console.warn("AdSense Warning (pode ser ignorado em dev):", e);
     }
   }, [slotId]);
 
