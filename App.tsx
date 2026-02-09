@@ -1,11 +1,21 @@
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ResumeData, TemplateId, Experience, Education, Skill, Language, Course, SectionId } from './types';
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
 import PhotoCropModal from './components/PhotoCropModal';
+import Toast from './components/Toast';
+import TemplateThumbnail from './components/TemplateThumbnail';
+import ConfirmModal from './components/ConfirmModal';
+import { useResumeHistory } from './hooks/useResumeHistory';
 import { enhanceText, generateSummary, suggestSkills } from './services/geminiService';
+import { 
+  validateEmailError, 
+  validatePhoneError, 
+  validateURLError, 
+  validateDateRange 
+} from './services/validationService';
 
 const STEPS = [
   { id: 'info', label: 'Dados', icon: 'fa-id-card' },
@@ -30,33 +40,9 @@ const TEMPLATES = [
 
 const STORAGE_KEY = 'curriculobr_data';
 
-const TemplateThumbnail: React.FC<{ template: TemplateId }> = ({ template }) => {
-  const [scale, setScale] = useState(0.08);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (containerRef.current) {
-        const s = containerRef.current.clientWidth / 794;
-        if (s > 0) setScale(s);
-      }
-    }, 200);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div ref={containerRef} className="w-20 h-24 overflow-hidden bg-white border border-slate-200 rounded-lg relative shrink-0 shadow-sm group-hover:border-blue-400 transition-colors">
-      <div className="origin-top-left absolute top-0 left-0 pointer-events-none" style={{ transform: `scale(${scale})`, width: '210mm', height: '297mm' }}>
-        <ResumePreview data={MOCK_RESUME_DATA} template={template} fontSize={12} />
-      </div>
-      <div className="absolute inset-0 bg-transparent z-10"></div>
-    </div>
-  );
-};
-
 const App: React.FC = () => {
-  const [view, setView] = useState<'home' | 'editor'>('home');
-  const [data, setData] = useState<ResumeData>(INITIAL_RESUME_DATA);
+  // Adicionado estado 'templates'
+  const [view, setView] = useState<'home' | 'templates' | 'editor'>('home');
   const [template, setTemplate] = useState<TemplateId>('modern_blue');
   const [currentStep, setCurrentStep] = useState(0);
   const [previewScale, setPreviewScale] = useState(0.55);
@@ -64,7 +50,16 @@ const App: React.FC = () => {
   const [isEnhancing, setIsEnhancing] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [highlightedStep, setHighlightedStep] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
+  // Estado genérico para modal de confirmação
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
+  
+  // Usando o Hook de Histórico
+  const { data, updateData, undo, redo, canUndo, canRedo, setHistoryDirect } = useResumeHistory(INITIAL_RESUME_DATA);
+
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [tempImage, setTempImage] = useState<string | null>(null);
   
@@ -72,39 +67,59 @@ const App: React.FC = () => {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorScrollRef = useRef<HTMLDivElement>(null);
 
+  // Carregar dados salvos
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.data) setData(parsed.data);
+        if (parsed.data) setHistoryDirect({ past: [], present: parsed.data, future: [] });
         if (parsed.template) setTemplate(parsed.template);
         if (parsed.fontSize) setFontSize(parsed.fontSize);
-        setView('editor');
+        if (parsed.isDarkMode) setIsDarkMode(parsed.isDarkMode);
       } catch (e) {
         console.error("Erro ao carregar dados salvos:", e);
       }
     }
   }, []);
 
+  // Dark Mode Effect
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  // Salvar automaticamente com Debounce (2 segundos)
   useEffect(() => {
     if (view === 'editor') {
-      const stateToSave = {
-        data,
-        template,
-        fontSize
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+      const handler = setTimeout(() => {
+        const stateToSave = { data, template, fontSize, isDarkMode };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+      }, 2000);
+
+      return () => clearTimeout(handler);
     }
-  }, [data, template, fontSize, view]);
+  }, [data, template, fontSize, view, isDarkMode]);
+
+  const showToast = (message: string, type: 'error' | 'success' = 'success') => {
+    setToast({ message, type });
+  };
 
   const handleClearData = () => {
-    if (window.confirm("Tem certeza que deseja apagar todos os dados e começar do zero?")) {
-      setData(INITIAL_RESUME_DATA);
-      setTemplate('modern_blue');
-      setFontSize(12);
-      localStorage.removeItem(STORAGE_KEY);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Limpar Tudo?',
+      message: 'Isso apagará todos os dados preenchidos. Esta ação não pode ser desfeita.',
+      action: () => {
+        setHistoryDirect({ past: [], present: INITIAL_RESUME_DATA, future: [] });
+        localStorage.removeItem(STORAGE_KEY);
+        showToast("Dados limpos.");
+        setConfirmModal(null);
+      }
+    });
   };
 
   const cvScore = useMemo(() => {
@@ -122,12 +137,173 @@ const App: React.FC = () => {
 
   const activeTab = STEPS[currentStep].id;
 
+  const validateField = (field: string, value: string) => {
+    let error: string | null = null;
+    if (field === 'email') error = validateEmailError(value);
+    if (field === 'phone') error = validatePhoneError(value);
+    if (field === 'linkedin') error = validateURLError(value, 'URL');
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
   const updatePersonalInfo = (field: keyof ResumeData['personalInfo'], value: string) => {
-    setData(prev => ({
+    updateData(prev => ({
       ...prev,
       personalInfo: { ...prev.personalInfo, [field]: value }
     }));
   };
+
+  const addItem = (listName: 'experiences' | 'education' | 'skills' | 'languages' | 'courses') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    if (listName === 'experiences') {
+      const newItem: Experience = { id, company: '', position: '', location: '', startDate: '', endDate: '', current: false, description: '' };
+      updateData(prev => ({ ...prev, experiences: [newItem, ...(prev.experiences || [])] }));
+    } else if (listName === 'education') {
+      const newItem: Education = { id, institution: '', degree: '', field: '', location: '', startDate: '', endDate: '' };
+      updateData(prev => ({ ...prev, education: [newItem, ...(prev.education || [])] }));
+    } else if (listName === 'skills') {
+      const newItem: Skill = { id, name: '', level: 'Intermediate' };
+      updateData(prev => ({ ...prev, skills: [...(prev.skills || []), newItem] }));
+    } else if (listName === 'languages') {
+      const newItem: Language = { id, name: '', level: '', percentage: 60 };
+      updateData(prev => ({ ...prev, languages: [...(prev.languages || []), newItem] }));
+    } else if (listName === 'courses') {
+      const newItem: Course = { id, name: '', institution: '', year: '' };
+      updateData(prev => ({ ...prev, courses: [...(prev.courses || []), newItem] }));
+    }
+  };
+
+  const removeItem = (listName: 'experiences' | 'education' | 'skills' | 'languages' | 'courses', id: string) => {
+    updateData(prev => ({
+      ...prev,
+      [listName]: (prev[listName] as any[]).filter(item => item.id !== id)
+    }));
+  };
+
+  const updateItem = <T extends 'experiences' | 'education' | 'skills' | 'languages' | 'courses'>(
+    listName: T, 
+    id: string, 
+    field: string, 
+    value: any
+  ) => {
+    updateData(prev => {
+      // @ts-ignore
+      const newList = (prev[listName] as any[]).map(item => item.id === id ? { ...item, [field]: value } : item);
+      
+      // Validação de intervalo de data
+      if ((listName === 'experiences' || listName === 'education') && (field === 'startDate' || field === 'endDate')) {
+        const item = newList.find((i: any) => i.id === id);
+        const dateVal = validateDateRange(item.startDate, item.endDate);
+        if (!dateVal.valid) {
+          setErrors(prevErr => ({ ...prevErr, [`${listName}_${id}_date`]: dateVal.error || null }));
+        } else {
+          setErrors(prevErr => ({ ...prevErr, [`${listName}_${id}_date`]: null }));
+        }
+      }
+
+      return { ...prev, [listName]: newList };
+    });
+  };
+
+  const handleEnhance = async (text: string, context: string, listName?: any, id?: string) => {
+    if (isEnhancing) return;
+    
+    // Validação extra para texto curto
+    if (!text || text.length < 5) {
+      showToast("Texto muito curto para a IA processar.", "error");
+      return;
+    }
+
+    setIsEnhancing(id || context);
+    try {
+      const enhanced = await enhanceText(text, context);
+      if (listName && id) {
+        updateItem(listName, id, 'description', enhanced);
+      } else if (context === 'summary') {
+        updateData(prev => ({ ...prev, summary: enhanced }));
+      }
+      showToast("Texto refinado pela IA!");
+    } catch (err) {
+      console.error(err);
+      showToast("Erro ao processar a IA. Tente novamente.", "error");
+    } finally {
+      setIsEnhancing(null);
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!data.personalInfo.jobTitle || isEnhancing) return;
+    setIsEnhancing('summary-gen');
+    try {
+      const skillNames = data.skills.map(s => s.name);
+      const expPositions = data.experiences.map(e => e.position);
+      const generated = await generateSummary(data.personalInfo.jobTitle, skillNames, expPositions);
+      updateData(prev => ({ ...prev, summary: generated }));
+      showToast("Resumo gerado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      showToast("Erro ao gerar resumo. Verifique o cargo inserido.", "error");
+    } finally {
+      setIsEnhancing(null);
+    }
+  };
+
+  const handleSuggestSkills = async () => {
+    if (!data.personalInfo.jobTitle || isEnhancing) return;
+    setIsEnhancing('skills-suggest');
+    try {
+      const suggested = await suggestSkills(data.personalInfo.jobTitle);
+      if (suggested.length > 0) {
+        const newSkills: Skill[] = suggested.map(s => ({
+          id: Math.random().toString(36).substr(2, 9),
+          name: s,
+          level: 'Intermediate'
+        }));
+        updateData(prev => ({ ...prev, skills: [...prev.skills, ...newSkills] }));
+        showToast(`${suggested.length} habilidades sugeridas adicionadas.`);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Erro ao sugerir habilidades.", "error");
+    } finally {
+      setIsEnhancing(null);
+    }
+  };
+
+  // Wrapped in useCallback for React.memo optimization in Preview
+  const handleSectionClick = useCallback((sectionId: string) => {
+    const stepIdx = STEPS.findIndex(s => s.id === sectionId);
+    if (stepIdx !== -1) {
+      setCurrentStep(stepIdx);
+      setHighlightedStep(sectionId);
+      setTimeout(() => setHighlightedStep(null), 1500);
+      if (editorScrollRef.current) {
+        editorScrollRef.current.scrollTop = 0;
+      }
+    }
+  }, []);
+
+  // Wrapped in useCallback for React.memo optimization in Preview
+  const handleReorder = useCallback((newOrder: SectionId[]) => {
+    updateData(prev => ({ ...prev, sectionOrder: newOrder }));
+  }, [updateData]);
+
+  const resetZoom = () => {
+    if (!previewContainerRef.current) return;
+    const containerHeight = previewContainerRef.current.clientHeight;
+    const containerWidth = previewContainerRef.current.clientWidth;
+    const scaleY = (containerHeight - 140) / 1123;
+    const scaleX = (containerWidth - 100) / 794; 
+    const bestScale = Math.min(scaleX, scaleY);
+    setPreviewScale(Math.min(1.0, Math.max(0.3, bestScale)));
+  };
+
+  useEffect(() => {
+    if (view === 'editor') {
+      resetZoom();
+      window.addEventListener('resize', resetZoom);
+      return () => window.removeEventListener('resize', resetZoom);
+    }
+  }, [view, isSidebarOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -145,417 +321,361 @@ const App: React.FC = () => {
     updatePersonalInfo('photoUrl', croppedImage);
     setIsCropModalOpen(false);
     setTempImage(null);
+    showToast("Foto atualizada!");
   };
 
-  const addItem = (listName: 'experiences' | 'education' | 'skills' | 'languages' | 'courses') => {
-    const id = Math.random().toString(36).substr(2, 9);
-    if (listName === 'experiences') {
-      const newItem: Experience = { id, company: '', position: '', location: '', startDate: '', endDate: '', current: false, description: '' };
-      setData(prev => ({ ...prev, experiences: [newItem, ...(prev.experiences || [])] }));
-    } else if (listName === 'education') {
-      const newItem: Education = { id, institution: '', degree: '', field: '', location: '', startDate: '', endDate: '' };
-      setData(prev => ({ ...prev, education: [newItem, ...(prev.education || [])] }));
-    } else if (listName === 'skills') {
-      const newItem: Skill = { id, name: '', level: 'Intermediate' };
-      setData(prev => ({ ...prev, skills: [...(prev.skills || []), newItem] }));
-    } else if (listName === 'languages') {
-      const newItem: Language = { id, name: '', level: '', percentage: 60 };
-      setData(prev => ({ ...prev, languages: [...(prev.languages || []), newItem] }));
-    } else if (listName === 'courses') {
-      const newItem: Course = { id, name: '', institution: '', year: '' };
-      setData(prev => ({ ...prev, courses: [...(prev.courses || []), newItem] }));
-    }
+  const handleTemplateSelect = (selectedTemplate: TemplateId) => {
+    setTemplate(selectedTemplate);
+    updateData(INITIAL_RESUME_DATA);
+    setView('editor');
   };
 
-  const removeItem = (listName: 'experiences' | 'education' | 'skills' | 'languages' | 'courses', id: string) => {
-    setData(prev => ({
-      ...prev,
-      [listName]: (prev[listName] as any[]).filter(item => item.id !== id)
-    }));
-  };
-
-  const updateItem = (listName: 'experiences' | 'education' | 'skills' | 'languages' | 'courses', id: string, field: string, value: any) => {
-    setData(prev => ({
-      ...prev,
-      [listName]: (prev[listName] as any[]).map(item => item.id === id ? { ...item, [field]: value } : item)
-    }));
-  };
-
-  const handleEnhance = async (text: string, context: string, listName?: any, id?: string) => {
-    if (!text || isEnhancing) return;
-    setIsEnhancing(id || context);
-    try {
-      const enhanced = await enhanceText(text, context);
-      if (listName && id) {
-        updateItem(listName, id, 'description', enhanced);
-      } else if (context === 'summary') {
-        setData(prev => ({ ...prev, summary: enhanced }));
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsEnhancing(null);
-    }
-  };
-
-  const handleGenerateSummary = async () => {
-    if (!data.personalInfo.jobTitle || isEnhancing) return;
-    setIsEnhancing('summary-gen');
-    try {
-      const skillNames = data.skills.map(s => s.name);
-      const expPositions = data.experiences.map(e => e.position);
-      const generated = await generateSummary(data.personalInfo.jobTitle, skillNames, expPositions);
-      setData(prev => ({ ...prev, summary: generated }));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsEnhancing(null);
-    }
-  };
-
-  const handleSectionClick = (sectionId: string) => {
-    const index = STEPS.findIndex(step => step.id === sectionId);
-    if (index !== -1) {
-      setCurrentStep(index);
-      setHighlightedStep(sectionId);
-      setTimeout(() => setHighlightedStep(null), 1500);
-      if (editorScrollRef.current) {
-        editorScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  };
-
-  const resetZoom = () => {
-    if (!previewContainerRef.current) return;
-    const containerHeight = previewContainerRef.current.clientHeight;
-    const containerWidth = previewContainerRef.current.clientWidth;
-    const scaleY = (containerHeight - 140) / 1123;
-    const scaleX = (containerWidth - 100) / 794; 
-    const bestScale = Math.min(scaleX, scaleY);
-    setPreviewScale(Math.min(1.0, Math.max(0.3, bestScale)));
-  };
-
-  useEffect(() => {
-    if (view === 'editor') {
-      resetZoom();
-      const timer = setTimeout(resetZoom, 400);
-      window.addEventListener('resize', resetZoom);
-      return () => {
-        window.removeEventListener('resize', resetZoom);
-        clearTimeout(timer);
-      };
-    }
-  }, [view, isSidebarOpen]);
-
+  // RENDERIZAÇÃO DA PÁGINA HOME
   if (view === 'home') {
     return (
-      <div className="min-h-screen bg-white flex flex-col relative overflow-hidden">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] aspect-square bg-blue-50 rounded-full blur-[120px] opacity-60"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square bg-indigo-50 rounded-full blur-[120px] opacity-60"></div>
+      <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col relative overflow-hidden transition-colors duration-300">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] aspect-square bg-blue-50 dark:bg-blue-900/20 rounded-full blur-[120px] opacity-60"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square bg-indigo-50 dark:bg-indigo-900/20 rounded-full blur-[120px] opacity-60"></div>
         <header className="relative z-10 h-24 flex items-center justify-between px-8 md:px-20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3">
                <i className="fas fa-file-invoice text-lg"></i>
             </div>
-            <h1 className="font-black text-2xl tracking-tighter text-slate-800 uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
+            <h1 className="font-black text-2xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
           </div>
-          <button onClick={() => { setData(MOCK_RESUME_DATA); setView('editor'); }} className="hidden md:block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">Ver Exemplo</button>
+          <div className="flex gap-4">
+             <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+               <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+             </button>
+            <button onClick={() => { updateData(MOCK_RESUME_DATA); setView('editor'); }} className="hidden md:block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">Ver Exemplo</button>
+          </div>
         </header>
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-24 text-center">
           <div className="max-w-5xl w-full space-y-8">
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
-              <span className="inline-block py-2 px-4 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">Profissional & Elegante</span>
-              <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-none">Seu currículo perfeito, <br className="hidden md:block"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">simples e direto.</span></h2>
-              <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">Design de alto nível para destacar suas habilidades. Construído para profissionais que buscam o próximo nível na carreira.</p>
+              <span className="inline-block py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">Gerador de Currículos IA</span>
+              <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Seu currículo perfeito, <br className="hidden md:block"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">em minutos.</span></h2>
+              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">Combine design profissional com o poder da Inteligência Artificial para conquistar a vaga dos seus sonhos.</p>
             </div>
             <div className="flex items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <button onClick={() => { setData(INITIAL_RESUME_DATA); setView('editor'); }} className="group bg-slate-900 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 hover:scale-[1.05] transition-all shadow-2xl flex items-center gap-3">Criar Meu Currículo <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i></button>
+              <button onClick={() => setView('templates')} className="group bg-slate-900 dark:bg-blue-600 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 dark:hover:bg-blue-500 hover:scale-[1.05] transition-all shadow-2xl flex items-center gap-3">Criar Agora <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i></button>
             </div>
-            <div className="pt-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 animate-in fade-in duration-1000 delay-500 px-4">
-              {TEMPLATES.slice(0, 5).map(t => (
-                <div key={t.id} className="group relative cursor-pointer" onClick={() => { setTemplate(t.id as TemplateId); setView('editor'); }}>
-                  <div className="w-full aspect-[3/4] rounded-2xl shadow-lg group-hover:-translate-y-2 transition-transform duration-500 overflow-hidden border border-slate-100 relative">
-                    <div className="absolute inset-0 scale-[0.35] origin-top-left">
-                       <ResumePreview data={MOCK_RESUME_DATA} template={t.id as TemplateId} fontSize={12} />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // RENDERIZAÇÃO DA PÁGINA DE SELEÇÃO DE TEMPLATES
+  if (view === 'templates') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
+        <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
+             <i className="fas fa-arrow-left text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"></i>
+             <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Voltar</span>
+          </div>
+          <h1 className="font-black text-xl text-slate-800 dark:text-white uppercase tracking-tight">Escolha seu Modelo</h1>
+          <div className="w-20"></div> {/* Spacer for centering */}
+        </header>
+
+        <main className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+              {TEMPLATES.map((t) => (
+                <div key={t.id} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group border border-slate-100 dark:border-slate-700 flex flex-col">
+                  <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                    <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
+                    <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                       <button 
+                         onClick={() => handleTemplateSelect(t.id as TemplateId)}
+                         className="bg-white text-blue-600 px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform"
+                       >
+                         Usar este
+                       </button>
                     </div>
                   </div>
-                  <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">{t.label}</p>
+                  <div className="p-6 flex flex-col gap-2">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{t.desc}</p>
+                    <button 
+                         onClick={() => handleTemplateSelect(t.id as TemplateId)}
+                         className="mt-4 w-full py-3 border-2 border-slate-100 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 font-bold text-xs uppercase tracking-widest hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 dark:hover:border-blue-600 transition-all"
+                       >
+                         Selecionar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </main>
-        <footer className="relative z-10 py-12 border-t border-slate-50 flex flex-col items-center gap-4">
-          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.5em]">Gerador de Currículos CurriculoBR</p>
-        </footer>
       </div>
     );
   }
 
+  // RENDERIZAÇÃO DO EDITOR
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden">
-      {isCropModalOpen && tempImage && (
-        <PhotoCropModal imageSrc={tempImage} onConfirm={handleCropConfirm} onCancel={() => { setIsCropModalOpen(false); setTempImage(null); }} />
+    <div className="h-screen flex flex-col bg-white dark:bg-slate-950 overflow-hidden transition-colors duration-300">
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {confirmModal && (
+        <ConfirmModal 
+          isOpen={confirmModal.isOpen} 
+          title={confirmModal.title} 
+          message={confirmModal.message} 
+          onConfirm={confirmModal.action} 
+          onCancel={() => setConfirmModal(null)} 
+        />
       )}
-      <nav className="no-print h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8 z-50 shrink-0">
+
+      {isCropModalOpen && tempImage && (
+        <PhotoCropModal imageSrc={tempImage} onConfirm={handleCropConfirm} onCancel={() => setIsCropModalOpen(false)} />
+      )}
+      <nav className="no-print h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-8 z-50 shrink-0">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
           <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-sm"></i></div>
-          <h1 className="font-extrabold text-xl tracking-tighter text-slate-800 uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
+          <h1 className="font-extrabold text-xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
         </div>
         <div className="hidden lg:flex items-center gap-8">
+           <div className="flex items-center gap-2 mr-4">
+              <button onClick={undo} disabled={!canUndo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canUndo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Desfazer">
+                <i className="fas fa-undo text-xs"></i>
+              </button>
+              <button onClick={redo} disabled={!canRedo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canRedo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Refazer">
+                <i className="fas fa-redo text-xs"></i>
+              </button>
+           </div>
            <div className="flex items-center gap-3">
-              <div className="w-32 h-1.5 bg-slate-100 rounded-full"><div className={`h-full rounded-full transition-all duration-1000 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-600'}`} style={{ width: `${cvScore}%` }}></div></div>
-              <span className="text-xs font-black text-slate-700 tracking-tighter">{cvScore}% Completo</span>
+              <div className="w-32 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-1000 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-600'}`} style={{ width: `${cvScore}%` }}></div>
+              </div>
+              <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{cvScore}% Completo</span>
            </div>
-           <div className="flex gap-4">
-             <button onClick={() => setView('home')} className="px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all">Voltar</button>
-             <button onClick={() => window.print()} className="bg-blue-600 text-white px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg">
-               <i className="fas fa-download"></i> Baixar PDF
-             </button>
-           </div>
+           <button onClick={() => window.print()} className="bg-blue-600 text-white px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg">
+             <i className="fas fa-download"></i> Exportar PDF
+           </button>
         </div>
       </nav>
       <div className="flex-1 flex overflow-hidden flex-col md:flex-row">
-        <div className="no-print w-full md:w-[420px] flex flex-col border-r border-slate-100 bg-white z-40 shrink-0 shadow-xl">
-           <div className="flex overflow-x-auto border-b border-slate-50 shrink-0 custom-scrollbar bg-slate-50/50">
+        <div className="no-print w-full md:w-[420px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-40 shrink-0 shadow-xl transition-colors duration-300">
+           <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 shrink-0 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50">
              {STEPS.map((step, idx) => (
-               <button key={step.id} onClick={() => setCurrentStep(idx)} className={`flex-1 min-w-[100px] py-5 flex flex-col items-center gap-2 transition-all relative px-2 shrink-0 ${currentStep === idx ? 'text-blue-600 bg-white shadow-inner' : 'text-slate-400 grayscale hover:bg-white/50'}`}>
+               <button 
+                key={step.id} 
+                onClick={() => setCurrentStep(idx)} 
+                className={`flex-1 min-w-[100px] py-5 flex flex-col items-center gap-2 transition-all relative px-2 shrink-0 ${currentStep === idx ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-inner' : 'text-slate-400 grayscale hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
+               >
                  <i className={`fas ${step.icon} text-[14px]`}></i>
                  <span className="text-[9px] font-black uppercase tracking-[0.1em] whitespace-nowrap">{step.label}</span>
                  {currentStep === idx && <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-t-full"></div>}
                </button>
              ))}
            </div>
-           <div ref={editorScrollRef} className={`flex-1 overflow-y-auto custom-scrollbar p-6 transition-colors duration-500 ${highlightedStep ? 'bg-blue-50/30' : ''}`}>
-              <div className={highlightedStep === activeTab ? 'section-highlight p-2' : ''}>
-                {activeTab === 'info' && (
-                  <div className="animate-in slide-in-from-bottom-2 duration-300">
-                    <h2 className="text-lg font-black text-slate-900 mb-6 uppercase tracking-tight">Informações Pessoais</h2>
-                    <div className="mb-8 flex flex-col items-center">
-                      <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                        <div className="w-28 h-28 rounded-3xl overflow-hidden border-4 border-slate-50 shadow-inner bg-slate-100 flex items-center justify-center">
-                          {data.personalInfo.photoUrl ? <img src={data.personalInfo.photoUrl} className="w-full h-full object-cover" /> : <i className="fas fa-user text-3xl text-slate-300"></i>}
-                        </div>
-                        <div className="absolute inset-0 bg-blue-600/60 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold uppercase text-center p-2">Alterar Foto</div>
+           <div ref={editorScrollRef} className={`flex-1 overflow-y-auto custom-scrollbar p-6 transition-colors duration-500 ${highlightedStep ? 'bg-blue-50/20 dark:bg-blue-900/10' : ''}`}>
+              {activeTab === 'info' && (
+                <div className="animate-in slide-in-from-bottom-2 duration-300">
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Informações Pessoais</h2>
+                  <div className="mb-8 flex flex-col items-center">
+                    <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                      <div className="w-28 h-28 rounded-3xl overflow-hidden border-4 border-slate-50 dark:border-slate-800 shadow-inner bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        {data.personalInfo.photoUrl ? <img src={data.personalInfo.photoUrl} className="w-full h-full object-cover" /> : <i className="fas fa-user text-3xl text-slate-300"></i>}
                       </div>
-                      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                      <div className="absolute inset-0 bg-blue-600/60 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold uppercase text-center p-2">Alterar Foto</div>
                     </div>
-                    <div className="space-y-4">
-                      <Input label="Nome Completo" value={data.personalInfo.fullName} onChange={(v) => updatePersonalInfo('fullName', v)} placeholder="Ex: João da Silva" />
-                      <Input label="Cargo Pretendido" value={data.personalInfo.jobTitle} onChange={(v) => updatePersonalInfo('jobTitle', v)} placeholder="Ex: Gerente de Vendas" />
+                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                  </div>
+                  <div className="space-y-2">
+                    <Input label="Nome Completo" value={data.personalInfo.fullName} onChange={(v) => updatePersonalInfo('fullName', v)} placeholder="Ex: João da Silva" />
+                    <Input label="Cargo Pretendido" value={data.personalInfo.jobTitle} onChange={(v) => updatePersonalInfo('jobTitle', v)} placeholder="Ex: Engenheiro de Software" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input label="E-mail" value={data.personalInfo.email} onChange={(v) => updatePersonalInfo('email', v)} placeholder="email@exemplo.com" error={errors.email} onBlur={() => validateField('email', data.personalInfo.email)} />
+                      <Input label="Telefone" value={data.personalInfo.phone} onChange={(v) => updatePersonalInfo('phone', v)} placeholder="(11) 99999-9999" error={errors.phone} onBlur={() => validateField('phone', data.personalInfo.phone)} />
+                    </div>
+                    <Input label="Localização" value={data.personalInfo.location} onChange={(v) => updatePersonalInfo('location', v)} placeholder="Cidade, Estado" />
+                    <Input label="LinkedIn" value={data.personalInfo.linkedin} onChange={(v) => updatePersonalInfo('linkedin', v)} placeholder="linkedin.com/in/perfil" error={errors.linkedin} onBlur={() => validateField('linkedin', data.personalInfo.linkedin)} />
+                  </div>
+                </div>
+              )}
+              {activeTab === 'experience' && (
+                <div className="animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Experiências</h2>
+                    <button onClick={() => addItem('experiences')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                  </div>
+                  {data.experiences?.map(exp => (
+                    <div key={exp.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-blue-400">
+                      <button onClick={() => removeItem('experiences', exp.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
+                      <Input label="Empresa" value={exp.company} onChange={(v) => updateItem('experiences', exp.id, 'company', v)} />
+                      <Input label="Cargo" value={exp.position} onChange={(v) => updateItem('experiences', exp.id, 'position', v)} />
                       <div className="grid grid-cols-2 gap-4">
-                        <Input label="E-mail" value={data.personalInfo.email} onChange={(v) => updatePersonalInfo('email', v)} placeholder="email@exemplo.com" />
-                        <Input label="Telefone" value={data.personalInfo.phone} onChange={(v) => updatePersonalInfo('phone', v)} placeholder="(11) 99999-9999" />
+                        <Input label="Início" value={exp.startDate} onChange={(v) => updateItem('experiences', exp.id, 'startDate', v)} error={errors[`experiences_${exp.id}_date`]} />
+                        <Input label="Fim" value={exp.endDate} onChange={(v) => updateItem('experiences', exp.id, 'endDate', v)} />
                       </div>
-                      <Input label="Localização" value={data.personalInfo.location} onChange={(v) => updatePersonalInfo('location', v)} placeholder="Cidade, Estado" />
-                      <Input label="LinkedIn (URL)" value={data.personalInfo.linkedin} onChange={(v) => updatePersonalInfo('linkedin', v)} placeholder="linkedin.com/in/perfil" />
-                      <Input label="Website / Portfólio" value={data.personalInfo.website} onChange={(v) => updatePersonalInfo('website', v)} placeholder="meusite.com" />
-                    </div>
-                  </div>
-                )}
-                {activeTab === 'experience' && (
-                  <div className="animate-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Experiências</h2>
-                      <button onClick={() => addItem('experiences')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
-                    </div>
-                    {data.experiences?.map(exp => (
-                      <div key={exp.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-100 mb-6 relative group border-l-4 border-l-blue-400">
-                        <button onClick={() => removeItem('experiences', exp.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
-                        <Input label="Empresa" value={exp.company} onChange={(v) => updateItem('experiences', exp.id, 'company', v)} placeholder="Nome da empresa" />
-                        <Input label="Cargo" value={exp.position} onChange={(v) => updateItem('experiences', exp.id, 'position', v)} placeholder="Seu cargo" />
-                        <div className="grid grid-cols-2 gap-4">
-                          <Input label="Início" value={exp.startDate} onChange={(v) => updateItem('experiences', exp.id, 'startDate', v)} placeholder="MM/AAAA" />
-                          <Input label="Fim" value={exp.endDate} onChange={(v) => updateItem('experiences', exp.id, 'endDate', v)} placeholder="MM/AAAA ou 'Atual'" />
-                        </div>
-                        <div className="mt-2 relative">
-                           <div className="flex justify-between items-center mb-1">
-                             <label className="text-[10px] font-bold text-slate-400 uppercase">Descrição</label>
-                             <button onClick={() => handleEnhance(exp.description, 'experiência', 'experiences', exp.id)} disabled={!exp.description || isEnhancing === exp.id} className="text-[9px] text-blue-600 font-black uppercase hover:text-blue-800 transition-colors"><i className={`fas ${isEnhancing === exp.id ? 'fa-circle-notch fa-spin' : 'fa-magic'}`}></i> IA</button>
-                           </div>
-                           <textarea className="w-full p-4 rounded-xl border text-sm h-32 outline-none focus:ring-1 focus:ring-blue-500 bg-white" value={exp.description} onChange={(e) => updateItem('experiences', exp.id, 'description', e.target.value)} />
-                        </div>
+                      <div className="mt-2 relative">
+                         <div className="flex justify-between items-center mb-1">
+                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Descrição</label>
+                           <button onClick={() => handleEnhance(exp.description, 'experiência', 'experiences', exp.id)} disabled={!exp.description || isEnhancing === exp.id} className="text-[9px] text-blue-600 dark:text-blue-400 font-black uppercase hover:text-blue-800 transition-colors">
+                            <i className={`fas ${isEnhancing === exp.id ? 'fa-circle-notch fa-spin' : 'fa-magic'}`}></i> IA
+                           </button>
+                         </div>
+                         <textarea className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm h-32 outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 resize-none transition-all" value={exp.description} onChange={(e) => updateItem('experiences', exp.id, 'description', e.target.value)} />
                       </div>
-                    ))}
-                  </div>
-                )}
-                {activeTab === 'education' && (
-                  <div className="animate-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Educação</h2>
-                      <button onClick={() => addItem('education')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
                     </div>
-                    {data.education?.map(edu => (
-                      <div key={edu.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-100 mb-6 relative group border-l-4 border-l-indigo-400">
-                        <button onClick={() => removeItem('education', edu.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
-                        <Input label="Instituição" value={edu.institution} onChange={(v) => updateItem('education', edu.id, 'institution', v)} placeholder="Ex: USP, Harvard..." />
-                        <Input label="Curso / Formação" value={edu.degree} onChange={(v) => updateItem('education', edu.id, 'degree', v)} placeholder="Ex: Bacharelado em Design" />
-                        <div className="grid grid-cols-2 gap-4">
-                          <Input label="Início" value={edu.startDate} onChange={(v) => updateItem('education', edu.id, 'startDate', v)} placeholder="Ano" />
-                          <Input label="Fim" value={edu.endDate} onChange={(v) => updateItem('education', edu.id, 'endDate', v)} placeholder="Ano" />
-                        </div>
+                  ))}
+                </div>
+              )}
+              {activeTab === 'education' && (
+                <div className="animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Educação</h2>
+                    <button onClick={() => addItem('education')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                  </div>
+                  {data.education?.map(edu => (
+                    <div key={edu.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-indigo-400">
+                      <button onClick={() => removeItem('education', edu.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
+                      <Input label="Instituição" value={edu.institution} onChange={(v) => updateItem('education', edu.id, 'institution', v)} />
+                      <Input label="Curso" value={edu.degree} onChange={(v) => updateItem('education', edu.id, 'degree', v)} />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input label="Início" value={edu.startDate} onChange={(v) => updateItem('education', edu.id, 'startDate', v)} error={errors[`education_${edu.id}_date`]} />
+                        <Input label="Fim" value={edu.endDate} onChange={(v) => updateItem('education', edu.id, 'endDate', v)} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {activeTab === 'skills' && (
+                <div className="animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Habilidades</h2>
+                    <button onClick={() => addItem('skills')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    {data.skills?.map(skill => (
+                      <div key={skill.id} className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 group transition-all hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm">
+                        <input className="flex-1 bg-transparent border-none text-[11px] font-bold outline-none dark:text-white" value={skill.name} onChange={(e) => updateItem('skills', skill.id, 'name', e.target.value)} placeholder="Habilidade..." />
+                        <button onClick={() => removeItem('skills', skill.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i className="fas fa-times"></i></button>
                       </div>
                     ))}
                   </div>
-                )}
-                {activeTab === 'skills' && (
-                  <div className="animate-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Habilidades</h2>
-                      <button onClick={() => addItem('skills')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                      {data.skills?.map(skill => (
-                        <div key={skill.id} className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 group">
-                          <input className="flex-1 bg-transparent border-none text-[11px] font-bold outline-none" value={skill.name} onChange={(e) => updateItem('skills', skill.id, 'name', e.target.value)} placeholder="Habilidade..." />
-                          <button onClick={() => removeItem('skills', skill.id)} className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"><i className="fas fa-times"></i></button>
-                        </div>
-                      ))}
-                    </div>
-                    <button onClick={async () => {
-                      if (!data.personalInfo.jobTitle) return;
-                      setIsEnhancing('skills-suggest');
-                      const suggested = await suggestSkills(data.personalInfo.jobTitle);
-                      suggested.forEach(s => {
-                         const id = Math.random().toString(36).substr(2, 9);
-                         setData(prev => ({ ...prev, skills: [...prev.skills, { id, name: s, level: 'Intermediate' }] }));
-                      });
-                      setIsEnhancing(null);
-                    }} disabled={isEnhancing === 'skills-suggest'} className="w-full py-4 border-2 border-dashed border-blue-100 rounded-2xl text-[10px] font-black text-blue-400 uppercase tracking-widest hover:bg-blue-50/50 transition-all">
-                      <i className={`fas ${isEnhancing === 'skills-suggest' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'} mr-2`}></i> Sugerir com IA
+                  <button 
+                    onClick={handleSuggestSkills} 
+                    disabled={isEnhancing === 'skills-suggest'}
+                    className="w-full py-4 border-2 border-dashed border-blue-100 dark:border-slate-700 rounded-2xl text-[10px] font-black text-blue-400 dark:text-slate-400 uppercase tracking-widest hover:bg-blue-50/50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                  >
+                    <i className={`fas ${isEnhancing === 'skills-suggest' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}`}></i> Sugerir com IA
+                  </button>
+                </div>
+              )}
+              {activeTab === 'summary' && (
+                <div className="animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Resumo Profissional</h2>
+                    <button onClick={handleGenerateSummary} disabled={!data.personalInfo.jobTitle || isEnhancing === 'summary-gen'} className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
+                      <i className={`fas ${isEnhancing === 'summary-gen' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic'}`}></i> Gerar com IA
                     </button>
                   </div>
-                )}
-                {activeTab === 'extras' && (
-                  <div className="animate-in slide-in-from-bottom-2 duration-300 space-y-8">
-                    <div>
-                      <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Idiomas</h2>
-                        <button onClick={() => addItem('languages')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Novo Idioma</button>
-                      </div>
-                      {data.languages?.map(lang => (
-                        <div key={lang.id} className="p-4 bg-slate-50 rounded-2xl mb-4 border border-slate-100">
-                          <div className="flex justify-between items-center mb-2">
-                             <input className="bg-transparent font-black text-xs outline-none" value={lang.name} onChange={(e) => updateItem('languages', lang.id, 'name', e.target.value)} placeholder="Ex: Inglês" />
-                             <button onClick={() => removeItem('languages', lang.id)} className="text-slate-300 hover:text-red-500"><i className="fas fa-trash-alt text-[10px]"></i></button>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <input className="bg-transparent text-[10px] italic outline-none flex-1" value={lang.level} onChange={(e) => updateItem('languages', lang.id, 'level', e.target.value)} placeholder="Nível (Avançado...)" />
-                            <input type="range" className="w-24 h-1 bg-slate-200 accent-blue-600 appearance-none rounded-full" value={lang.percentage} onChange={(e) => updateItem('languages', lang.id, 'percentage', parseInt(e.target.value))} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Cursos Adicionais</h2>
-                        <button onClick={() => addItem('courses')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Novo Curso</button>
-                      </div>
-                      {data.courses?.map(course => (
-                        <div key={course.id} className="p-4 bg-slate-50 rounded-2xl mb-4 border border-slate-100 relative group">
-                           <button onClick={() => removeItem('courses', course.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-[10px]"></i></button>
-                           <Input label="Nome do Curso" value={course.name} onChange={(v) => updateItem('courses', course.id, 'name', v)} />
-                           <div className="grid grid-cols-2 gap-4">
-                             <Input label="Instituição" value={course.institution} onChange={(v) => updateItem('courses', course.id, 'institution', v)} />
-                             <Input label="Ano" value={course.year} onChange={(v) => updateItem('courses', course.id, 'year', v)} />
-                           </div>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="relative">
+                    <textarea 
+                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-64 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all" 
+                      value={data.summary} 
+                      onChange={(e) => updateData(prev => ({ ...prev, summary: e.target.value }))}
+                      placeholder="Escreva um pouco sobre você e suas principais conquistas..." 
+                    />
+                    <button 
+                      onClick={() => handleEnhance(data.summary, 'resumo')} 
+                      disabled={!data.summary || isEnhancing === 'summary'}
+                      className="absolute bottom-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:text-blue-600 transition-all"
+                    >
+                      <i className={`fas ${isEnhancing === 'summary' ? 'fa-circle-notch fa-spin' : 'fa-magic'} mr-1`}></i> Refinar
+                    </button>
                   </div>
-                )}
-                {activeTab === 'summary' && (
-                  <div className="animate-in slide-in-from-bottom-2 duration-300">
+                </div>
+              )}
+              {activeTab === 'extras' && (
+                <div className="animate-in slide-in-from-bottom-2 duration-300 space-y-8">
+                  <div>
                     <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Resumo Profissional</h2>
-                      <button onClick={handleGenerateSummary} disabled={!data.personalInfo.jobTitle || isEnhancing === 'summary-gen'} className="text-[10px] font-black text-blue-600 uppercase hover:text-blue-800 transition-all flex items-center gap-2">
-                        <i className={`fas ${isEnhancing === 'summary-gen' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic'}`}></i> Gerar com IA
-                      </button>
+                      <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Idiomas</h2>
+                      <button onClick={() => addItem('languages')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
                     </div>
-                    <div className="relative">
-                       <textarea className="w-full p-6 bg-slate-50 rounded-3xl border border-slate-100 text-sm h-64 outline-none focus:ring-2 focus:ring-blue-500/20 resize-none leading-relaxed" value={data.summary} onChange={(e) => setData(prev => ({ ...prev, summary: e.target.value }))} placeholder="Escreva um pouco sobre você e suas principais conquistas..." />
-                       <button onClick={() => handleEnhance(data.summary, 'resumo')} disabled={!data.summary || isEnhancing === 'summary'} className="absolute bottom-4 right-4 bg-white/80 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black text-slate-600 shadow-sm border border-slate-100 hover:text-blue-600">
-                         <i className={`fas ${isEnhancing === 'summary' ? 'fa-circle-notch fa-spin' : 'fa-magic'} mr-1`}></i> Refinar
-                       </button>
-                    </div>
+                    {data.languages?.map(lang => (
+                      <div key={lang.id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl mb-4 border border-slate-100 dark:border-slate-700 group hover:shadow-sm transition-all">
+                        <div className="flex justify-between items-center mb-2">
+                           <input className="bg-transparent font-black text-xs outline-none focus:text-blue-600 transition-colors dark:text-white" value={lang.name} onChange={(e) => updateItem('languages', lang.id, 'name', e.target.value)} placeholder="Ex: Inglês" />
+                           <button onClick={() => removeItem('languages', lang.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><i className="fas fa-trash-alt text-[10px]"></i></button>
+                        </div>
+                        <input type="range" className="w-full h-1 bg-slate-200 dark:bg-slate-600 accent-blue-600 appearance-none rounded-full cursor-pointer" value={lang.percentage} onChange={(e) => updateItem('languages', lang.id, 'percentage', parseInt(e.target.value))} />
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
            </div>
-           <div className="p-6 border-t border-slate-50 flex items-center justify-between gap-4 shrink-0 no-print">
-              <button onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))} className={`flex-1 py-4 font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all ${currentStep === 0 ? 'invisible' : ''}`}>Anterior</button>
-              <button onClick={() => currentStep === STEPS.length - 1 ? window.print() : setCurrentStep(prev => prev + 1)} className="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg active:scale-95">{currentStep === STEPS.length - 1 ? 'Baixar Currículo' : 'Próximo Passo'}</button>
+           <div className="p-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 no-print">
+              <button onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))} className={`flex-1 py-4 font-bold text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors ${currentStep === 0 ? 'invisible' : ''}`}>Anterior</button>
+              <button onClick={() => currentStep === STEPS.length - 1 ? window.print() : setCurrentStep(prev => prev + 1)} className="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
+                {currentStep === STEPS.length - 1 ? 'Exportar PDF' : 'Próximo Passo'}
+              </button>
            </div>
         </div>
 
-        <div ref={previewContainerRef} className="flex-1 bg-[#f1f5f9] relative flex flex-col items-center justify-center overflow-hidden paper-texture transition-all duration-300">
-           {/* Controles de Zoom Superior */}
-           <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-200 z-[70] no-print">
-              <button onClick={() => setPreviewScale(p => Math.max(0.3, p - 0.1))} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-all"><i className="fas fa-minus text-xs"></i></button>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest w-12 text-center">{Math.round(previewScale * 100)}%</span>
-              <button onClick={() => setPreviewScale(p => Math.min(1.5, p + 0.1))} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-all"><i className="fas fa-plus text-xs"></i></button>
-              <div className="w-[1px] h-4 bg-slate-200 mx-1"></div>
-              <button onClick={resetZoom} className="text-[9px] font-black uppercase text-blue-600 hover:text-blue-800 transition-all px-2">Reset</button>
+        <div ref={previewContainerRef} className="flex-1 bg-[#f1f5f9] dark:bg-slate-950 relative flex flex-col items-center justify-center overflow-hidden paper-texture">
+           <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 z-[70] no-print">
+              <button onClick={() => setPreviewScale(p => Math.max(0.3, p - 0.1))} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"><i className="fas fa-minus text-xs"></i></button>
+              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-12 text-center">{Math.round(previewScale * 100)}%</span>
+              <button onClick={() => setPreviewScale(p => Math.min(1.5, p + 0.1))} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"><i className="fas fa-plus text-xs"></i></button>
            </div>
 
-           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="absolute bottom-6 right-6 no-print w-12 h-12 bg-white shadow-xl rounded-full flex items-center justify-center text-slate-600 hover:text-blue-600 z-[60] border border-slate-100 transition-transform active:scale-90" title={isSidebarOpen ? "Expandir" : "Configurar"}>
+           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="absolute bottom-6 right-6 no-print w-12 h-12 bg-white dark:bg-slate-800 shadow-xl rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 z-[60] border border-slate-100 dark:border-slate-700 transition-all hover:text-blue-600 active:scale-90">
              <i className={`fas ${isSidebarOpen ? 'fa-expand' : 'fa-cog'}`}></i>
            </button>
 
-           <div className="print-container transition-transform duration-300 ease-out flex items-center justify-center" style={{ transform: `scale(${previewScale})` }}>
+           <div className="print-container transition-transform duration-300 ease-out" style={{ transform: `scale(${previewScale})` }}>
               <div className="bg-white shadow-2xl ring-1 ring-slate-200">
-                <ResumePreview 
-                  data={data} 
-                  template={template} 
-                  fontSize={fontSize}
-                  onSectionClick={handleSectionClick} 
-                  onReorder={(newOrder) => setData(prev => ({ ...prev, sectionOrder: newOrder }))}
-                />
+                <ResumePreview data={data} template={template} fontSize={fontSize} onSectionClick={handleSectionClick} onReorder={handleReorder} />
               </div>
            </div>
         </div>
 
-        <div className={`no-print border-l border-slate-100 bg-white flex flex-col shrink-0 z-40 no-print-sidebar transition-all duration-300 ease-in-out shadow-2xl overflow-hidden ${isSidebarOpen ? 'w-[320px] opacity-100' : 'w-0 opacity-0'}`}>
-           <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-              <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-2"><i className="fas fa-cog text-blue-600"></i> Configurações</h2>
-              <button onClick={() => setIsSidebarOpen(false)} className="text-slate-300 hover:text-slate-600 transition-colors"><i className="fas fa-chevron-right text-xs"></i></button>
+        <div className={`no-print border-l border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 z-40 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden ${isSidebarOpen ? 'w-[320px] opacity-100' : 'w-0 opacity-0'}`}>
+           <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-800/30">
+              <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2"><i className="fas fa-palette text-blue-600"></i> Estilo</h2>
+              <button onClick={() => setIsSidebarOpen(false)} className="text-slate-300 hover:text-slate-600 dark:hover:text-slate-100 transition-colors"><i className="fas fa-times text-xs"></i></button>
            </div>
-
            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-              {/* Ajuste de Fonte */}
               <section>
                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tamanho da Fonte</h3>
-                    <span className="text-[10px] font-black text-blue-600">{fontSize}px</span>
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fonte</h3>
+                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400">{fontSize}px</span>
                  </div>
-                 <input 
-                    type="range" min="8" max="16" step="0.5" 
-                    value={fontSize} 
-                    onChange={(e) => setFontSize(parseFloat(e.target.value))}
-                    className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                 />
+                 <input type="range" min="8" max="16" step="0.5" value={fontSize} onChange={(e) => setFontSize(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600" />
               </section>
-
               <section>
-                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Estilos</h3>
+                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Templates</h3>
                  <div className="space-y-4">
                     {TEMPLATES.map(t => (
-                      <button key={t.id} onClick={() => setTemplate(t.id as TemplateId)} className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-4 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 shadow-sm' : 'border-slate-50 hover:border-slate-200'}`}>
-                         <TemplateThumbnail template={t.id as TemplateId} />
+                      <button key={t.id} onClick={() => setTemplate(t.id as TemplateId)} className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-4 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-50 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-600'}`}>
+                         <TemplateThumbnail template={t.id as TemplateId} className="w-20 h-24" />
                          <div className="text-left flex-1 min-w-0">
-                           <p className={`text-[10px] font-black uppercase truncate ${template === t.id ? 'text-blue-700' : 'text-slate-700'}`}>{t.label}</p>
+                           <p className={`text-[10px] font-black uppercase truncate ${template === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
                            <p className="text-[8px] text-slate-400 font-bold uppercase truncate">{t.desc}</p>
                          </div>
-                         {template === t.id && <i className="fas fa-check-circle text-blue-600 text-xs"></i>}
                       </button>
                     ))}
                  </div>
               </section>
-
-              <section className="space-y-3 pb-8">
-                 <button onClick={() => setData(MOCK_RESUME_DATA)} className="w-full py-4 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100/50">Restaurar Exemplo</button>
-                 <button onClick={handleClearData} className="w-full py-4 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all border border-red-100/50">Limpar Dados</button>
+              <section className="pt-4 border-t border-slate-50 dark:border-slate-800">
+                  <div className="flex items-center justify-between">
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modo Escuro</span>
+                     <button onClick={() => setIsDarkMode(!isDarkMode)} className={`w-12 h-6 rounded-full p-1 transition-colors ${isDarkMode ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                       <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${isDarkMode ? 'translate-x-6' : ''}`}></div>
+                     </button>
+                  </div>
               </section>
+              <div className="pt-8 space-y-3">
+                 <button onClick={handleClearData} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/40 transition-all border border-red-100/50 dark:border-red-900/20">Limpar Dados</button>
+              </div>
            </div>
         </div>
       </div>

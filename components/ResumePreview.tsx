@@ -165,7 +165,7 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
     }
   };
 
-  const a4ContainerStyle = "bg-white w-[210mm] h-[297mm] mx-auto shadow-2xl relative overflow-hidden flex flex-col print-container";
+  const a4ContainerStyle = "bg-white w-[210mm] h-[297mm] mx-auto shadow-2xl relative overflow-hidden flex flex-col print-container text-slate-900";
 
   // Template Managers
   const getTemplateLayout = () => {
@@ -233,7 +233,7 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
             <div className="w-[85mm] bg-[#0c1221] text-white p-12 flex flex-col shrink-0 border-r border-[#d4af37]/10">
               <div className="mb-12 text-center" onClick={() => onSectionClick?.('info')}>
                 <div className="w-40 h-40 rounded-full overflow-hidden mx-auto mb-8 border-[5px] border-[#d4af37]/20 p-1 shadow-2xl">
-                  {personalInfo.photoUrl ? <img src={personalInfo.photoUrl} className="w-full h-full object-cover rounded-full" /> : <div className="w-full h-full bg-[#1e293b] rounded-full flex items-center justify-center"><i className="fas fa-user text-5xl opacity-10"></i></div>}
+                  {personalInfo.photoUrl ? <img src={personalInfo.photoUrl} className="w-full h-full object-cover rounded-full" /> : <div className="w-full h-full bg-[#1e293b] rounded-full flex items-center justify-center"><i className="fas fa-user text-5xl opacity-1"></i></div>}
                 </div>
                 <h1 className="text-[1.8em] font-serif uppercase tracking-tighter mb-1 text-[#d4af37]">{personalInfo.fullName || 'Nome'}</h1>
                 <p className="text-[0.8em] font-bold uppercase tracking-[0.3em] text-slate-400 mt-4">{personalInfo.jobTitle}</p>
@@ -397,4 +397,9 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
   );
 };
 
-export default ResumePreview;
+// Optimization: Only re-render if data actually changed
+export default React.memo(ResumePreview, (prev, next) => {
+  return prev.template === next.template && 
+         prev.fontSize === next.fontSize &&
+         JSON.stringify(prev.data) === JSON.stringify(next.data);
+});
