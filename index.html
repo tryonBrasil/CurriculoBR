@@ -1,54 +1,107 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="google-adsense-account" content="ca-pub-1895006161330485">
-    <title>CurriculoBR - Gerador de Currículos Profissionais</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- AdSense: Script Principal (Correto para React/Sites Padrão) -->
+    <title>CV Studio AI | Editor de Currículos Profissionais com IA</title>
+    <meta name="description" content="Crie currículos profissionais e modernos em minutos com o CV Studio AI. Use nossa inteligência artificial para otimizar suas experiências e baixar em PDF gratuitamente.">
+    <meta name="keywords" content="gerador de currículo, criar cv online, currículo IA, editor de currículo pdf, currículo profissional">
+    
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1895006161330485" crossorigin="anonymous"></script>
-    
-    <!-- AdSense: Script AMP (Adicionado conforme instrução da Etapa 1) -->
-    <script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs" type="module"></script>
+    
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              cv_sans: ['Inter', 'sans-serif'],
+              cv_serif: ['"Playfair Display"', 'serif'],
+            },
             colors: {
-              slate: {
-                850: '#1e293b',
-                900: '#0f172a',
-                950: '#020617',
+              brand: {
+                50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a',
               }
             }
           }
         }
       }
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.4",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.3",
-    "pdfjs-dist": "https://esm.sh/pdfjs-dist@^5.4.624"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
-<body class="text-slate-900 dark:text-slate-100 transition-colors duration-300">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-</body>
+    
+    <style>
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+      
+      .a4-preview {
+        width: 210mm;
+        min-height: 297mm;
+        background: white;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        transform-origin: top center;
+      }
+
+      @media print {
+        body { background: white; }
+        .no-print { display: none !important; }
+      }
+    </style>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+        "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3"
+      }
+    }
+    </script>
+  </head>
+  <body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
+    
+    <div id="root">
+      <div id="pre-loader-content" style="padding: 40px; max-width: 800px; margin: 0 auto; font-family: sans-serif; color: #334155;">
+          <header style="text-align: center; margin-bottom: 30px;">
+              <h1 style="font-size: 2.5rem; color: #1e3a8a;">CV Studio AI</h1>
+              <p style="font-size: 1.2rem;">O Editor de Currículos Profissional Inteligente</p>
+          </header>
+
+          <article>
+              <h2 style="font-size: 1.5rem;">Crie seu currículo ideal para 2026</h2>
+              <p>O <strong>CV Studio AI</strong> é uma ferramenta gratuita desenvolvida para ajudar profissionais a criarem currículos otimizados em PDF. Nossa plataforma utiliza inteligência artificial para sugerir as melhores descrições de cargo e habilidades para o seu perfil.</p>
+              
+              <h3 style="font-size: 1.2rem; margin-top: 20px;">Vantagens do nosso Gerador de CV:</h3>
+              <ul>
+                  <li>Interface intuitiva e moderna;</li>
+                  <li>Templates aprovados por recrutadores;</li>
+                  <li>Exportação rápida em formato A4;</li>
+                  <li>Privacidade e segurança de dados.</li>
+              </ul>
+              
+              <p style="margin-top: 20px; font-style: italic; color: #64748b;">
+                  O editor está sendo carregado... Caso a ferramenta não apareça, verifique se o JavaScript está ativado.
+              </p>
+          </article>
+
+          <footer style="margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; font-size: 0.9rem;">
+              <p>Links Importantes: 
+                  <a href="/privacidade.html" style="color: #2563eb;">Política de Privacidade</a> | 
+                  <a href="/termos.html" style="color: #2563eb;">Termos de Uso</a>
+              </p>
+          </footer>
+      </div>
+    </div>
+
+  </body>
 </html>
