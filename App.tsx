@@ -8,21 +8,16 @@ import PhotoCropModal from './components/PhotoCropModal';
 import Toast from './components/Toast';
 import TemplateThumbnail from './components/TemplateThumbnail';
 import ConfirmModal from './components/ConfirmModal';
-import AdUnit from './components/AdUnit';
-import AuthModal from './components/AuthModal';
-import AuthenticatedHome from './components/AuthenticatedHome';
+import AdUnit from './components/AdUnit'; // Importação do AdUnit
 import { useResumeHistory } from './hooks/useResumeHistory';
 import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI } from './services/geminiService';
 import { extractTextFromPDF } from './services/pdfService';
-import {
-  validateEmailError,
-  validatePhoneError,
-  validateURLError,
-  validateDateRange
+import { 
+  validateEmailError, 
+  validatePhoneError, 
+  validateURLError, 
+  validateDateRange 
 } from './services/validationService';
-import { authService } from './services/authService';
-import { resumeService } from './services/resumeService';
-import { pdfExportService } from './services/pdfExportService';
 
 const STEPS = [
   { id: 'info', label: 'Dados', icon: 'fa-id-card' },
@@ -48,12 +43,8 @@ const TEMPLATES = [
 const STORAGE_KEY = 'curriculobr_data';
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
-  const [currentResumeId, setCurrentResumeId] = useState<string | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [publicShareToken, setPublicShareToken] = useState<string | null>(null);
-
-  const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms' | 'authenticated-home' | 'public-view'>('home');
+  // Adicionado estado 'templates', 'privacy' e 'terms'
+  const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms'>('home');
   const [template, setTemplate] = useState<TemplateId>('modern_blue');
   const [currentStep, setCurrentStep] = useState(0);
   const [previewScale, setPreviewScale] = useState(0.55);
@@ -85,25 +76,7 @@ const App: React.FC = () => {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorScrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const shareToken = params.get('share');
-    if (shareToken) {
-      setPublicShareToken(shareToken);
-      setView('public-view');
-    }
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = authService.onAuthStateChange((authUser) => {
-      setUser(authUser);
-      if (authUser) {
-        setView('authenticated-home');
-      }
-    });
-    return () => unsubscribe?.unsubscribe();
-  }, []);
-
+  // Carregar dados salvos
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -142,57 +115,6 @@ const App: React.FC = () => {
 
   const showToast = (message: string, type: 'error' | 'success' = 'success') => {
     setToast({ message, type });
-  };
-
-  const handleAuthSuccess = async () => {
-    setShowAuthModal(false);
-    const currentUser = await authService.getCurrentUser();
-    setUser(currentUser);
-    if (currentUser) {
-      setView('authenticated-home');
-    }
-  };
-
-  const handleLogout = async () => {
-    await authService.signOut();
-    setUser(null);
-    setCurrentResumeId(null);
-    setView('home');
-  };
-
-  const handleSelectResumeFromList = async (resumeId: string) => {
-    try {
-      const resume = await resumeService.getResume(resumeId);
-      setCurrentResumeId(resume.id);
-      setTemplate(resume.template);
-      setFontSize(resume.fontSize);
-      setHistoryDirect({ past: [], present: resume.data, future: [] });
-      setView('editor');
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Erro ao carregar currículo', 'error');
-    }
-  };
-
-  const handleNewResume = () => {
-    setCurrentResumeId(null);
-    setTemplate('modern_blue');
-    setFontSize(12);
-    setHistoryDirect({ past: [], present: INITIAL_RESUME_DATA, future: [] });
-  };
-
-  const saveCurrentResume = async () => {
-    if (!user) {
-      showToast('Você precisa estar logado', 'error');
-      return;
-    }
-    try {
-      const title = currentResumeId ? 'Currículo Salvo' : `Currículo ${new Date().toLocaleDateString()}`;
-      const resumeId = await resumeService.saveResume(user.id, title, data, template, fontSize);
-      setCurrentResumeId(resumeId);
-      showToast('Currículo salvo com sucesso!');
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Erro ao salvar', 'error');
-    }
   };
 
   const handleClearData = () => {
@@ -458,26 +380,6 @@ const App: React.FC = () => {
     }
   }, [view, isSidebarOpen, fitToScreen]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (view !== 'editor') return;
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z' && !e.shiftKey) {
-          e.preventDefault();
-          undo();
-        } else if (e.key === 'z' && e.shiftKey) {
-          e.preventDefault();
-          redo();
-        } else if (e.key === 'y') {
-          e.preventDefault();
-          redo();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [view, undo, redo]);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -524,98 +426,6 @@ const App: React.FC = () => {
       </main>
     </div>
   );
-
-  if (view === 'authenticated-home') {
-    return (
-      <>
-        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-        <AuthenticatedHome
-          user={user}
-          onSelectResume={handleSelectResumeFromList}
-          onNewResume={handleNewResume}
-          onLogout={handleLogout}
-        />
-      </>
-    );
-  }
-
-  if (view === 'public-view' && publicShareToken) {
-    const [publicData, setPublicData] = useState<any>(null);
-    const [publicLoading, setPublicLoading] = useState(true);
-    const [publicError, setPublicError] = useState('');
-
-    useEffect(() => {
-      const loadPublicResume = async () => {
-        try {
-          const resume = await resumeService.getPublicResume(publicShareToken);
-          setPublicData(resume);
-        } catch (err) {
-          setPublicError(err instanceof Error ? err.message : 'Erro ao carregar currículo');
-        } finally {
-          setPublicLoading(false);
-        }
-      };
-      loadPublicResume();
-    }, [publicShareToken]);
-
-    if (publicLoading) {
-      return (
-        <div className="h-screen flex items-center justify-center bg-white dark:bg-slate-900">
-          <div className="text-center">
-            <i className="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p className="text-slate-600 dark:text-slate-400">Carregando currículo...</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (publicError || !publicData) {
-      return (
-        <div className="h-screen flex items-center justify-center bg-white dark:bg-slate-900 flex-col">
-          <div className="text-center">
-            <i className="fas fa-exclamation-circle text-4xl text-red-600 mb-4"></i>
-            <p className="text-red-600 dark:text-red-400 mb-4">{publicError || 'Currículo não encontrado'}</p>
-            <button
-              onClick={() => setView('home')}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold uppercase"
-            >
-              Voltar para Home
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="h-screen flex flex-col bg-slate-200 dark:bg-slate-950 overflow-hidden">
-        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 z-50">
-          <h1
-            className="font-extrabold text-xl tracking-tighter text-slate-800 dark:text-white uppercase italic cursor-pointer hover:text-blue-600"
-            onClick={() => setView('home')}
-          >
-            Curriculo<span className="text-blue-600">BR</span>
-          </h1>
-          <button
-            onClick={() => window.print()}
-            className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-xs uppercase shadow-lg hover:bg-blue-700"
-          >
-            <i className="fas fa-download mr-2"></i>Exportar PDF
-          </button>
-        </header>
-        <div className="flex-1 overflow-auto flex justify-center p-8 bg-slate-200 dark:bg-slate-950">
-          <div className="print-container">
-            <ResumePreview
-              data={publicData.data}
-              template={publicData.template}
-              fontSize={publicData.fontSize}
-              onSectionClick={() => {}}
-              onReorder={() => {}}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (view === 'privacy') {
     return (
@@ -699,14 +509,11 @@ const App: React.FC = () => {
             </div>
             <h1 className="font-black text-2xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
           </div>
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4">
              <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
              </button>
             <button onClick={() => { updateData(MOCK_RESUME_DATA); setView('editor'); }} className="hidden md:block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">Ver Exemplo</button>
-            <button onClick={() => setShowAuthModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-xs uppercase shadow-lg hover:bg-blue-700 transition-all">
-              <i className="fas fa-sign-in-alt mr-2"></i>Entrar
-            </button>
           </div>
         </header>
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-24 text-center">
@@ -812,8 +619,6 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
-
-        <AuthModal isOpen={showAuthModal} onSuccess={handleAuthSuccess} onClose={() => setShowAuthModal(false)} />
       </div>
     );
   }
@@ -901,12 +706,12 @@ const App: React.FC = () => {
           <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-sm"></i></div>
           <h1 className="font-extrabold text-xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-8">
            <div className="flex items-center gap-2 mr-4">
-              <button onClick={undo} disabled={!canUndo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canUndo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Desfazer (Ctrl+Z)">
+              <button onClick={undo} disabled={!canUndo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canUndo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Desfazer">
                 <i className="fas fa-undo text-xs"></i>
               </button>
-              <button onClick={redo} disabled={!canRedo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canRedo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Refazer (Ctrl+Shift+Z)">
+              <button onClick={redo} disabled={!canRedo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canRedo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Refazer">
                 <i className="fas fa-redo text-xs"></i>
               </button>
            </div>
@@ -916,22 +721,7 @@ const App: React.FC = () => {
               </div>
               <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{cvScore}% Completo</span>
            </div>
-           {user && (
-             <button onClick={saveCurrentResume} className="bg-green-600 text-white px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-green-700 transition-all flex items-center gap-2 shadow-lg">
-               <i className="fas fa-save"></i> Salvar Currículo
-             </button>
-           )}
-           <button
-             onClick={() => {
-               const element = previewContainerRef.current?.querySelector('.print-container');
-               if (element) {
-                 pdfExportService.exportResume(element as HTMLElement, 'curriculo');
-               } else {
-                 window.print();
-               }
-             }}
-             className="bg-blue-600 text-white px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
-           >
+           <button onClick={() => window.print()} className="bg-blue-600 text-white px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg">
              <i className="fas fa-download"></i> Exportar PDF
            </button>
         </div>
