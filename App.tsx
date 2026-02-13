@@ -193,5 +193,3 @@ export default function App() {
     </div>
   );
 }
-
-const activeTab = ""; // Variável auxiliar para controle interno
