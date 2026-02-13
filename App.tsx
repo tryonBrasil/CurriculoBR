@@ -1,115 +1,103 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ResumeData, TemplateId } from './types';
-import { INITIAL_RESUME_DATA } from './constants';
+
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { ResumeData, TemplateId, Experience, Education, Language, Certification } from './types';
+import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
+import Toast from './components/Toast';
+import TemplateThumbnail from './components/TemplateThumbnail';
+import ConfirmModal from './components/ConfirmModal';
+import PhotoCropModal from './components/PhotoCropModal';
+import AdUnit from './components/AdUnit';
+import JobScanner from './components/JobScanner'; 
+import CoverLetterGenerator from './components/CoverLetterGenerator';
 import { useResumeHistory } from './hooks/useResumeHistory';
-import { exportToDocx } from './services/exportService';
+import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI } from './services/geminiService';
+import { extractTextFromPDF } from './services/pdfService';
+import { exportToDocx } from './services/exportService'; 
+import { validateEmailError, validatePhoneError } from './services/validationService';
 
 const STEPS = [
-  { id: 'info', label: 'Dados Pessoais' },
-  { id: 'experience', label: 'Experiência' },
-  { id: 'education', label: 'Educação' },
-  { id: 'summary', label: 'Resumo' },
+  { id: 'info', label: 'Dados', icon: 'fa-id-card' },
+  { id: 'experience', label: 'Experiência', icon: 'fa-briefcase' },
+  { id: 'education', label: 'Educação', icon: 'fa-graduation-cap' },
+  { id: 'skills', label: 'Habilidades', icon: 'fa-bolt' },
+  { id: 'languages', label: 'Idiomas', icon: 'fa-language' },
+  { id: 'certifications', label: 'Cursos', icon: 'fa-certificate' },
+  { id: 'summary', label: 'Resumo', icon: 'fa-align-left' },
+  { id: 'scanner', label: 'Scanner', icon: 'fa-crosshairs' },
+  { id: 'cover-letter', label: 'Carta', icon: 'fa-envelope-open-text' },
 ];
 
 const TEMPLATES = [
-  { id: 'modern_blue', label: 'Modern Blue' },
-  { id: 'executive_navy', label: 'Executive Navy' },
-  { id: 'modern_vitae', label: 'Modern Vitae' }
+  { id: 'modern_blue', label: 'Modern Blue', desc: 'Profissional e Limpo' },
+  { id: 'executive_red', label: 'Executive Red', desc: 'Liderança Sênior' },
+  { id: 'corporate_gray', label: 'Corporate Gray', desc: 'Minimalista Pro' },
+  { id: 'classic_serif', label: 'Classic Serif', desc: 'Tradicional Acadêmico' },
+  { id: 'swiss_minimal', label: 'Swiss Minimal', desc: 'Design Suíço' },
 ];
 
-export default function App() {
-  const [view, setView] = useState<'home' | 'templates' | 'editor'>('home');
+const STORAGE_KEY = 'curriculobr_data_v2';
+
+const App: React.FC = () => {
+  const [view, setView] = useState<'home' | 'editor'>('home');
+  const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [template, setTemplate] = useState<TemplateId>('modern_blue');
   const [currentStep, setCurrentStep] = useState(0);
-  const { data, updateData } = useResumeHistory(INITIAL_RESUME_DATA);
+  const [previewScale, setPreviewScale] = useState(0.5);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
+  
+  const { data, updateData, undo, redo, canUndo, canRedo, setHistoryDirect } = useResumeHistory(INITIAL_RESUME_DATA);
+  
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const editorScrollRef = useRef<HTMLDivElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
-  // CORREÇÃO: Define a aba ativa dinamicamente
-  const activeTab = STEPS[currentStep]?.id || 'info';
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.data) setHistoryDirect({ past: [], present: parsed.data, future: [] });
+        if (parsed.template) setTemplate(parsed.template);
+        if (parsed.isDarkMode) setIsDarkMode(parsed.isDarkMode);
+      } catch (e) { console.error(e); }
+    }
+  }, []);
 
-  if (view === 'home') {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-900">
-        <h1 className="text-5xl font-black mb-6 dark:text-white italic">Curriculo<span className="text-blue-600">BR</span></h1>
-        <button onClick={() => setView('templates')} className="bg-blue-600 text-white px-10 py-4 rounded-full font-bold uppercase shadow-xl hover:scale-105 transition-all">
-          Criar Novo Currículo
-        </button>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
-  if (view === 'templates') {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-black mb-12 dark:text-white text-center uppercase">Escolha um <span className="text-blue-600">Modelo</span></h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {TEMPLATES.map((t) => (
-              <div 
-                key={t.id} 
-                onClick={() => { setTemplate(t.id as TemplateId); setView('editor'); }}
-                className="cursor-pointer bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-lg border-4 border-transparent hover:border-blue-600 transition-all"
-              >
-                <div className="aspect-[210/297] bg-slate-200 dark:bg-slate-700 rounded-xl mb-4 flex items-center justify-center">
-                   <span className="text-slate-400 font-bold text-xs uppercase">Preview {t.label}</span>
-                </div>
-                <h3 className="font-bold text-center dark:text-white">{t.label}</h3>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (view === 'editor') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, template, isDarkMode }));
+    }
+  }, [data, template, view, isDarkMode]);
 
-  return (
-    <div className="h-screen flex flex-col bg-white dark:bg-slate-950 overflow-hidden">
-      <nav className="h-16 border-b flex items-center justify-between px-8 bg-white dark:bg-slate-900">
-        <div className="font-black text-xl dark:text-white italic cursor-pointer" onClick={() => setView('home')}>
-          Curriculo<span className="text-blue-600">BR</span>
-        </div>
-        <button onClick={() => exportToDocx(data)} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase">Exportar Word</button>
-      </nav>
+  const fitToScreen = useCallback(() => {
+    if (!previewContainerRef.current) return;
+    const h = previewContainerRef.current.clientHeight;
+    const w = previewContainerRef.current.clientWidth;
+    const targetScale = Math.min((h - 60) / 1123, (w - 60) / 794);
+    setPreviewScale(Math.max(0.2, targetScale));
+  }, []);
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-12">
-          <div className="max-w-xl mx-auto">
-            <h2 className="text-2xl font-black mb-8 uppercase dark:text-white text-blue-600">{STEPS[currentStep].label}</h2>
-            
-            {/* CORREÇÃO: Removido isTextArea para evitar erro TS2322 */}
-            {activeTab === 'info' && (
-              <div className="space-y-4">
-                <Input label="Nome Completo" value={data.fullName || ''} onChange={(val) => updateData({...data, fullName: val})} />
-                <Input label="E-mail" value={data.email || ''} onChange={(val) => updateData({...data, email: val})} />
-                <Input label="Telefone" value={data.phone || ''} onChange={(val) => updateData({...data, phone: val})} />
-              </div>
-            )}
-
-            {activeTab === 'summary' && (
-              <textarea 
-                className="w-full p-4 rounded-xl border-2 dark:bg-slate-800 dark:text-white min-h-[150px] outline-none focus:border-blue-600"
-                value={data.summary || ''}
-                onChange={(e) => updateData({...data, summary: e.target.value})}
-                placeholder="Escreva seu resumo profissional..."
-              />
-            )}
-
-            <div className="mt-8 flex justify-between">
-              <button disabled={currentStep === 0} onClick={() => setCurrentStep(s => s - 1)} className="text-slate-400 font-bold uppercase text-xs">Anterior</button>
-              <button onClick={() => currentStep < STEPS.length - 1 ? setCurrentStep(s => s + 1) : window.print()} className="bg-slate-900 dark:bg-white dark:text-slate-900 text-white px-8 py-3 rounded-xl font-bold uppercase text-xs">
-                {currentStep === STEPS.length - 1 ? 'Finalizar' : 'Próximo'}
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex-1 bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4">
-          <div className="origin-top shadow-2xl bg-white" style={{ transform: 'scale(0.6)' }}>
-            <ResumePreview data={data} template={template} fontSize={12} fontFamily="'Inter', sans-serif" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+  useEffect(() => {
+    if (view === 'editor') {
+      const timer = setTimeout(fitToScreen, 100);
+      window.addEventListener('resize', fitToScreen);
+      return () => window.removeEventListener('resize', fitToScreen);
+    
