@@ -3,16 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CV Studio AI | Editor de Currículos Profissionais</title>
+    
+    <title>CV Studio AI | Editor de Currículos Profissionais com IA</title>
+    <meta name="description" content="Crie currículos profissionais em minutos com o CV Studio AI. Ferramenta gratuita com templates modernos e otimização por inteligência artificial.">
+    <meta name="keywords" content="gerador de currículo, criar cv online, currículo IA, currículo grátis, editor de currículo pdf">
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1895006161330485" crossorigin="anonymous"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.mjs" type="module"></script>
+    
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              cv_sans: ['Inter', 'sans-serif'],
+              cv_serif: ['"Playfair Display"', 'serif'],
+            },
+            colors: {
+              brand: {
+                50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+      .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+      
+      .a4-preview {
+        width: 210mm;
+        min-height: 297mm;
+        background: white;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        transform-origin: top center;
+      }
+
+      @media print {
+        body { background: white; }
+        .no-print { display: none !important; }
+      }
+    </style>
     
     <script type="importmap">
     {
@@ -29,17 +71,38 @@
   <body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
     
     <div id="root">
-      <main style="padding: 40px; max-width: 800px; margin: 0 auto; font-family: sans-serif; text-align: center;">
-          <h1 style="font-size: 2.5rem; color: #1e3a8a;">CV Studio AI</h1>
-          <p style="font-size: 1.2rem; color: #475569;">Carregando editor profissional...</p>
-          <div style="margin-top: 20px;">
-              <a href="/privacidade.html" style="color: #2563eb; margin-right: 15px;">Privacidade</a>
-              <a href="/termos.html" style="color: #2563eb;">Termos</a>
-          </div>
+      <main style="padding: 40px; max-width: 900px; margin: 0 auto; font-family: sans-serif; line-height: 1.6;">
+          <header style="text-align: center; margin-bottom: 40px;">
+              <h1 style="font-size: 2.8rem; color: #1e3a8a; margin-bottom: 10px;">CV Studio AI</h1>
+              <p style="font-size: 1.3rem; color: #475569;">Crie currículos profissionais com Inteligência Artificial</p>
+          </header>
+
+          <article style="color: #334155;">
+              <h2 style="font-size: 1.8rem; color: #1e293b;">O melhor gerador de currículos gratuito</h2>
+              <p>O <strong>CV Studio AI</strong> ajuda você a conquistar a vaga dos seus sonhos. Nossa plataforma oferece um editor intuitivo onde você pode inserir suas informações e exportar um arquivo PDF pronto para envio, seguindo os padrões exigidos pelos recrutadores em 2026.</p>
+              
+              <h3 style="font-size: 1.4rem; margin-top: 30px; color: #1e293b;">Por que escolher o CV Studio AI?</h3>
+              <ul style="margin-left: 20px; margin-top: 10px;">
+                  <li><strong>Otimização por IA:</strong> Melhore suas descrições profissionais automaticamente.</li>
+                  <li><strong>Design Moderno:</strong> Layouts limpos e profissionais (A4).</li>
+                  <li><strong>Totalmente Grátis:</strong> Sem taxas escondidas para baixar seu arquivo.</li>
+                  <li><strong>Privacidade:</strong> Seus dados são usados apenas para gerar o documento.</li>
+              </ul>
+
+              <div style="margin-top: 40px; background-color: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center;">
+                  <p><strong>Aguarde um instante...</strong> O editor inteligente está sendo carregado no seu navegador.</p>
+              </div>
+          </article>
+
+          <footer style="margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
+              <p style="font-size: 0.9rem; color: #64748b;">
+                  <a href="/privacidade.html" style="text-decoration: none; color: #2563eb; margin: 0 10px;">Política de Privacidade</a> | 
+                  <a href="/termos.html" style="text-decoration: none; color: #2563eb; margin: 0 10px;">Termos de Uso</a>
+              </p>
+              <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">&copy; 2026 CV Studio AI - Todos os direitos reservados.</p>
+          </footer>
       </main>
     </div>
-
-    <script type="module" src="./App.tsx"></script>
 
   </body>
 </html>
