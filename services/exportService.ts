@@ -5,7 +5,6 @@ import { ResumeData } from "../types";
 export const exportToDocx = async (data: ResumeData) => {
   const saveAs = (FileSaver as any).saveAs || (FileSaver as any).default || FileSaver;
 
-  // Helper para criar títulos de seção consistentes
   const createSectionHeading = (text: string) => {
     return new Paragraph({
       heading: HeadingLevel.HEADING_1,
@@ -22,7 +21,7 @@ export const exportToDocx = async (data: ResumeData) => {
         new TextRun({
           text: text.toUpperCase(),
           bold: true,
-          size: 28, // 14pt
+          size: 28,
           font: "Calibri",
         }),
       ],
@@ -38,9 +37,9 @@ export const exportToDocx = async (data: ResumeData) => {
       spacing: { after: 120 },
       children: [
         new TextRun({
-          text: data.fullName.toUpperCase(),
+          text: (data.fullName || "Sem Nome").toUpperCase(),
           bold: true,
-          size: 40, // 20pt
+          size: 40,
           font: "Calibri",
         }),
       ],
@@ -49,8 +48,10 @@ export const exportToDocx = async (data: ResumeData) => {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({
-          text: [data.email, data.phone, data.location, data.website].filter(Boolean).join("  |  "),
-          size: 20, // 10pt
+          // CORREÇÃO: Removi 'website' que não existe no seu ResumeData
+          // Se quiser adicionar o link, use (data as any).website ou verifique o nome correto no types.ts
+          text: [data.email, data.phone, data.location].filter(Boolean).join("  |  "),
+          size: 20,
           font: "Calibri",
         }),
       ],
@@ -66,7 +67,7 @@ export const exportToDocx = async (data: ResumeData) => {
         children: [
           new TextRun({
             text: data.summary,
-            size: 22, // 11pt
+            size: 22,
             font: "Calibri",
           }),
         ],
@@ -88,7 +89,8 @@ export const exportToDocx = async (data: ResumeData) => {
         }),
         new Paragraph({
           children: [
-            new TextRun({ text: exp.period, italic: true, size: 20, font: "Calibri", color: "666666" }),
+            // CORREÇÃO: De 'italic' para 'italics'
+            new TextRun({ text: exp.period, italics: true, size: 20, font: "Calibri", color: "666666" }),
           ],
         }),
         new Paragraph({
@@ -117,20 +119,6 @@ export const exportToDocx = async (data: ResumeData) => {
     });
   }
 
-  // --- 5. HABILIDADES ---
-  if (data.skills) {
-    children.push(createSectionHeading("Habilidades"));
-    children.push(
-      new Paragraph({
-        spacing: { before: 120 },
-        children: [
-          new TextRun({ text: data.skills, size: 22, font: "Calibri" }),
-        ],
-      })
-    );
-  }
-
-  // --- CRIAÇÃO DO DOCUMENTO ---
   const doc = new Document({
     sections: [{
       properties: {},
@@ -140,18 +128,8 @@ export const exportToDocx = async (data: ResumeData) => {
 
   try {
     const blob = await Packer.toBlob(doc);
-    const fileName = `Curriculo_${data.fullName.replace(/[^a-zA-Z0-9]/g, '_') || 'Novo'}.docx`;
-    
-    if (typeof saveAs === 'function') {
-        saveAs(blob, fileName);
-    } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
+    const fileName = `Curriculo_${data.fullName?.replace(/[^a-zA-Z0-9]/g, '_') || 'Novo'}.docx`;
+    saveAs(blob, fileName);
   } catch (error) {
     console.error("Erro ao gerar DOCX:", error);
   }
