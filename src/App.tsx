@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { ResumeData, TemplateId, Experience, Education, Skill, Language, Course, SectionId } from './src/types';
+import { ResumeData, TemplateId, Experience, Education, Skill, Language, Course, SectionId } from './types';
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
-import ResumePreview from './src/components/ResumePreview';
+import ResumePreview from './components/ResumePreview';
 import PhotoCropModal from './components/PhotoCropModal';
 import Toast from './components/Toast';
 import TemplateThumbnail from './components/TemplateThumbnail';
