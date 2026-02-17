@@ -27,6 +27,13 @@ const STEPS = [
   { id: 'summary', label: 'Resumo', icon: 'fa-align-left' },
 ];
 
+const TEMPLATES: { id: TemplateId; label: string; desc: string; pro?: boolean }[] = [
+  { id: 'modern', label: 'Moderno', desc: 'Limpo e profissional' },
+  { id: 'classic', label: 'Clássico', desc: 'Elegante e tradicional' },
+  { id: 'minimalist', label: 'Minimalista', desc: 'Foco no conteúdo' },
+  { id: 'creative', label: 'Criativo', desc: 'Destaque visual' },
+];
+
 export default function App() {
   const [data, setData] = useState<ResumeData>(() => {
     const saved = localStorage.getItem('resume-data');
@@ -71,7 +78,45 @@ export default function App() {
     showToast('Todos os dados foram limpos', 'info');
   };
 
-  // --- LOGICA DA HOME ---
+  // --- VIEWS ADICIONAIS PARA O ADSENSE ---
+  if (view === 'privacy') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8 md:p-20 transition-colors">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-xl space-y-6">
+          <button onClick={() => setView('home')} className="text-blue-600 font-black uppercase text-[10px] tracking-widest mb-4 inline-block italic">← Voltar para Home</button>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Política de Privacidade</h1>
+          <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed">
+            <p>A sua privacidade é uma prioridade para o CurriculoBR. Esta política explica como lidamos com as suas informações.</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">1. Processamento de Dados</h2>
+            <p>Os dados que você insere no formulário de currículo são processados localmente no seu navegador. Utilizamos a API do Google Gemini apenas para funções de inteligência artificial solicitadas por você.</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">2. Segurança</h2>
+            <p>Não armazenamos seus dados pessoais em servidores externos permanentes, garantindo que suas informações profissionais permaneçam sob seu controle.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'terms') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8 md:p-20 transition-colors">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-xl space-y-6">
+          <button onClick={() => setView('home')} className="text-blue-600 font-black uppercase text-[10px] tracking-widest mb-4 inline-block italic">← Voltar para Home</button>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Termos de Uso</h1>
+          <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed">
+            <p>Ao utilizar o CurriculoBR, você aceita os seguintes termos:</p>
+            <ul className="list-disc ml-6 space-y-2">
+              <li>O CurriculoBR é uma ferramenta gratuita para criação de documentos.</li>
+              <li>Não garantimos resultados de contratação, sendo apenas uma ferramenta de auxílio.</li>
+              <li>O uso de inteligência artificial é opcional e visa o refinamento de texto.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- VIEW: HOME (IMPLEMENTADA COM CONTEÚDO SEO) ---
   if (view === 'home') {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col relative overflow-hidden transition-colors duration-300">
@@ -85,7 +130,7 @@ export default function App() {
             </div>
             <h1 className="font-black text-2xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
           </div>
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4">
             <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
             </button>
@@ -96,75 +141,11 @@ export default function App() {
         <main className="relative z-10 flex-1 flex flex-col items-center px-6 pt-12 pb-24">
           <div className="max-w-5xl w-full text-center space-y-12">
             <div className="space-y-6">
-              <span className="inline-block py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Gerador de Currículos Gratuito com IA</span>
-              <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Crie seu currículo profissional <br className="hidden md:block"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">em poucos segundos.</span></h2>
-              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">Combine tecnologia de ponta com designs aprovados por recrutadores. Otimize sua carreira com a inteligência artificial do Google Gemini.</p>
+              <span className="inline-block py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Gerador de Currículos Grátis com IA</span>
+              <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none italic">O currículo que te leva à <br className="hidden md:block"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">próxima entrevista.</span></h2>
+              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">Combine design profissional com o poder do Google Gemini para conquistar sua vaga no mercado de trabalho brasileiro.</p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button onClick={() => setView('templates')} className="w-full sm:w-auto bg-blue-600 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 hover:scale-[1.05] transition-all shadow-2xl flex items-center justify-center gap-3">
-                Começar Agora <i className="fas fa-magic"></i>
-              </button>
-              <button onClick={() => setIsImportModalOpen(true)} className="w-full sm:w-auto bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xl flex items-center justify-center gap-3">
-                Importar do PDF <i className="fas fa-file-import"></i>
-              </button>
-            </div>
-
-            {/* SEÇÃO DE CONTEÚDO PARA ADSENSE - EVITA REPROVAÇÃO POR CONTEÚDO BAIXO */}
-            <div className="mt-24 text-left border-t border-slate-100 dark:border-slate-800 pt-20">
-              <div className="grid md:grid-cols-2 gap-16 items-start">
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">O que é o CurriculoBR?</h3>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed italic border-l-4 border-blue-600 pl-4">
-                    Nossa missão é democratizar o acesso a currículos de alta qualidade para todos os profissionais brasileiros. 
-                  </p>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Utilizamos a <strong>Inteligência Artificial do Google Gemini</strong> para analisar e refinar as descrições de suas experiências profissionais. Isso ajuda a destacar suas conquistas de forma que os recrutadores e sistemas de ATS (rastreamento de candidatos) identifiquem seu potencial imediatamente.
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                    <h4 className="font-black text-blue-600 text-xs uppercase mb-2">Totalmente Gratuito</h4>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Crie, edite e baixe quantos currículos precisar sem taxas escondidas ou assinaturas.</p>
-                  </div>
-                  <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                    <h4 className="font-black text-blue-600 text-xs uppercase mb-2">Privacidade em Primeiro Lugar</h4>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Seus dados são armazenados localmente no seu navegador e não são vendidos a terceiros.</p>
-                  </div>
-                </div>
-              </div>
-
-              <section className="mt-20 space-y-10">
-                <h3 className="text-center text-3xl font-black text-slate-800 dark:text-white uppercase">Dicas Profissionais para 2026</h3>
-                <div className="grid md:grid-cols-3 gap-8">
-                  <div className="space-y-4">
-                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600">
-                      <i className="fas fa-search"></i>
-                    </div>
-                    <h5 className="font-bold text-slate-800 dark:text-white">Palavras-chave</h5>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Leia a descrição da vaga e use termos técnicos idênticos no seu currículo para passar pelos robôs de triagem.</p>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600">
-                      <i className="fas fa-chart-line"></i>
-                    </div>
-                    <h5 className="font-bold text-slate-800 dark:text-white">Foco em Resultados</h5>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Em vez de listar apenas deveres, use números. Ex: "Aumentei as vendas em 20%" em vez de "Responsável por vendas".</p>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center text-purple-600">
-                      <i className="fas fa-eye"></i>
-                    </div>
-                    <h5 className="font-bold text-slate-800 dark:text-white">Leitura Escaneável</h5>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Recrutadores gastam cerca de 6 segundos na primeira leitura. Use nossos templates para garantir clareza visual.</p>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-        </main>
-
-        <footer className="relative z-10 py-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
-          <div className="max-w-5xl mx-auto px-6 flex flex-col items-center gap-6">
-            <div className="flex gap-8">
-              <button onClick={() => setView('privacy')} className="text-xs font-black uppercase tracking-wid
+                Começar Agora <i className="fas fa-magic">
