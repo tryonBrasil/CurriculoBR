@@ -12,7 +12,7 @@ import AdUnit from './components/AdUnit';
 
 // Hooks e Serviços
 import { useResumeHistory } from './hooks/useResumeHistory';
-import { validateEmailError, validatePhoneError } from './services/validationService';
+import { validateEmailError } from './services/validationService';
 
 const STEPS = [
   { id: 'info', label: 'Dados', icon: 'fa-id-card' },
@@ -30,23 +30,19 @@ const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
 ];
 
 export default function App() {
-  // --- ESTADOS ---
   const [data, setData] = useState<ResumeData>(() => {
-    const saved = localStorage.getItem('resume-data');
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('resume-data') : null;
     return saved ? JSON.parse(saved) : INITIAL_RESUME_DATA;
   });
 
   const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms'>('home');
   const [activeStep, setActiveStep] = useState<SectionId>('info');
-  const [isDarkMode, setIsDarkMode] = useState(() => 
-    typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)').matches : false
-  );
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isClearing, setIsClearing] = useState(false);
 
   const { addToHistory } = useResumeHistory(data);
 
-  // --- EFEITOS ---
   useEffect(() => {
     localStorage.setItem('resume-data', JSON.stringify(data));
   }, [data]);
@@ -55,7 +51,6 @@ export default function App() {
     document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
-  // --- AÇÕES ---
   const updateData = useCallback((newData: Partial<ResumeData>) => {
     setData(prev => {
       const updated = { ...prev, ...newData };
@@ -67,40 +62,64 @@ export default function App() {
   const handleClearData = () => {
     setData(INITIAL_RESUME_DATA);
     setIsClearing(false);
-    setToast({ message: 'Dados limpos com sucesso!', type: 'success' });
+    setToast({ message: 'Dados limpos!', type: 'success' });
   };
 
   // --- SUB-VIEWS (Privacidade e Termos) ---
-  const PolicyView = ({ title, children }: { title: string, children: React.ReactNode }) => (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8 md:p-20">
-      <div className="max-w-3xl mx-auto bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-xl space-y-6">
-        <button onClick={() => setView('home')} className="text-blue-600 font-black uppercase text-[10px] tracking-widest italic">← Voltar para Home</button>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">{title}</h1>
-        <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed">{children}</div>
+  if (view === 'privacy' || view === 'terms') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-8 md:p-20">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-xl">
+          <button onClick={() => setView('home')} className="text-blue-600 font-black text-[10px] mb-8 uppercase italic">← Voltar</button>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase mb-6">
+            {view === 'privacy' ? 'Política de Privacidade' : 'Termos de Uso'}
+          </h1>
+          <div className="text-slate-500 dark:text-slate-400 leading-relaxed space-y-4">
+            <p>Seus dados são processados apenas no seu navegador. O CurriculoBR utiliza a API do Gemini para melhoria de texto e o AdSense para anúncios.</p>
+          </div>
+        </div>
       </div>
-    </div>
-  );
-
-  if (view === 'privacy') return <PolicyView title="Política de Privacidade"><p>Seus dados são processados localmente e não são armazenados em nossos servidores...</p></PolicyView>;
-  if (view === 'terms') return <PolicyView title="Termos de Uso"><p>O CurriculoBR é uma ferramenta gratuita de auxílio profissional...</p></PolicyView>;
+    );
+  }
 
   // --- VIEW: HOME ---
   if (view === 'home') {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col relative overflow-hidden transition-colors">
-        {/* Orbes Decorativos */}
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] aspect-square bg-blue-50 dark:bg-blue-900/20 rounded-full blur-[120px] opacity-60"></div>
-        
-        <header className="relative z-10 h-24 flex items-center justify-between px-8 md:px-20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3">
-              <i className="fas fa-file-invoice"></i>
-            </div>
-            <h1 className="font-black text-2xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
-          </div>
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-            <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-          </button>
+      <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col transition-colors">
+        <header className="h-24 flex items-center justify-between px-8 md:px-20">
+          <h1 className="font-black text-2xl text-slate-800 dark:text-white italic uppercase">Curriculo<span className="text-blue-600">BR</span></h1>
+          <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-slate-400"><i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i></button>
         </header>
+        <main className="flex-1 flex flex-col items-center justify-center px-6 text-center space-y-12">
+          <div className="max-w-3xl space-y-6">
+            <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter italic">O currículo que te leva à <span className="text-blue-600">entrevista.</span></h2>
+            <p className="text-slate-500 text-lg">Crie seu currículo profissional em minutos com inteligência artificial.</p>
+          </div>
+          <div className="flex gap-4">
+            <button onClick={() => setView('templates')} className="bg-blue-600 text-white px-10 py-5 rounded-3xl font-black uppercase text-sm shadow-xl">Começar Agora</button>
+            <button onClick={() => { updateData(MOCK_RESUME_DATA); setView('editor'); }} className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white px-10 py-5 rounded-3xl font-black uppercase text-sm">Ver Exemplo</button>
+          </div>
+          <div className="w-full max-w-4xl pt-10">
+            <AdUnit slotId="1234567890" format="horizontal" />
+          </div>
+        </main>
+        <footer className="py-8 flex gap-6 justify-center border-t border-slate-50 dark:border-slate-800">
+          <button onClick={() => setView('privacy')} className="text-[10px] font-black uppercase text-slate-400">Privacidade</button>
+          <button onClick={() => setView('terms')} className="text-[10px] font-black uppercase text-slate-400">Termos</button>
+        </footer>
+      </div>
+    );
+  }
 
-        <main className="relative z-10 flex-1 flex flex-col items-center px-6 pt-1
+  // --- VIEW: EDITOR / TEMPLATES ---
+  return (
+    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {view === 'templates' ? (
+        <div className="flex-1 p-8 md:p-20 overflow-y-auto">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <button onClick={() => setView('home')} className="text-blue-600 font-black uppercase text-[10px] italic">← Voltar</button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {TEMPLATES.map(t => (
+                <div key={t.id} onClick={() => { updateData({ templateId: t.id }); setView('editor');
