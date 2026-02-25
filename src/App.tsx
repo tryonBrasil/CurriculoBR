@@ -8,8 +8,6 @@ import TemplateThumbnail from './components/TemplateThumbnail';
 import ConfirmModal from './components/ConfirmModal';
 import PhotoCropModal from './components/PhotoCropModal';
 import AdUnit from './components/AdUnit';
-import JobScanner from './components/JobScanner'; 
-import CoverLetterGenerator from './components/CoverLetterGenerator';
 import CookieConsent from './components/CookieConsent';
 import Sobre from './Sobre';
 import Contato from './Contato';
@@ -18,7 +16,6 @@ import BlogPost from './blog/BlogPost';
 import { useResumeHistory } from './hooks/useResumeHistory';
 import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI } from './services/geminiService';
 import { extractTextFromPDF } from './services/pdfService';
-import { exportToDocx } from './services/exportService'; 
 import { 
   validateEmailError, 
   validatePhoneError
@@ -32,8 +29,6 @@ const STEPS = [
   { id: 'certifications', label: 'Cursos', icon: 'fa-certificate' },
   { id: 'skills', label: 'Habilidades', icon: 'fa-bolt' },
   { id: 'summary', label: 'Resumo', icon: 'fa-align-left' },
-  { id: 'scanner', label: 'Scanner', icon: 'fa-crosshairs' },
-  { id: 'cover-letter', label: 'Carta', icon: 'fa-envelope-open-text' },
 ];
 
 const TEMPLATES = [
@@ -177,16 +172,6 @@ export default function App() {
     } catch (e) {
       console.error("Erro ao imprimir:", e);
       showToast("Não foi possível iniciar a impressão. Tente Ctrl+P.", "error");
-    }
-  };
-
-  const handleExportDocx = () => {
-    try {
-      exportToDocx(data);
-      showToast("Download do DOCX iniciado!");
-    } catch (e) {
-      console.error("Erro ao exportar DOCX:", e);
-      showToast("Erro ao gerar arquivo Word.", "error");
     }
   };
 
@@ -370,7 +355,7 @@ export default function App() {
     setIsEnhancing('summary-gen');
     try {
       const expPositions = data.experiences.map(e => e.position);
-      const skillNames = data.skills.map(s => s.name).join(', ');
+      const skillNames = data.skills.map(s => s.name);
       await generateSummaryStream("Profissional", skillNames, expPositions, (currentText) => {
          updateData(prev => ({ ...prev, summary: currentText }));
       });
@@ -391,8 +376,8 @@ export default function App() {
       const jobContext = data.experiences[0]?.position || "profissional geral";
       const suggested = await suggestSkills(jobContext);
       
-      if (suggested) {
-        const newSkills = suggested.split(',').map((name: string, i: number) => ({
+      if (suggested && suggested.length > 0) {
+        const newSkills = suggested.map((name: string) => ({
           id: Math.random().toString(36).substr(2, 9),
           name: name.trim(),
           level: 'Intermediate' as const,
@@ -698,7 +683,16 @@ export default function App() {
                 </div>
               )}
 
-              <CoverLetterGenerator resumeData={data} />
+              <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 text-center border border-slate-100 dark:border-slate-700">
+                <div className="w-16 h-16 bg-blue-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-envelope-open-text text-blue-600 text-2xl"></i>
+                </div>
+                <h3 className="font-black text-slate-900 dark:text-white uppercase text-lg mb-2">Em Breve</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">O gerador de carta de apresentação está sendo desenvolvido. Enquanto isso, crie seu currículo completo!</p>
+                <button onClick={() => navigateTo('/', 'templates')} className="bg-blue-600 text-white px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors">
+                  <i className="fas fa-magic mr-2"></i> Criar Currículo
+                </button>
+              </div>
               
               <div className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-8">
                   <AdUnit slotId="" format="horizontal" />
@@ -794,7 +788,7 @@ export default function App() {
               {TEMPLATES.map((t) => (
                 <div key={t.id} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group border border-slate-100 dark:border-slate-700 flex flex-col">
                   <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
-                    <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" fontSize={26} />
+                    <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
                     <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                        <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform">Usar este</button>
                     </div>
@@ -864,31 +858,11 @@ export default function App() {
            
            <div className="relative">
              <button 
-               onClick={() => setShowDownloadMenu(!showDownloadMenu)} 
+               onClick={() => { handlePrint(); }}
                className="bg-blue-600 text-white px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
              >
-               <i className="fas fa-download"></i> Baixar Currículo
+               <i className="fas fa-file-pdf"></i> Baixar PDF
              </button>
-             
-             {showDownloadMenu && (
-               <>
-                 <div className="fixed inset-0 z-40" onClick={() => setShowDownloadMenu(false)}></div>
-                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                   <button 
-                     onClick={() => { handlePrint(); setShowDownloadMenu(false); }}
-                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wide transition-colors"
-                   >
-                     <i className="fas fa-file-pdf text-red-500 text-lg"></i> PDF
-                   </button>
-                   <button 
-                     onClick={() => { handleExportDocx(); setShowDownloadMenu(false); }}
-                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wide border-t border-slate-100 dark:border-slate-800 transition-colors"
-                   >
-                     <i className="fas fa-file-word text-blue-500 text-lg"></i> Word (.docx)
-                   </button>
-                 </div>
-               </>
-             )}
            </div>
         </div>
         
@@ -964,7 +938,10 @@ export default function App() {
                       <button onClick={() => removeItem('experiences', exp.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
                       <Input label="Empresa" value={exp.company} onChange={(v) => updateItem('experiences', exp.id, 'company', v)} />
                       <Input label="Cargo" value={exp.position} onChange={(v) => updateItem('experiences', exp.id, 'position', v)} />
-                      <Input label="Período" value={exp.period} onChange={(v) => updateItem('experiences', exp.id, 'period', v)} placeholder="Ex: Jan 2020 - Atual" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input label="Início" value={exp.startDate} onChange={(v) => updateItem('experiences', exp.id, 'startDate', v)} placeholder="Ex: Jan 2020" />
+                        <Input label="Fim" value={exp.endDate} onChange={(v) => updateItem('experiences', exp.id, 'endDate', v)} placeholder="Ex: Atual" />
+                      </div>
                       <div className="mt-2 relative">
                          <div className="flex justify-between items-center mb-1">
                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Descrição</label>
@@ -1093,12 +1070,6 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-              )}
-              {activeTab === 'scanner' && (
-                <JobScanner data={data} onUpdateData={updateData} />
-              )}
-              {activeTab === 'cover-letter' && (
-                <CoverLetterGenerator resumeData={data} />
               )}
            </div>
 
