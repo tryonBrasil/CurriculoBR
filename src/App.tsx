@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { ResumeData, TemplateId, Experience, Education, Language, Certification } from './types';
+import { ResumeData, TemplateId, Experience, Education, Language, Course } from './types';
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
@@ -276,21 +276,21 @@ export default function App() {
   };
 
   const handlePhotoConfirm = (croppedImage: string) => {
-    updateData(prev => ({ ...prev, photoUrl: croppedImage }));
+    updateData(prev => ({ ...prev, personalInfo: { ...prev.personalInfo, photoUrl: croppedImage } }));
     setIsPhotoModalOpen(false);
     setPendingPhoto(null);
   };
 
   const cvScore = useMemo(() => {
     let points = 0;
-    if (data.fullName) points += 15;
+    if (data.personalInfo?.fullName) points += 15;
     if (data.summary && data.summary.length > 50) points += 15;
     if (data.experiences?.length > 0) points += 20;
     if (data.education?.length > 0) points += 15;
     if (data.languages?.length > 0) points += 10;
-    if (data.certifications?.length > 0) points += 10;
+    if (data.courses?.length > 0) points += 10;
     if (data.skills?.length >= 5) points += 10;
-    if (data.photoUrl) points += 5;
+    if (data.personalInfo?.photoUrl) points += 5;
     return Math.min(points, 100);
   }, [data]);
 
@@ -303,31 +303,31 @@ export default function App() {
     setErrors(prev => ({ ...prev, [field]: error }));
   };
 
-  const addItem = (listName: 'experiences' | 'education' | 'languages' | 'certifications') => {
+  const addItem = (listName: 'experiences' | 'education' | 'languages' | 'courses') => {
     const id = Math.random().toString(36).substr(2, 9);
     if (listName === 'experiences') {
-      const newItem: Experience = { id, company: '', position: '', period: '', description: '' };
+      const newItem: Experience = { id, company: '', position: '', location: '', startDate: '', endDate: '', current: false, description: '' };
       updateData(prev => ({ ...prev, experiences: [newItem, ...(prev.experiences || [])] }));
     } else if (listName === 'education') {
-      const newItem: Education = { id, school: '', degree: '', year: '' };
+      const newItem: Education = { id, institution: '', degree: '', field: '', location: '', startDate: '', endDate: '' };
       updateData(prev => ({ ...prev, education: [newItem, ...(prev.education || [])] }));
     } else if (listName === 'languages') {
-      const newItem: Language = { id, name: '', level: '' };
+      const newItem: Language = { id, name: '', level: '', percentage: 0 };
       updateData(prev => ({ ...prev, languages: [newItem, ...(prev.languages || [])] }));
-    } else if (listName === 'certifications') {
-      const newItem: Certification = { id, name: '', issuer: '', year: '' };
-      updateData(prev => ({ ...prev, certifications: [newItem, ...(prev.certifications || [])] }));
+    } else if (listName === 'courses') {
+      const newItem: Course = { id, name: '', institution: '', year: '' };
+      updateData(prev => ({ ...prev, courses: [newItem, ...(prev.courses || [])] }));
     }
   };
 
-  const removeItem = (listName: 'experiences' | 'education' | 'languages' | 'certifications', id: string) => {
+  const removeItem = (listName: 'experiences' | 'education' | 'languages' | 'courses', id: string) => {
     updateData(prev => ({
       ...prev,
       [listName]: (prev[listName] as any[]).filter(item => item.id !== id)
     }));
   };
 
-  const updateItem = <T extends 'experiences' | 'education' | 'languages' | 'certifications'>(
+  const updateItem = <T extends 'experiences' | 'education' | 'languages' | 'courses'>(
     listName: T, 
     id: string, 
     field: string, 
@@ -366,12 +366,12 @@ export default function App() {
   };
 
   const handleGenerateSummary = async () => {
-    if (!data.skills || isEnhancing) return;
+    if (!data.skills?.length || isEnhancing) return;
     setIsEnhancing('summary-gen');
     try {
       const expPositions = data.experiences.map(e => e.position);
-      
-      await generateSummaryStream("Profissional", data.skills, expPositions, (currentText) => {
+      const skillNames = data.skills.map(s => s.name).join(', ');
+      await generateSummaryStream("Profissional", skillNames, expPositions, (currentText) => {
          updateData(prev => ({ ...prev, summary: currentText }));
       });
       
@@ -392,7 +392,12 @@ export default function App() {
       const suggested = await suggestSkills(jobContext);
       
       if (suggested) {
-        updateData(prev => ({ ...prev, skills: prev.skills ? `${prev.skills}, ${suggested}` : suggested }));
+        const newSkills = suggested.split(',').map((name: string, i: number) => ({
+          id: Math.random().toString(36).substr(2, 9),
+          name: name.trim(),
+          level: 'Intermediate' as const,
+        })).filter((s: { name: string }) => s.name);
+        updateData(prev => ({ ...prev, skills: [...(prev.skills || []), ...newSkills] }));
         showToast("Habilidades sugeridas adicionadas.");
       }
     } catch (err) {
@@ -654,7 +659,7 @@ export default function App() {
   }
 
   if (view === 'cover-letter-page') {
-    const hasData = data.fullName || (data.experiences && data.experiences.length > 0);
+    const hasData = data.personalInfo?.fullName || (data.experiences && data.experiences.length > 0);
 
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
@@ -918,8 +923,8 @@ export default function App() {
                   <div className="flex items-center gap-6 mb-6">
                     <div className="relative group cursor-pointer" onClick={() => photoInputRef.current?.click()}>
                       <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden">
-                        {data.photoUrl ? (
-                          <img src={data.photoUrl} alt="Perfil" className="w-full h-full object-cover" />
+                        {data.personalInfo?.photoUrl ? (
+                          <img src={data.personalInfo.photoUrl} alt="Perfil" className="w-full h-full object-cover" />
                         ) : (
                           <i className="fas fa-camera text-slate-400 text-2xl group-hover:text-blue-500 transition-colors"></i>
                         )}
@@ -932,19 +937,19 @@ export default function App() {
                     <div>
                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">Sua Foto</h3>
                        <p className="text-xs text-slate-400 max-w-[200px] leading-tight mt-1">Recomendamos uma foto profissional, com fundo neutro e boa iluminação.</p>
-                       {data.photoUrl && (
-                           <button onClick={(e) => { e.stopPropagation(); updateData(p => ({...p, photoUrl: ''})); }} className="text-[10px] text-red-500 font-bold uppercase mt-2 hover:underline">Remover foto</button>
+                       {data.personalInfo?.photoUrl && (
+                           <button onClick={(e) => { e.stopPropagation(); updateData(p => ({...p, personalInfo: {...p.personalInfo, photoUrl: ''}})); }} className="text-[10px] text-red-500 font-bold uppercase mt-2 hover:underline">Remover foto</button>
                        )}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Input label="Nome Completo" value={data.fullName} onChange={(v) => updateData(p => ({...p, fullName: v}))} placeholder="Ex: João da Silva" />
+                    <Input label="Nome Completo" value={data.personalInfo?.fullName || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, fullName: v}}))} placeholder="Ex: João da Silva" />
                     <div className="grid grid-cols-2 gap-4">
-                      <Input label="E-mail" value={data.email} onChange={(v) => updateData(p => ({...p, email: v}))} placeholder="email@exemplo.com" error={errors.email} onBlur={() => validateField('email', data.email)} />
-                      <Input label="Telefone" value={data.phone} onChange={(v) => updateData(p => ({...p, phone: v}))} placeholder="(11) 99999-9999" error={errors.phone} onBlur={() => validateField('phone', data.phone)} />
+                      <Input label="E-mail" value={data.personalInfo?.email || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, email: v}}))} placeholder="email@exemplo.com" error={errors.email} onBlur={() => validateField('email', data.personalInfo?.email || '')} />
+                      <Input label="Telefone" value={data.personalInfo?.phone || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, phone: v}}))} placeholder="(11) 99999-9999" error={errors.phone} onBlur={() => validateField('phone', data.personalInfo?.phone || '')} />
                     </div>
-                    <Input label="Localização" value={data.location} onChange={(v) => updateData(p => ({...p, location: v}))} placeholder="Cidade, Estado" />
+                    <Input label="Localização" value={data.personalInfo?.location || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, location: v}}))} placeholder="Cidade, Estado" />
                   </div>
                 </div>
               )}
@@ -988,9 +993,9 @@ export default function App() {
                   {data.education?.map(edu => (
                     <div key={edu.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-indigo-400 shadow-sm">
                       <button onClick={() => removeItem('education', edu.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
-                      <Input label="Instituição" value={edu.school} onChange={(v) => updateItem('education', edu.id, 'school', v)} />
+                      <Input label="Instituição" value={edu.institution} onChange={(v) => updateItem('education', edu.id, 'institution', v)} />
                       <Input label="Grau/Curso" value={edu.degree} onChange={(v) => updateItem('education', edu.id, 'degree', v)} />
-                      <Input label="Ano/Período" value={edu.year} onChange={(v) => updateItem('education', edu.id, 'year', v)} placeholder="Ex: 2018 - 2022" />
+                      <Input label="Ano/Período" value={edu.endDate} onChange={(v) => updateItem('education', edu.id, 'endDate', v)} placeholder="Ex: 2018 - 2022" />
                     </div>
                   ))}
                 </div>
@@ -1020,17 +1025,17 @@ export default function App() {
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Cursos e Certificações</h2>
-                    <button onClick={() => addItem('certifications')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                    <button onClick={() => addItem('courses')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
                   </div>
-                  {data.certifications?.map(cert => (
+                  {data.courses?.map(cert => (
                     <div key={cert.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-yellow-400 shadow-sm">
-                      <button onClick={() => removeItem('certifications', cert.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
-                      <Input label="Curso / Certificação" value={cert.name} onChange={(v) => updateItem('certifications', cert.id, 'name', v)} />
-                      <Input label="Instituição" value={cert.issuer} onChange={(v) => updateItem('certifications', cert.id, 'issuer', v)} />
-                      <Input label="Ano" value={cert.year} onChange={(v) => updateItem('certifications', cert.id, 'year', v)} placeholder="Ex: 2023" />
+                      <button onClick={() => removeItem('courses', cert.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
+                      <Input label="Curso / Certificação" value={cert.name} onChange={(v) => updateItem('courses', cert.id, 'name', v)} />
+                      <Input label="Instituição" value={cert.institution} onChange={(v) => updateItem('courses', cert.id, 'institution', v)} />
+                      <Input label="Ano" value={cert.year} onChange={(v) => updateItem('courses', cert.id, 'year', v)} placeholder="Ex: 2023" />
                     </div>
                   ))}
-                  {(!data.certifications || data.certifications.length === 0) && (
+                  {(!data.courses || data.courses.length === 0) && (
                     <div className="text-center p-8 text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
                       <i className="fas fa-certificate text-2xl mb-2"></i>
                       <p className="text-xs">Nenhuma certificação adicionada.</p>
@@ -1047,11 +1052,19 @@ export default function App() {
                     </button>
                   </div>
                   <div className="relative">
-                    <textarea 
-                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-40 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all" 
-                      value={data.skills} 
-                      onChange={(e) => updateData(p => ({...p, skills: e.target.value}))}
-                      placeholder="Liste suas habilidades separadas por vírgula..." 
+                    <textarea
+                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-40 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all"
+                      value={data.skills?.map(s => s.name).join(', ') || ''}
+                      onChange={(e) => {
+                        const names = e.target.value.split(',');
+                        const newSkills = names.map((name, i) => ({
+                          id: data.skills?.[i]?.id || Math.random().toString(36).substr(2, 9),
+                          name: name,
+                          level: data.skills?.[i]?.level || 'Intermediate' as const,
+                        }));
+                        updateData(p => ({...p, skills: newSkills}));
+                      }}
+                      placeholder="Liste suas habilidades separadas por vírgula..."
                     />
                   </div>
                 </div>
@@ -1060,7 +1073,7 @@ export default function App() {
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Resumo Profissional</h2>
-                    <button onClick={handleGenerateSummary} disabled={!data.skills || isEnhancing === 'summary-gen'} className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
+                    <button onClick={handleGenerateSummary} disabled={!data.skills?.length || isEnhancing === 'summary-gen'} className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
                       <i className={`fas ${isEnhancing === 'summary-gen' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic'}`}></i> Gerar com IA
                     </button>
                   </div>
