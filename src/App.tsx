@@ -13,6 +13,8 @@ import CoverLetterGenerator from './components/CoverLetterGenerator';
 import CookieConsent from './components/CookieConsent';
 import Sobre from './Sobre';
 import Contato from './Contato';
+import BlogList from './blog/BlogList';
+import BlogPost from './blog/BlogPost';
 import { useResumeHistory } from './hooks/useResumeHistory';
 import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI } from './services/geminiService';
 import { extractTextFromPDF } from './services/pdfService';
@@ -59,7 +61,8 @@ const FONTS = [
 const STORAGE_KEY = 'curriculobr_data_v2';
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms' | 'cover-letter-page' | 'sobre' | 'contato'>('home');
+  const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms' | 'cover-letter-page' | 'sobre' | 'contato' | 'blog' | 'blog-post'>('home');
+  const [blogSlug, setBlogSlug] = useState<string>('');
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [template, setTemplate] = useState<TemplateId>('modern_blue');
   const [currentStep, setCurrentStep] = useState(0);
@@ -123,6 +126,11 @@ export default function App() {
       setView('sobre');
     } else if (path === '/contato') {
       setView('contato');
+    } else if (path === '/blog') {
+      setView('blog');
+    } else if (path.startsWith('/blog/')) {
+      setBlogSlug(path.replace('/blog/', ''));
+      setView('blog-post');
     }
     
     const handlePopState = () => {
@@ -132,6 +140,8 @@ export default function App() {
       else if (p === '/termos') setView('terms');
       else if (p === '/sobre') setView('sobre');
       else if (p === '/contato') setView('contato');
+      else if (p === '/blog') setView('blog');
+      else if (p.startsWith('/blog/')) { setBlogSlug(p.replace('/blog/', '')); setView('blog-post'); }
       else if (p === '/') setView('home');
     };
     window.addEventListener('popstate', handlePopState);
@@ -621,6 +631,28 @@ export default function App() {
     return <Contato onVoltar={() => navigateTo('/', 'home')} />;
   }
 
+  if (view === 'blog') {
+    return (
+      <BlogList
+        onVoltar={() => navigateTo('/', 'home')}
+        onPost={(slug) => { setBlogSlug(slug); navigateTo(`/blog/${slug}`, 'blog-post'); }}
+        onCriarCurriculo={() => navigateTo('/', 'templates')}
+      />
+    );
+  }
+
+  if (view === 'blog-post') {
+    return (
+      <BlogPost
+        slug={blogSlug}
+        onVoltar={() => navigateTo('/', 'home')}
+        onBlog={() => navigateTo('/blog', 'blog')}
+        onPost={(slug) => { setBlogSlug(slug); navigateTo(`/blog/${slug}`, 'blog-post'); }}
+        onCriarCurriculo={() => navigateTo('/', 'templates')}
+      />
+    );
+  }
+
   if (view === 'cover-letter-page') {
     const hasData = data.fullName || (data.experiences && data.experiences.length > 0);
 
@@ -723,6 +755,7 @@ export default function App() {
         <footer className="relative z-10 py-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center">
           <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 mb-4">
              <button onClick={() => navigateTo('/sobre', 'sobre')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Sobre</button>
+             <button onClick={() => navigateTo('/blog', 'blog')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Blog</button>
              <button onClick={() => navigateTo('/contato', 'contato')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Contato</button>
              <button onClick={() => navigateTo('/privacidade', 'privacy')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Política de Privacidade</button>
              <button onClick={() => navigateTo('/termos', 'terms')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Termos e Condições</button>
