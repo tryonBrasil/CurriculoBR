@@ -132,6 +132,51 @@ export const suggestSkills = async (jobTitle: string): Promise<string[]> => {
   }
 };
 
+export const generateCoverLetterStream = async (
+  params: {
+    candidateName: string;
+    jobTitle: string;
+    company: string;
+    tone: 'formal' | 'dinamico' | 'criativo';
+    highlights: string;
+    experiences: string;
+    skills: string;
+  },
+  onUpdate: (text: string) => void
+): Promise<void> => {
+  const ai = getAI();
+  const toneMap = {
+    formal: 'formal e profissional, com linguagem executiva',
+    dinamico: 'dinâmico e confiante, com energia e proatividade',
+    criativo: 'criativo e autêntico, mostrando personalidade e diferencial',
+  };
+  const prompt = `
+    Candidato: ${params.candidateName}
+    Vaga: ${params.jobTitle} na empresa ${params.company}
+    Tom desejado: ${toneMap[params.tone]}
+    Experiências relevantes: ${params.experiences}
+    Habilidades: ${params.skills}
+    Destaques adicionais: ${params.highlights || 'Nenhum'}
+  `;
+  try {
+    const response = await ai.models.generateContentStream({
+      model: 'gemini-3-flash-preview',
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        systemInstruction: `Você é um especialista em redação de cartas de apresentação profissionais para o mercado brasileiro. Escreva uma carta completa com: saudação, parágrafo de abertura impactante, 2 parágrafos de experiências e valor, encerramento com call-to-action. Use o nome do candidato. Sem títulos ou cabeçalhos — apenas o corpo da carta. Máximo de 4 parágrafos, 250-350 palavras.`,
+        thinkingConfig: { thinkingBudget: 0 },
+      },
+    });
+    let accumulated = '';
+    for await (const chunk of response) {
+      if (chunk.text) { accumulated += chunk.text; onUpdate(accumulated); }
+    }
+  } catch (error) {
+    console.error('Erro Gemini (Cover Letter):', error);
+    onUpdate('Erro ao gerar carta. Verifique sua chave de API e tente novamente.');
+  }
+};
+
 export const parseResumeWithAI = async (text: string): Promise<any> => {
   const ai = getAI();
   try {
