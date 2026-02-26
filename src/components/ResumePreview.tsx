@@ -439,6 +439,636 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
           </div>
         );
 
+      /* ══════════════════════════════════════════════════
+         PREMIUM TEMPLATES
+         ══════════════════════════════════════════════════ */
+
+      case 'aurora_dark':
+        return (
+          <div className="h-full flex flex-col overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: '#e2e8f0', fontFamily: 'inherit' }}>
+            {/* Header */}
+            <header className="relative px-10 py-8 overflow-hidden cursor-pointer" onClick={() => onSectionClick?.('info')}>
+              <div className="absolute top-0 left-0 w-full h-full opacity-20" style={{ background: 'radial-gradient(ellipse at 30% 50%, #7c3aed, transparent 60%), radial-gradient(ellipse at 80% 20%, #2563eb, transparent 50%)' }}></div>
+              <div className="relative z-10 flex items-center gap-8">
+                {personalInfo.photoUrl && (
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 shrink-0" style={{ borderColor: '#7c3aed', boxShadow: '0 0 24px rgba(124,58,237,0.5)' }}>
+                    <img src={personalInfo.photoUrl} alt="" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h1 className="font-black uppercase tracking-tight leading-none mb-1" style={{ fontSize: '2em', background: 'linear-gradient(90deg, #c4b5fd, #93c5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{personalInfo.fullName || 'Seu Nome'}</h1>
+                  <p className="font-bold uppercase tracking-[0.2em] text-[0.85em]" style={{ color: '#a78bfa' }}>{personalInfo.jobTitle}</p>
+                  <div className="flex flex-wrap gap-4 mt-3 text-[0.78em]" style={{ color: '#94a3b8' }}>
+                    {personalInfo.email && <span><i className="fas fa-envelope mr-1" style={{ color: '#7c3aed' }}></i>{personalInfo.email}</span>}
+                    {personalInfo.phone && <span><i className="fas fa-phone mr-1" style={{ color: '#7c3aed' }}></i>{personalInfo.phone}</span>}
+                    {personalInfo.location && <span><i className="fas fa-map-marker-alt mr-1" style={{ color: '#7c3aed' }}></i>{personalInfo.location}</span>}
+                    {personalInfo.linkedin && <span><i className="fab fa-linkedin mr-1" style={{ color: '#7c3aed' }}></i>{personalInfo.linkedin}</span>}
+                    {personalInfo.drivingLicense && <span><i className="fas fa-car mr-1" style={{ color: '#7c3aed' }}></i>{personalInfo.drivingLicense}</span>}
+                  </div>
+                </div>
+              </div>
+            </header>
+            {/* Body */}
+            <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '1fr 2fr', gap: '0' }}>
+              {/* Sidebar */}
+              <div className="px-8 py-6 space-y-6 overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', borderRight: '1px solid rgba(124,58,237,0.3)' }}>
+                {summary && (
+                  <div className={sectionWrapperStyle('summary')} onDragOver={(e) => handleDragOver(e, 'summary')} onDrop={(e) => handleDrop(e, 'summary')} onClick={() => onSectionClick?.('summary')}>
+                    <DragHandle id="summary" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-2" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Perfil</h2>
+                    <p className="text-[0.8em] leading-relaxed" style={{ color: '#cbd5e1' }}>{summary}</p>
+                  </div>
+                )}
+                {skills.length > 0 && (
+                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                    <DragHandle id="skills" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Habilidades</h2>
+                    <div className="flex flex-wrap gap-1.5">
+                      {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded-md text-[0.75em] font-bold" style={{ background: 'rgba(124,58,237,0.25)', color: '#c4b5fd', border: '1px solid rgba(124,58,237,0.4)' }}>{s.name}</span>)}
+                    </div>
+                  </div>
+                )}
+                {(languages.length > 0 || courses.length > 0) && (
+                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                    <DragHandle id="extras" />
+                    {languages.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Idiomas</h2>
+                      <div className="space-y-2 mb-4">
+                        {languages.map(l => (
+                          <div key={l.id} className="text-[0.78em]">
+                            <div className="flex justify-between mb-0.5" style={{ color: '#e2e8f0' }}><span className="font-bold">{l.name}</span><span style={{ color: '#94a3b8' }}>{l.level}</span></div>
+                            <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}><div className="h-full rounded-full" style={{ width: `${l.percentage}%`, background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }}></div></div>
+                          </div>
+                        ))}
+                      </div>
+                    </>}
+                    {courses.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-2" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Cursos</h2>
+                      <div className="space-y-2">
+                        {courses.map(c => <div key={c.id} className="text-[0.78em]"><p className="font-bold" style={{ color: '#e2e8f0' }}>{c.name}</p><p style={{ color: '#94a3b8' }}>{c.institution} • {c.year}</p></div>)}
+                      </div>
+                    </>}
+                  </div>
+                )}
+              </div>
+              {/* Main */}
+              <div className="px-8 py-6 space-y-6 overflow-hidden">
+                {experiences.length > 0 && (
+                  <div className={sectionWrapperStyle('experience')} onDragOver={(e) => handleDragOver(e, 'experience')} onDrop={(e) => handleDrop(e, 'experience')} onClick={() => onSectionClick?.('experience')}>
+                    <DragHandle id="experience" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-4" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Experiência</h2>
+                    <div className="space-y-5">
+                      {experiences.map(exp => (
+                        <div key={exp.id} className="relative pl-5" style={{ borderLeft: '2px solid rgba(124,58,237,0.5)' }}>
+                          <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full" style={{ background: '#7c3aed', boxShadow: '0 0 8px rgba(124,58,237,0.8)' }}></div>
+                          <div className="flex justify-between items-baseline">
+                            <h3 className="font-bold text-[0.9em]" style={{ color: '#f1f5f9' }}>{exp.position}</h3>
+                            <span className="text-[0.75em]" style={{ color: '#94a3b8' }}>{exp.startDate} - {exp.endDate}</span>
+                          </div>
+                          <p className="font-bold text-[0.82em]" style={{ color: '#a78bfa' }}>{exp.company}</p>
+                          <p className="text-[0.8em] mt-1 leading-relaxed whitespace-pre-wrap" style={{ color: '#94a3b8' }}>{exp.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {education.length > 0 && (
+                  <div className={sectionWrapperStyle('education')} onDragOver={(e) => handleDragOver(e, 'education')} onDrop={(e) => handleDrop(e, 'education')} onClick={() => onSectionClick?.('education')}>
+                    <DragHandle id="education" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-4" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Educação</h2>
+                    <div className="space-y-3">
+                      {education.map(edu => (
+                        <div key={edu.id} className="relative pl-5" style={{ borderLeft: '2px solid rgba(124,58,237,0.5)' }}>
+                          <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full" style={{ background: '#7c3aed' }}></div>
+                          <h4 className="font-bold text-[0.9em]" style={{ color: '#f1f5f9' }}>{edu.institution}</h4>
+                          <p className="text-[0.82em]" style={{ color: '#a78bfa' }}>{edu.degree}</p>
+                          <p className="text-[0.78em]" style={{ color: '#94a3b8' }}>{edu.endDate}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'creative_portfolio':
+        return (
+          <div className="h-full flex flex-col bg-white overflow-hidden" style={{ fontFamily: 'inherit' }}>
+            {/* Bold top bar */}
+            <div className="h-2 w-full" style={{ background: 'linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6)' }}></div>
+            {/* Header */}
+            <header className="px-10 pt-8 pb-6 cursor-pointer flex gap-8 items-start" onClick={() => onSectionClick?.('info')}>
+              {personalInfo.photoUrl && (
+                <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 shadow-xl" style={{ border: '3px solid #f59e0b' }}>
+                  <img src={personalInfo.photoUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div className="flex-1">
+                <h1 className="font-black leading-none mb-1" style={{ fontSize: '2.4em', color: '#0f172a' }}>{personalInfo.fullName || 'Seu Nome'}</h1>
+                <p className="font-black uppercase tracking-[0.3em] text-[0.8em]" style={{ color: '#f59e0b' }}>{personalInfo.jobTitle}</p>
+                <div className="flex flex-wrap gap-4 mt-4 text-[0.78em] font-semibold text-slate-600">
+                  {personalInfo.email && <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.7em]" style={{ background: '#f59e0b' }}><i className="fas fa-envelope"></i></span>{personalInfo.email}</span>}
+                  {personalInfo.phone && <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.7em]" style={{ background: '#ef4444' }}><i className="fas fa-phone"></i></span>{personalInfo.phone}</span>}
+                  {personalInfo.location && <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.7em]" style={{ background: '#8b5cf6' }}><i className="fas fa-map-marker-alt"></i></span>{personalInfo.location}</span>}
+                  {personalInfo.linkedin && <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.7em]" style={{ background: '#0077b5' }}><i className="fab fa-linkedin"></i></span>{personalInfo.linkedin}</span>}
+                  {personalInfo.drivingLicense && <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[0.7em]" style={{ background: '#64748b' }}><i className="fas fa-car"></i></span>{personalInfo.drivingLicense}</span>}
+                </div>
+              </div>
+            </header>
+            {/* Content */}
+            <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '2fr 1fr', padding: '0 2.5rem', gap: '2rem' }}>
+              <div className="space-y-6 overflow-hidden py-4">
+                {summary && (
+                  <div className={sectionWrapperStyle('summary')} onDragOver={(e) => handleDragOver(e, 'summary')} onDrop={(e) => handleDrop(e, 'summary')} onClick={() => onSectionClick?.('summary')}>
+                    <DragHandle id="summary" />
+                    <div className="flex items-center gap-2 mb-2"><div className="w-4 h-4 rounded" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}></div><h2 className="font-black uppercase tracking-widest text-[0.82em] text-slate-800">Sobre Mim</h2></div>
+                    <p className="text-[0.85em] text-slate-700 leading-relaxed">{summary}</p>
+                  </div>
+                )}
+                {experiences.length > 0 && (
+                  <div className={sectionWrapperStyle('experience')} onDragOver={(e) => handleDragOver(e, 'experience')} onDrop={(e) => handleDrop(e, 'experience')} onClick={() => onSectionClick?.('experience')}>
+                    <DragHandle id="experience" />
+                    <div className="flex items-center gap-2 mb-3"><div className="w-4 h-4 rounded" style={{ background: 'linear-gradient(135deg, #ef4444, #8b5cf6)' }}></div><h2 className="font-black uppercase tracking-widest text-[0.82em] text-slate-800">Experiência</h2></div>
+                    <div className="space-y-5">
+                      {experiences.map(exp => (
+                        <div key={exp.id} className="relative" style={{ borderLeft: '3px solid #f59e0b', paddingLeft: '14px' }}>
+                          <div className="flex justify-between items-baseline">
+                            <h3 className="font-black text-[0.92em] text-slate-900">{exp.position}</h3>
+                            <span className="text-[0.75em] font-bold text-slate-500 whitespace-nowrap ml-2">{exp.startDate} - {exp.endDate}</span>
+                          </div>
+                          <p className="font-bold text-[0.82em]" style={{ color: '#f59e0b' }}>{exp.company}</p>
+                          <p className="text-[0.82em] text-slate-600 mt-1 leading-relaxed whitespace-pre-wrap">{exp.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {education.length > 0 && (
+                  <div className={sectionWrapperStyle('education')} onDragOver={(e) => handleDragOver(e, 'education')} onDrop={(e) => handleDrop(e, 'education')} onClick={() => onSectionClick?.('education')}>
+                    <DragHandle id="education" />
+                    <div className="flex items-center gap-2 mb-3"><div className="w-4 h-4 rounded" style={{ background: 'linear-gradient(135deg, #8b5cf6, #f59e0b)' }}></div><h2 className="font-black uppercase tracking-widest text-[0.82em] text-slate-800">Educação</h2></div>
+                    <div className="space-y-3">
+                      {education.map(edu => (
+                        <div key={edu.id} style={{ borderLeft: '3px solid #8b5cf6', paddingLeft: '14px' }}>
+                          <h4 className="font-black text-[0.9em] text-slate-900">{edu.institution}</h4>
+                          <p className="text-[0.82em] font-bold" style={{ color: '#8b5cf6' }}>{edu.degree}</p>
+                          <p className="text-[0.78em] text-slate-500 font-semibold">{edu.endDate}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Right column */}
+              <div className="space-y-6 overflow-hidden py-4" style={{ borderLeft: '1px dashed #e2e8f0', paddingLeft: '1.5rem' }}>
+                {skills.length > 0 && (
+                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                    <DragHandle id="skills" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.78em] text-slate-800 mb-3">Skills</h2>
+                    <div className="flex flex-wrap gap-1.5">
+                      {skills.map(s => <span key={s.id} className="px-2 py-1 rounded-lg text-[0.75em] font-black text-white" style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>{s.name}</span>)}
+                    </div>
+                  </div>
+                )}
+                {(languages.length > 0 || courses.length > 0) && (
+                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                    <DragHandle id="extras" />
+                    {languages.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-widest text-[0.78em] text-slate-800 mb-3">Idiomas</h2>
+                      <div className="space-y-2 mb-4">
+                        {languages.map(l => (
+                          <div key={l.id} className="text-[0.78em]">
+                            <div className="flex justify-between font-bold text-slate-700 mb-0.5"><span>{l.name}</span><span className="text-slate-500">{l.level}</span></div>
+                            <div className="h-1.5 bg-slate-100 rounded-full"><div className="h-full rounded-full" style={{ width: `${l.percentage}%`, background: 'linear-gradient(90deg, #f59e0b, #8b5cf6)' }}></div></div>
+                          </div>
+                        ))}
+                      </div>
+                    </>}
+                    {courses.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-widest text-[0.78em] text-slate-800 mb-2">Cursos</h2>
+                      <div className="space-y-2">
+                        {courses.map(c => <div key={c.id} className="text-[0.78em]"><p className="font-bold text-slate-900 leading-tight">{c.name}</p><p className="text-slate-500">{c.institution} • {c.year}</p></div>)}
+                      </div>
+                    </>}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'minimalist_pro':
+        return (
+          <div className="h-full bg-white flex flex-col overflow-hidden px-14 py-12" style={{ fontFamily: 'inherit' }}>
+            <header className="mb-8 cursor-pointer" onClick={() => onSectionClick?.('info')}>
+              <div className="flex justify-between items-end">
+                <div>
+                  <h1 className="font-black tracking-tight leading-none text-slate-900" style={{ fontSize: '2.8em' }}>{personalInfo.fullName || 'Seu Nome'}</h1>
+                  <p className="text-[0.9em] font-medium text-slate-500 mt-1 tracking-widest uppercase">{personalInfo.jobTitle}</p>
+                </div>
+                {personalInfo.photoUrl && <div className="w-20 h-20 rounded-full overflow-hidden" style={{ border: '2px solid #0f172a' }}><img src={personalInfo.photoUrl} alt="" className="w-full h-full object-cover" /></div>}
+              </div>
+              <div className="mt-4 h-px bg-slate-900"></div>
+              <div className="flex flex-wrap gap-6 mt-3 text-[0.78em] text-slate-600 font-medium">
+                {personalInfo.email && <span>{personalInfo.email}</span>}
+                {personalInfo.phone && <span>{personalInfo.phone}</span>}
+                {personalInfo.location && <span>{personalInfo.location}</span>}
+                {personalInfo.linkedin && <span>{personalInfo.linkedin}</span>}
+                {personalInfo.drivingLicense && <span>{personalInfo.drivingLicense}</span>}
+              </div>
+            </header>
+            <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '2fr 1fr', gap: '2.5rem' }}>
+              <div className="space-y-6 overflow-hidden">
+                {sectionOrder.map(id => {
+                  if (id === 'skills' || id === 'extras') return null;
+                  if (id === 'summary' && !summary) return null;
+                  if (id === 'experience' && experiences.length === 0) return null;
+                  if (id === 'education' && education.length === 0) return null;
+                  const labels: Record<string, string> = { summary: 'Perfil', experience: 'Experiência', education: 'Educação' };
+                  return (
+                    <div key={id} className={sectionWrapperStyle(id as SectionId)} onDragOver={(e) => handleDragOver(e, id as SectionId)} onDrop={(e) => handleDrop(e, id as SectionId)} onClick={() => onSectionClick?.(id)}>
+                      <DragHandle id={id as SectionId} />
+                      <h2 className="text-[0.75em] font-black uppercase tracking-[0.25em] text-slate-400 mb-3">{labels[id]}</h2>
+                      {id === 'summary' && <p className="text-[0.88em] text-slate-700 leading-relaxed">{summary}</p>}
+                      {id === 'experience' && (
+                        <div className="space-y-5">
+                          {experiences.map(exp => (
+                            <div key={exp.id}>
+                              <div className="flex justify-between items-baseline">
+                                <h3 className="font-bold text-[0.92em] text-slate-900">{exp.position}</h3>
+                                <span className="text-[0.75em] text-slate-400 font-medium whitespace-nowrap ml-2">{exp.startDate} - {exp.endDate}</span>
+                              </div>
+                              <p className="text-[0.82em] text-slate-500 font-semibold">{exp.company}</p>
+                              <p className="text-[0.82em] text-slate-600 mt-1 leading-relaxed whitespace-pre-wrap">{exp.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {id === 'education' && (
+                        <div className="space-y-3">
+                          {education.map(edu => (
+                            <div key={edu.id}>
+                              <h4 className="font-bold text-[0.9em] text-slate-900">{edu.institution}</h4>
+                              <p className="text-[0.82em] text-slate-600">{edu.degree}</p>
+                              <p className="text-[0.78em] text-slate-400">{edu.endDate}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="space-y-6 overflow-hidden">
+                {skills.length > 0 && (
+                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                    <DragHandle id="skills" />
+                    <h2 className="text-[0.75em] font-black uppercase tracking-[0.25em] text-slate-400 mb-3">Habilidades</h2>
+                    <div className="space-y-1.5">
+                      {skills.map(s => (
+                        <div key={s.id} className="flex items-center gap-2">
+                          <div className="w-1 h-1 rounded-full bg-slate-900 shrink-0"></div>
+                          <span className="text-[0.82em] text-slate-700 font-medium">{s.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(languages.length > 0 || courses.length > 0) && (
+                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                    <DragHandle id="extras" />
+                    {languages.length > 0 && <>
+                      <h2 className="text-[0.75em] font-black uppercase tracking-[0.25em] text-slate-400 mb-3">Idiomas</h2>
+                      <div className="space-y-1.5 mb-4">
+                        {languages.map(l => <div key={l.id} className="flex justify-between text-[0.8em]"><span className="font-medium text-slate-700">{l.name}</span><span className="text-slate-400">{l.level}</span></div>)}
+                      </div>
+                    </>}
+                    {courses.length > 0 && <>
+                      <h2 className="text-[0.75em] font-black uppercase tracking-[0.25em] text-slate-400 mb-3">Cursos</h2>
+                      <div className="space-y-2">
+                        {courses.map(c => <div key={c.id}><p className="text-[0.8em] font-semibold text-slate-700 leading-tight">{c.name}</p><p className="text-[0.75em] text-slate-400">{c.institution} • {c.year}</p></div>)}
+                      </div>
+                    </>}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'bold_impact':
+        return (
+          <div className="h-full bg-white flex flex-col overflow-hidden" style={{ fontFamily: 'inherit' }}>
+            {/* Giant name header */}
+            <header className="px-10 pt-8 pb-6 cursor-pointer" onClick={() => onSectionClick?.('info')} style={{ borderBottom: '4px solid #0f172a' }}>
+              <div className="flex items-end justify-between">
+                <div className="flex-1">
+                  <p className="text-[0.7em] font-black uppercase tracking-[0.4em] text-slate-400 mb-1">{personalInfo.jobTitle}</p>
+                  <h1 className="font-black leading-none uppercase text-slate-900" style={{ fontSize: '3em', letterSpacing: '-0.02em' }}>{personalInfo.fullName || 'SEU NOME'}</h1>
+                </div>
+                {personalInfo.photoUrl && <div className="w-20 h-20 rounded-none overflow-hidden shrink-0 ml-6" style={{ border: '3px solid #0f172a' }}><img src={personalInfo.photoUrl} alt="" className="w-full h-full object-cover" /></div>}
+              </div>
+              <div className="flex flex-wrap gap-5 mt-4 text-[0.78em] font-bold text-slate-700">
+                {personalInfo.email && <span><i className="fas fa-at mr-1 text-slate-400"></i>{personalInfo.email}</span>}
+                {personalInfo.phone && <span><i className="fas fa-mobile-alt mr-1 text-slate-400"></i>{personalInfo.phone}</span>}
+                {personalInfo.location && <span><i className="fas fa-map-pin mr-1 text-slate-400"></i>{personalInfo.location}</span>}
+                {personalInfo.linkedin && <span><i className="fab fa-linkedin mr-1 text-slate-400"></i>{personalInfo.linkedin}</span>}
+                {personalInfo.drivingLicense && <span><i className="fas fa-car mr-1 text-slate-400"></i>{personalInfo.drivingLicense}</span>}
+              </div>
+            </header>
+            <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '3fr 1fr' }}>
+              <div className="px-10 py-6 space-y-6 overflow-hidden" style={{ borderRight: '2px solid #0f172a' }}>
+                {summary && (
+                  <div className={sectionWrapperStyle('summary')} onDragOver={(e) => handleDragOver(e, 'summary')} onDrop={(e) => handleDrop(e, 'summary')} onClick={() => onSectionClick?.('summary')}>
+                    <DragHandle id="summary" />
+                    <h2 className="font-black uppercase tracking-[0.2em] text-[0.75em] text-slate-900 mb-2 flex items-center gap-2"><span className="w-6 h-0.5 bg-slate-900 inline-block"></span>Perfil</h2>
+                    <p className="text-[0.85em] text-slate-700 leading-relaxed">{summary}</p>
+                  </div>
+                )}
+                {experiences.length > 0 && (
+                  <div className={sectionWrapperStyle('experience')} onDragOver={(e) => handleDragOver(e, 'experience')} onDrop={(e) => handleDrop(e, 'experience')} onClick={() => onSectionClick?.('experience')}>
+                    <DragHandle id="experience" />
+                    <h2 className="font-black uppercase tracking-[0.2em] text-[0.75em] text-slate-900 mb-4 flex items-center gap-2"><span className="w-6 h-0.5 bg-slate-900 inline-block"></span>Experiência</h2>
+                    <div className="space-y-5">
+                      {experiences.map(exp => (
+                        <div key={exp.id}>
+                          <div className="flex justify-between items-baseline">
+                            <h3 className="font-black text-[0.95em] text-slate-900 uppercase">{exp.position}</h3>
+                            <span className="text-[0.75em] font-bold text-slate-400 whitespace-nowrap ml-3">{exp.startDate} – {exp.endDate}</span>
+                          </div>
+                          <p className="text-[0.82em] font-black text-slate-500 uppercase tracking-widest">{exp.company}</p>
+                          <p className="text-[0.82em] text-slate-600 mt-1.5 leading-relaxed whitespace-pre-wrap">{exp.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {education.length > 0 && (
+                  <div className={sectionWrapperStyle('education')} onDragOver={(e) => handleDragOver(e, 'education')} onDrop={(e) => handleDrop(e, 'education')} onClick={() => onSectionClick?.('education')}>
+                    <DragHandle id="education" />
+                    <h2 className="font-black uppercase tracking-[0.2em] text-[0.75em] text-slate-900 mb-3 flex items-center gap-2"><span className="w-6 h-0.5 bg-slate-900 inline-block"></span>Educação</h2>
+                    <div className="space-y-3">
+                      {education.map(edu => (
+                        <div key={edu.id}>
+                          <h4 className="font-black text-[0.9em] text-slate-900 uppercase">{edu.institution}</h4>
+                          <p className="text-[0.82em] font-bold text-slate-500 uppercase tracking-wider">{edu.degree}</p>
+                          <p className="text-[0.78em] text-slate-400">{edu.endDate}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Right narrow column */}
+              <div className="px-6 py-6 space-y-6 overflow-hidden bg-slate-50">
+                {skills.length > 0 && (
+                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                    <DragHandle id="skills" />
+                    <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-3">Skills</h2>
+                    <div className="space-y-1.5">
+                      {skills.map(s => <div key={s.id} className="text-[0.78em] font-bold text-slate-700 border-b border-slate-200 pb-1.5">{s.name}</div>)}
+                    </div>
+                  </div>
+                )}
+                {(languages.length > 0 || courses.length > 0) && (
+                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                    <DragHandle id="extras" />
+                    {languages.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-2">Idiomas</h2>
+                      <div className="space-y-1.5 mb-4">
+                        {languages.map(l => <div key={l.id} className="text-[0.75em]"><p className="font-black text-slate-900">{l.name}</p><p className="text-slate-500">{l.level}</p></div>)}
+                      </div>
+                    </>}
+                    {courses.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-2">Cursos</h2>
+                      <div className="space-y-2">
+                        {courses.map(c => <div key={c.id} className="text-[0.75em]"><p className="font-bold text-slate-900 leading-tight">{c.name}</p><p className="text-slate-500">{c.institution}</p></div>)}
+                      </div>
+                    </>}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'soft_pastel':
+        return (
+          <div className="h-full flex flex-col overflow-hidden" style={{ background: '#fdf6f0', fontFamily: 'inherit' }}>
+            {/* Decorative top */}
+            <div className="h-3 w-full" style={{ background: 'linear-gradient(90deg, #f9a8d4, #fda4af, #fcd34d, #86efac)' }}></div>
+            <header className="px-10 py-8 cursor-pointer flex items-center gap-8" onClick={() => onSectionClick?.('info')} style={{ background: '#fff5f7' }}>
+              {personalInfo.photoUrl && (
+                <div className="w-24 h-24 rounded-full overflow-hidden shrink-0" style={{ border: '3px solid #f9a8d4', boxShadow: '0 4px 16px rgba(249,168,212,0.4)' }}>
+                  <img src={personalInfo.photoUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <div>
+                <h1 className="font-black leading-tight" style={{ fontSize: '2em', color: '#831843' }}>{personalInfo.fullName || 'Seu Nome'}</h1>
+                <p className="font-bold text-[0.85em] mt-1" style={{ color: '#db2777' }}>{personalInfo.jobTitle}</p>
+                <div className="flex flex-wrap gap-4 mt-3 text-[0.75em] font-semibold" style={{ color: '#9d174d' }}>
+                  {personalInfo.email && <span><i className="fas fa-envelope mr-1" style={{ color: '#f472b6' }}></i>{personalInfo.email}</span>}
+                  {personalInfo.phone && <span><i className="fas fa-phone mr-1" style={{ color: '#f472b6' }}></i>{personalInfo.phone}</span>}
+                  {personalInfo.location && <span><i className="fas fa-map-marker-alt mr-1" style={{ color: '#f472b6' }}></i>{personalInfo.location}</span>}
+                  {personalInfo.linkedin && <span><i className="fab fa-linkedin mr-1" style={{ color: '#f472b6' }}></i>{personalInfo.linkedin}</span>}
+                  {personalInfo.drivingLicense && <span><i className="fas fa-car mr-1" style={{ color: '#f472b6' }}></i>{personalInfo.drivingLicense}</span>}
+                </div>
+              </div>
+            </header>
+            <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '1fr 2fr', gap: '0' }}>
+              {/* Left pastel sidebar */}
+              <div className="px-7 py-7 space-y-6 overflow-hidden" style={{ background: '#fff0f6' }}>
+                {skills.length > 0 && (
+                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                    <DragHandle id="skills" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Habilidades</h2>
+                    <div className="flex flex-wrap gap-1.5">
+                      {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded-full text-[0.75em] font-bold" style={{ background: '#fce7f3', color: '#9d174d' }}>{s.name}</span>)}
+                    </div>
+                  </div>
+                )}
+                {(languages.length > 0 || courses.length > 0) && (
+                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                    <DragHandle id="extras" />
+                    {languages.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Idiomas</h2>
+                      <div className="space-y-2 mb-4">
+                        {languages.map(l => (
+                          <div key={l.id} className="text-[0.78em]">
+                            <div className="flex justify-between font-semibold mb-0.5" style={{ color: '#831843' }}><span>{l.name}</span><span style={{ color: '#db2777' }}>{l.level}</span></div>
+                            <div className="h-1.5 rounded-full" style={{ background: '#fce7f3' }}><div className="h-full rounded-full" style={{ width: `${l.percentage}%`, background: 'linear-gradient(90deg, #f9a8d4, #db2777)' }}></div></div>
+                          </div>
+                        ))}
+                      </div>
+                    </>}
+                    {courses.length > 0 && <>
+                      <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-2 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Cursos</h2>
+                      <div className="space-y-2">
+                        {courses.map(c => <div key={c.id} className="text-[0.78em]"><p className="font-bold leading-tight" style={{ color: '#831843' }}>{c.name}</p><p style={{ color: '#9d174d' }}>{c.institution} • {c.year}</p></div>)}
+                      </div>
+                    </>}
+                  </div>
+                )}
+              </div>
+              {/* Right main */}
+              <div className="px-8 py-7 space-y-5 overflow-hidden">
+                {summary && (
+                  <div className={sectionWrapperStyle('summary')} onDragOver={(e) => handleDragOver(e, 'summary')} onDrop={(e) => handleDrop(e, 'summary')} onClick={() => onSectionClick?.('summary')}>
+                    <DragHandle id="summary" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-2 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Sobre Mim</h2>
+                    <p className="text-[0.85em] leading-relaxed" style={{ color: '#4a1942' }}>{summary}</p>
+                  </div>
+                )}
+                {experiences.length > 0 && (
+                  <div className={sectionWrapperStyle('experience')} onDragOver={(e) => handleDragOver(e, 'experience')} onDrop={(e) => handleDrop(e, 'experience')} onClick={() => onSectionClick?.('experience')}>
+                    <DragHandle id="experience" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Experiência</h2>
+                    <div className="space-y-4">
+                      {experiences.map(exp => (
+                        <div key={exp.id} className="pl-3" style={{ borderLeft: '2px solid #f9a8d4' }}>
+                          <div className="flex justify-between items-baseline">
+                            <h3 className="font-black text-[0.9em]" style={{ color: '#831843' }}>{exp.position}</h3>
+                            <span className="text-[0.73em] font-semibold" style={{ color: '#db2777' }}>{exp.startDate} - {exp.endDate}</span>
+                          </div>
+                          <p className="font-bold text-[0.8em]" style={{ color: '#db2777' }}>{exp.company}</p>
+                          <p className="text-[0.8em] mt-1 leading-relaxed whitespace-pre-wrap" style={{ color: '#9d174d' }}>{exp.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {education.length > 0 && (
+                  <div className={sectionWrapperStyle('education')} onDragOver={(e) => handleDragOver(e, 'education')} onDrop={(e) => handleDrop(e, 'education')} onClick={() => onSectionClick?.('education')}>
+                    <DragHandle id="education" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Educação</h2>
+                    <div className="space-y-3">
+                      {education.map(edu => (
+                        <div key={edu.id} className="pl-3" style={{ borderLeft: '2px solid #f9a8d4' }}>
+                          <h4 className="font-black text-[0.88em]" style={{ color: '#831843' }}>{edu.institution}</h4>
+                          <p className="text-[0.8em] font-semibold" style={{ color: '#db2777' }}>{edu.degree}</p>
+                          <p className="text-[0.76em]" style={{ color: '#9d174d' }}>{edu.endDate}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'tech_dark':
+        return (
+          <div className="h-full flex flex-col overflow-hidden" style={{ background: '#0d1117', color: '#e6edf3', fontFamily: "'Courier New', monospace" }}>
+            {/* Terminal-style header */}
+            <header className="px-10 py-7 cursor-pointer" onClick={() => onSectionClick?.('info')} style={{ borderBottom: '1px solid #21262d', background: '#161b22' }}>
+              <div className="flex items-start gap-6">
+                {personalInfo.photoUrl && (
+                  <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0" style={{ border: '2px solid #30363d', boxShadow: '0 0 12px rgba(88,166,255,0.3)' }}>
+                    <img src={personalInfo.photoUrl} alt="" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span style={{ color: '#58a6ff' }} className="text-[0.75em] font-bold">$</span>
+                    <span style={{ color: '#3fb950' }} className="text-[0.75em]">whoami</span>
+                  </div>
+                  <h1 className="font-bold leading-none" style={{ fontSize: '2em', color: '#58a6ff' }}>{personalInfo.fullName || 'dev@machine'}</h1>
+                  <p className="text-[0.82em] mt-1" style={{ color: '#3fb950' }}>// {personalInfo.jobTitle}</p>
+                  <div className="flex flex-wrap gap-4 mt-3 text-[0.72em]" style={{ color: '#8b949e' }}>
+                    {personalInfo.email && <span><span style={{ color: '#58a6ff' }}>mail:</span> {personalInfo.email}</span>}
+                    {personalInfo.phone && <span><span style={{ color: '#58a6ff' }}>tel:</span> {personalInfo.phone}</span>}
+                    {personalInfo.location && <span><span style={{ color: '#58a6ff' }}>loc:</span> {personalInfo.location}</span>}
+                    {personalInfo.linkedin && <span><span style={{ color: '#58a6ff' }}>in:</span> {personalInfo.linkedin}</span>}
+                    {personalInfo.drivingLicense && <span><span style={{ color: '#58a6ff' }}>cnh:</span> {personalInfo.drivingLicense}</span>}
+                  </div>
+                </div>
+              </div>
+            </header>
+            <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '2fr 1fr' }}>
+              {/* Main content */}
+              <div className="px-8 py-6 space-y-6 overflow-hidden" style={{ borderRight: '1px solid #21262d' }}>
+                {summary && (
+                  <div className={sectionWrapperStyle('summary')} onDragOver={(e) => handleDragOver(e, 'summary')} onDrop={(e) => handleDrop(e, 'summary')} onClick={() => onSectionClick?.('summary')}>
+                    <DragHandle id="summary" />
+                    <h2 className="text-[0.7em] font-bold mb-2 flex items-center gap-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> README.md</h2>
+                    <p className="text-[0.82em] leading-relaxed" style={{ color: '#c9d1d9' }}>{summary}</p>
+                  </div>
+                )}
+                {experiences.length > 0 && (
+                  <div className={sectionWrapperStyle('experience')} onDragOver={(e) => handleDragOver(e, 'experience')} onDrop={(e) => handleDrop(e, 'experience')} onClick={() => onSectionClick?.('experience')}>
+                    <DragHandle id="experience" />
+                    <h2 className="text-[0.7em] font-bold mb-4 flex items-center gap-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> experience.log</h2>
+                    <div className="space-y-5">
+                      {experiences.map(exp => (
+                        <div key={exp.id} className="pl-4" style={{ borderLeft: '2px solid #238636' }}>
+                          <div className="flex justify-between items-baseline">
+                            <h3 className="font-bold text-[0.88em]" style={{ color: '#58a6ff' }}>{exp.position}</h3>
+                            <span className="text-[0.72em]" style={{ color: '#6e7681' }}>{exp.startDate} – {exp.endDate}</span>
+                          </div>
+                          <p className="font-bold text-[0.78em]" style={{ color: '#3fb950' }}>@ {exp.company}</p>
+                          <p className="text-[0.78em] mt-1.5 leading-relaxed whitespace-pre-wrap" style={{ color: '#8b949e' }}>{exp.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {education.length > 0 && (
+                  <div className={sectionWrapperStyle('education')} onDragOver={(e) => handleDragOver(e, 'education')} onDrop={(e) => handleDrop(e, 'education')} onClick={() => onSectionClick?.('education')}>
+                    <DragHandle id="education" />
+                    <h2 className="text-[0.7em] font-bold mb-3 flex items-center gap-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> education.json</h2>
+                    <div className="space-y-3">
+                      {education.map(edu => (
+                        <div key={edu.id} className="pl-4" style={{ borderLeft: '2px solid #388bfd' }}>
+                          <h4 className="font-bold text-[0.86em]" style={{ color: '#58a6ff' }}>{edu.institution}</h4>
+                          <p className="text-[0.78em]" style={{ color: '#3fb950' }}>{edu.degree}</p>
+                          <p className="text-[0.72em]" style={{ color: '#6e7681' }}>{edu.endDate}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Right sidebar */}
+              <div className="px-6 py-6 space-y-6 overflow-hidden" style={{ background: '#161b22' }}>
+                {skills.length > 0 && (
+                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                    <DragHandle id="skills" />
+                    <h2 className="text-[0.7em] font-bold mb-3" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> skills[]</h2>
+                    <div className="flex flex-wrap gap-1.5">
+                      {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded text-[0.72em] font-bold" style={{ background: 'rgba(56,139,253,0.15)', color: '#58a6ff', border: '1px solid rgba(56,139,253,0.3)' }}>{s.name}</span>)}
+                    </div>
+                  </div>
+                )}
+                {(languages.length > 0 || courses.length > 0) && (
+                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                    <DragHandle id="extras" />
+                    {languages.length > 0 && <>
+                      <h2 className="text-[0.7em] font-bold mb-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> languages()</h2>
+                      <div className="space-y-2 mb-4">
+                        {languages.map(l => (
+                          <div key={l.id} className="text-[0.72em]">
+                            <div className="flex justify-between mb-0.5" style={{ color: '#c9d1d9' }}><span className="font-bold">{l.name}</span><span style={{ color: '#6e7681' }}>{l.level}</span></div>
+                            <div className="h-1 rounded" style={{ background: '#21262d' }}><div className="h-full rounded" style={{ width: `${l.percentage}%`, background: '#3fb950' }}></div></div>
+                          </div>
+                        ))}
+                      </div>
+                    </>}
+                    {courses.length > 0 && <>
+                      <h2 className="text-[0.7em] font-bold mb-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> certs[]</h2>
+                      <div className="space-y-2">
+                        {courses.map(c => <div key={c.id} className="text-[0.72em]"><p className="font-bold" style={{ color: '#c9d1d9' }}>{c.name}</p><p style={{ color: '#6e7681' }}>{c.institution} • {c.year}</p></div>)}
+                      </div>
+                    </>}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
