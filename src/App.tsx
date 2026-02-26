@@ -34,28 +34,27 @@ const STEPS = [
 ];
 
 const FREE_TEMPLATES = [
-  { id: 'modern_blue',     label: 'Modern Blue',    desc: 'Profissional e Limpo' },
-  { id: 'executive_navy',  label: 'Executive Navy', desc: 'Premium e Luxuoso' },
-  { id: 'modern_vitae',    label: 'Modern Vitae',   desc: 'Elegante e Espaçoso' },
-  { id: 'classic_serif',   label: 'Classic Serif',  desc: 'Tradicional Acadêmico' },
-  { id: 'swiss_minimal',   label: 'Swiss Minimal',  desc: 'Design Suíço' },
-  { id: 'teal_sidebar',    label: 'Teal Sidebar',   desc: 'Corporativo Moderno' },
-  { id: 'executive_red',   label: 'Executive Red',  desc: 'Liderança Sênior' },
-  { id: 'corporate_gray',  label: 'Corporate Gray', desc: 'Minimalista Pro' },
-  { id: 'minimal_red_line',label: 'Minimal Red',    desc: 'Impacto Visual' },
+  { id: 'modern_blue',        label: 'Modern Blue',       desc: 'Profissional e Limpo' },
+  { id: 'executive_navy',     label: 'Executive Navy',    desc: 'Premium e Luxuoso' },
+  { id: 'modern_vitae',       label: 'Modern Vitae',      desc: 'Elegante e Espaçoso' },
+  { id: 'classic_serif',      label: 'Classic Serif',     desc: 'Tradicional Acadêmico' },
+  { id: 'swiss_minimal',      label: 'Swiss Minimal',     desc: 'Design Suíço' },
+  { id: 'teal_sidebar',       label: 'Teal Sidebar',      desc: 'Corporativo Moderno' },
+  { id: 'executive_red',      label: 'Executive Red',     desc: 'Liderança Sênior' },
+  { id: 'corporate_gray',     label: 'Corporate Gray',    desc: 'Minimalista Pro' },
+  { id: 'minimal_red_line',   label: 'Minimal Red',       desc: 'Impacto Visual' },
+  { id: 'aurora_dark',        label: 'Aurora Dark',       desc: 'Dark Mode Gradiente' },
+  { id: 'creative_portfolio', label: 'Creative Portfolio',desc: 'Design de Portfólio' },
+  { id: 'minimalist_pro',     label: 'Minimalist Pro',    desc: 'Ultra Minimalista' },
+  { id: 'bold_impact',        label: 'Bold Impact',       desc: 'Tipografia Forte' },
+  { id: 'soft_pastel',        label: 'Soft Pastel',       desc: 'Elegante e Feminino' },
+  { id: 'tech_dark',          label: 'Tech Dark',         desc: 'Para Área de TI' },
 ];
 
 // Alias mantém compatibilidade com código que usa TEMPLATES
 const TEMPLATES = FREE_TEMPLATES;
 
-const PREMIUM_TEMPLATES = [
-  { id: 'aurora_dark',       label: 'Aurora Dark',      desc: 'Dark Mode Gradiente',   badge: 'Novo' },
-  { id: 'creative_portfolio',label: 'Creative Portfolio',desc: 'Design de Portfólio',   badge: 'Popular' },
-  { id: 'minimalist_pro',    label: 'Minimalist Pro',   desc: 'Ultra Minimalista',      badge: '' },
-  { id: 'bold_impact',       label: 'Bold Impact',      desc: 'Tipografia Forte',       badge: 'Novo' },
-  { id: 'soft_pastel',       label: 'Soft Pastel',      desc: 'Elegante e Feminino',    badge: '' },
-  { id: 'tech_dark',         label: 'Tech Dark',        desc: 'Para Área de TI',        badge: 'Popular' },
-];
+const PREMIUM_TEMPLATES: { id: string; label: string; desc: string; badge: string }[] = [];
 
 const FONTS = [
   { id: 'inter', label: 'Inter', family: "'Inter', sans-serif" },
@@ -989,7 +988,7 @@ export default function App() {
             <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoBR?</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { icon: 'fa-file-alt', title: '9 Modelos', desc: 'Designs modernos e profissionais prontos para usar' },
+                { icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos e profissionais prontos para usar' },
                 { icon: 'fa-wand-magic-sparkles', title: 'IA Integrada', desc: 'Google Gemini sugere textos e habilidades pra você' },
                 { icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe em PDF de alta qualidade sem pagar nada' },
                 { icon: 'fa-user-slash', title: 'Sem Cadastro', desc: '100% online, sem criar conta, sem cartão de crédito' },
@@ -1012,7 +1011,7 @@ export default function App() {
               </div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
               <div>
-                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">9</p>
+                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">15</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p>
               </div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
@@ -1096,16 +1095,16 @@ export default function App() {
         <main className="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar">
           <div className="max-w-6xl mx-auto space-y-12">
 
-            {/* ── Seção Gratuitos ── */}
+            {/* ── Seção Todos os Modelos ── */}
             <section>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
-                    <i className="fas fa-unlock text-white text-xs"></i>
+                    <i className="fas fa-th-large text-white text-xs"></i>
                   </div>
                   <div>
-                    <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Modelos Gratuitos</h2>
-                    <p className="text-[10px] text-slate-400 font-bold">{FREE_TEMPLATES.length} modelos disponíveis</p>
+                    <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Todos os Modelos</h2>
+                    <p className="text-[10px] text-slate-400 font-bold">{FREE_TEMPLATES.length} modelos gratuitos disponíveis</p>
                   </div>
                 </div>
                 <button
@@ -1144,89 +1143,6 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-              )}
-            </section>
-
-            {/* ── Separador ── */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
-              <div className="relative flex justify-center">
-                <span className="bg-slate-50 dark:bg-slate-900 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Em breve</span>
-              </div>
-            </div>
-
-            {/* ── Seção Premium ── */}
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <i className="fas fa-crown text-white text-xs"></i>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Modelos Premium</h2>
-                      <span className="text-[9px] font-black px-2 py-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full uppercase tracking-wide">Em Breve</span>
-                    </div>
-                    <p className="text-[10px] text-slate-400 font-bold">{PREMIUM_TEMPLATES.length} modelos exclusivos chegando</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowPremiumTemplates(v => !v)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                >
-                  <i className={`fas ${showPremiumTemplates ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
-                  {showPremiumTemplates ? 'Ocultar' : 'Mostrar'}
-                </button>
-              </div>
-
-              {showPremiumTemplates && (
-                <>
-                  <div className="mb-5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700/40 rounded-2xl p-4 flex items-center gap-3">
-                    <i className="fas fa-star text-amber-500 text-lg"></i>
-                    <p className="text-xs text-amber-800 dark:text-amber-300 font-bold">Designs exclusivos com layouts avançados, paletas de cores premium e tipografia especial. Serão lançados em breve gratuitamente.</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {PREMIUM_TEMPLATES.map((t) => (
-                      <div key={t.id} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col relative opacity-80 hover:opacity-100 transition-opacity duration-300 group">
-                        {/* Badge */}
-                        {t.badge && (
-                          <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
-                            {t.badge}
-                          </div>
-                        )}
-                        {/* Lock overlay */}
-                        <div className="relative aspect-[210/297] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 overflow-hidden flex items-center justify-center">
-                          {/* Blurred placeholder */}
-                          <div className="absolute inset-0 flex flex-col gap-2 p-4 opacity-30 pointer-events-none">
-                            <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded-lg w-3/4"></div>
-                            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
-                            <div className="mt-4 space-y-2">
-                              {[1,2,3,4,5].map(i => <div key={i} className="h-2 bg-slate-200 dark:bg-slate-700 rounded" style={{width:`${60+i*7}%`}}></div>)}
-                            </div>
-                            <div className="mt-4 space-y-2">
-                              {[1,2,3].map(i => <div key={i} className="h-2 bg-slate-200 dark:bg-slate-700 rounded" style={{width:`${80-i*10}%`}}></div>)}
-                            </div>
-                          </div>
-                          {/* Lock icon */}
-                          <div className="relative z-10 flex flex-col items-center gap-3">
-                            <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-2xl shadow-xl flex items-center justify-center border border-slate-100 dark:border-slate-600">
-                              <i className="fas fa-crown text-amber-400 text-2xl"></i>
-                            </div>
-                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest bg-white/80 dark:bg-slate-800/80 px-3 py-1 rounded-full backdrop-blur-sm">Premium</span>
-                          </div>
-                        </div>
-                        <div className="p-5">
-                          <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
-                          <p className="text-xs text-slate-400 mt-0.5">{t.desc}</p>
-                          <button disabled className="mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest border-2 border-dashed border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400 cursor-not-allowed flex items-center justify-center gap-2">
-                            <i className="fas fa-lock text-[10px]"></i> Em Breve
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
               )}
             </section>
 
@@ -1648,14 +1564,14 @@ export default function App() {
                      ))}
                    </div>
                  )}
-                 {/* Premium teaser in sidebar */}
-                 <div className="mt-4 p-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700/40">
+                 {/* New templates highlight in sidebar */}
+                 <div className="mt-4 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700/40">
                    <div className="flex items-center gap-2 mb-1">
-                     <i className="fas fa-crown text-amber-500 text-xs"></i>
-                     <p className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wide">Premium — Em Breve</p>
+                     <i className="fas fa-sparkles text-blue-500 text-xs"></i>
+                     <p className="text-[10px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-wide">6 Novos Modelos!</p>
                    </div>
-                   <p className="text-[9px] text-amber-600 dark:text-amber-500">6 novos modelos exclusivos chegando.</p>
-                   <button onClick={() => { handleTemplateSelect(template); navigateTo('/', 'templates'); }} className="mt-2 text-[9px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wide hover:underline">Ver todos →</button>
+                   <p className="text-[9px] text-blue-600 dark:text-blue-500">Aurora Dark, Tech Dark, Creative Portfolio e mais.</p>
+                   <button onClick={() => { handleTemplateSelect(template); navigateTo('/', 'templates'); }} className="mt-2 text-[9px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-wide hover:underline">Ver todos →</button>
                  </div>
               </section>
               <section className="pt-4 border-t border-slate-50 dark:border-slate-800">

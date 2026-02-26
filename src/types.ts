@@ -63,5 +63,5 @@ export interface ResumeData {
   sectionOrder: SectionId[];
 }
 
-export type TemplateId = 'teal_sidebar' | 'executive_red' | 'corporate_gray' | 'minimal_red_line' | 'modern_blue' | 'classic_serif' | 'swiss_minimal' | 'executive_navy' | 'modern_vitae';
+export type TemplateId = 'teal_sidebar' | 'executive_red' | 'corporate_gray' | 'minimal_red_line' | 'modern_blue' | 'classic_serif' | 'swiss_minimal' | 'executive_navy' | 'modern_vitae' | 'aurora_dark' | 'creative_portfolio' | 'minimalist_pro' | 'bold_impact' | 'soft_pastel' | 'tech_dark';
 
