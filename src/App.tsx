@@ -9,6 +9,7 @@ import ConfirmModal from './components/ConfirmModal';
 import PhotoCropModal from './components/PhotoCropModal';
 import AdUnit from './components/AdUnit';
 import CookieConsent from './components/CookieConsent';
+import ATSPanel from './components/ATSPanel';
 import Sobre from './Sobre';
 import Contato from './Contato';
 import BlogList from './blog/BlogList';
@@ -96,7 +97,7 @@ export default function App() {
   const [showFreeTemplates, setShowFreeTemplates]     = useState(true);
   const [showPremiumTemplates, setShowPremiumTemplates] = useState(true);
   
-  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
+  const [isATSPanelOpen, setIsATSPanelOpen] = useState(false);
   
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
@@ -501,6 +502,7 @@ export default function App() {
     <>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <CookieConsent />
+      {isATSPanelOpen && <ATSPanel data={data} onClose={() => setIsATSPanelOpen(false)} />}
       
       {isImportModalOpen && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
@@ -957,23 +959,37 @@ export default function App() {
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-24 text-center">
           <div className="max-w-5xl w-full space-y-8">
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
-              <span className="inline-block py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">Gerador de Currículos IA</span>
+              <span className="inline-flex items-center gap-2 py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                <span className="status-dot w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+                Gerador de Currículos com IA — 100% Grátis
+              </span>
               <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Seu currículo perfeito, <br className="hidden md:block"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">em minutos.</span></h2>
               <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">Combine design profissional com o poder da Inteligência Artificial para conquistar a vaga dos seus sonhos.</p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
               <button onClick={() => navigateTo('/', 'templates')} className="group bg-blue-600 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 hover:scale-[1.05] transition-all shadow-2xl flex items-center gap-3">
-                Criar do Zero <i className="fas fa-magic"></i>
+                Criar do Zero <i className="fas fa-magic group-hover:rotate-12 transition-transform"></i>
               </button>
               <button onClick={() => setIsImportModalOpen(true)} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xl flex items-center gap-3">
                 Importar Currículo <i className="fas fa-file-import"></i>
               </button>
             </div>
-            
-            <div className="mt-8">
+
+            <div className="mt-4">
                <button onClick={() => navigateTo('/carta-de-apresentacao', 'cover-letter-page')} className="text-slate-400 hover:text-blue-600 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto">
                  <i className="fas fa-envelope-open-text"></i> Precisa apenas de uma Carta de Apresentação?
                </button>
+            </div>
+
+            {/* Trust bar */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+              <span className="flex items-center gap-1.5"><i className="fas fa-user-slash text-blue-600"></i> Sem Cadastro</span>
+              <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
+              <span className="flex items-center gap-1.5"><i className="fas fa-lock text-blue-600"></i> 100% Privado</span>
+              <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
+              <span className="flex items-center gap-1.5"><i className="fas fa-file-pdf text-blue-600"></i> PDF Grátis</span>
+              <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
+              <span className="flex items-center gap-1.5"><i className="fas fa-brain text-blue-600"></i> IA Integrada</span>
             </div>
 
             <div className="mt-12 max-w-3xl mx-auto">
@@ -988,8 +1004,8 @@ export default function App() {
             <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoBR?</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos e profissionais prontos para usar' },
-                { icon: 'fa-wand-magic-sparkles', title: 'IA Integrada', desc: 'Google Gemini sugere textos e habilidades pra você' },
+                { icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos e exclusivos para cada perfil profissional' },
+                { icon: 'fa-wand-magic-sparkles', title: 'IA Integrada', desc: 'Google Gemini sugere textos, habilidades e faz análise ATS' },
                 { icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe em PDF de alta qualidade sem pagar nada' },
                 { icon: 'fa-user-slash', title: 'Sem Cadastro', desc: '100% online, sem criar conta, sem cartão de crédito' },
               ].map(f => (
@@ -1005,25 +1021,115 @@ export default function App() {
 
             {/* Social proof */}
             <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-8 text-center">
-              <div>
-                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">+15.000</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p>
-              </div>
+              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">+15.000</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div>
-                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">15</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p>
-              </div>
+              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">15</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div>
-                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">100%</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Grátis, sempre</p>
-              </div>
+              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">100%</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Grátis, sempre</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
+              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9★</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p></div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── ATS Feature Highlight ── */}
+        <section className="relative z-10 py-16 px-6 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-[-20%] right-[-10%] w-[40%] aspect-square rounded-full blur-[100px] opacity-30" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}></div>
+          </div>
+          <div className="max-w-5xl mx-auto relative z-10">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9★</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p>
+                <span className="inline-block px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">Exclusivo</span>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-4 leading-tight">Score ATS com Inteligência Artificial</h3>
+                <p className="text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                  Descubra como seu currículo se sai frente a sistemas de triagem automática (ATS) usados por grandes empresas. Nossa IA analisa, pontua e dá feedback acionável — gratuitamente.
+                </p>
+                <div className="space-y-3">
+                  {[
+                    { icon: 'fa-chart-bar', text: 'Score de 0 a 100 com análise detalhada', color: 'text-violet-600' },
+                    { icon: 'fa-tags', text: 'Palavras-chave detectadas no seu currículo', color: 'text-blue-600' },
+                    { icon: 'fa-arrow-trend-up', text: 'Melhorias prioritárias e acionáveis', color: 'text-green-600' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center shrink-0">
+                        <i className={`fas ${item.icon} ${item.color} text-sm`}></i>
+                      </div>
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => navigateTo('/', 'templates')} className="mt-8 bg-violet-600 hover:bg-violet-700 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-xl inline-flex items-center gap-3">
+                  <i className="fas fa-brain"></i> Experimente Agora
+                </button>
               </div>
+              <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-3xl p-6 shadow-2xl">
+                <div className="bg-white/10 rounded-2xl p-5 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-white font-black text-xs uppercase tracking-widest">Análise ATS</p>
+                    <span className="bg-green-400 text-green-900 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">Excelente</span>
+                  </div>
+                  <div className="flex items-center gap-5 mb-5">
+                    <div className="relative w-20 h-20 shrink-0">
+                      <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="6"/>
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#4ade80" strokeWidth="6"
+                          strokeDasharray={`${(87/100) * 2 * Math.PI * 34} ${2 * Math.PI * 34}`} strokeLinecap="round"/>
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-black text-white">87</span>
+                        <span className="text-[8px] text-white/60">/100</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold mb-2">Palavras-chave</p>
+                      <div className="flex flex-wrap gap-1">
+                        {['React', 'TypeScript', 'Liderança', 'Agile'].map(kw => (
+                          <span key={kw} className="bg-white/20 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Melhorias</p>
+                    {['Adicione mais métricas quantificáveis', 'Inclua certificações relevantes'].map((tip, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
+                        <i className="fas fa-arrow-right text-amber-400 text-[9px]"></i>
+                        <span className="text-white/80 text-[10px]">{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Testimonials ── */}
+        <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+          <div className="max-w-5xl mx-auto">
+            <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-3">Depoimentos</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white text-center mb-10 uppercase tracking-tight">Quem já conquistou sua vaga</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { name: 'Ana Paula S.', role: 'Analista de Marketing', city: 'São Paulo, SP', text: 'Criei meu currículo em 20 minutos com o template Aurora Dark. Na semana seguinte já estava sendo chamada para entrevistas. Melhor ferramenta que já usei!', stars: 5, avatar: 'A', color: 'from-pink-500 to-rose-600' },
+                { name: 'Ricardo M.', role: 'Dev Frontend', city: 'Belo Horizonte, MG', text: 'O template Tech Dark é perfeito para desenvolvedores. A análise ATS com IA me ajudou a otimizar o currículo e consegui 3 entrevistas em uma semana.', stars: 5, avatar: 'R', color: 'from-blue-500 to-cyan-600' },
+                { name: 'Fernanda T.', role: 'Professora', city: 'Recife, PE', text: 'Sem experiência em design, criei um currículo lindo com o Soft Pastel. A IA gerou meu resumo profissional em segundos. Recomendo demais!', stars: 5, avatar: 'F', color: 'from-violet-500 to-purple-600' },
+              ].map((t, i) => (
+                <div key={i} className="testimonial-card bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(t.stars)].map((_, j) => <i key={j} className="fas fa-star text-amber-400 text-xs"></i>)}
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-5 italic">"{t.text}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>{t.avatar}</div>
+                    <div>
+                      <p className="font-black text-slate-900 dark:text-white text-sm">{t.name}</p>
+                      <p className="text-[10px] text-slate-400 font-medium">{t.role} · {t.city}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -1195,6 +1301,13 @@ export default function App() {
               <button onClick={undo} disabled={!canUndo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canUndo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Desfazer"><i className="fas fa-undo text-xs"></i></button>
               <button onClick={redo} disabled={!canRedo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canRedo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Refazer"><i className="fas fa-redo text-xs"></i></button>
            </div>
+           <button
+             onClick={() => setIsATSPanelOpen(true)}
+             className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-700/40 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all"
+             title="Analisar currículo com IA"
+           >
+             <i className="fas fa-brain text-xs"></i> Score ATS
+           </button>
            <div className="flex items-center gap-3">
               <div className="w-28 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all duration-1000 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-600'}`} style={{ width: `${cvScore}%` }}></div>

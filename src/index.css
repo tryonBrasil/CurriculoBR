@@ -1,113 +1,235 @@
-
 :root {
     --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --accent: #6366f1;
 }
 
 @media print {
-    @page {
-        size: A4;
-        margin: 0;
-    }
-    
+    @page { size: A4; margin: 0; }
     html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 100% !important;
-        width: 100% !important;
-        background: #fff !important;
+        margin: 0 !important; padding: 0 !important; height: 100% !important;
+        width: 100% !important; background: #fff !important;
         -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        overflow: visible !important;
+        print-color-adjust: exact !important; overflow: visible !important;
     }
-
-    .no-print, nav, aside, footer, button, .adsbygoogle, .no-print-sidebar, .toast-container { 
-        display: none !important; 
+    .no-print, nav, aside, footer, button, .adsbygoogle, .no-print-sidebar, .toast-container {
+        display: none !important;
     }
-
     .print-container {
-        display: block !important;
-        position: relative !important;
-        width: 210mm !important;
-        height: 297mm !important;
-        margin: 0 auto !important;
-        padding: 0 !important;
-        transform: none !important;
-        background: white !important;
+        display: block !important; position: relative !important;
+        width: 210mm !important; height: 297mm !important;
+        margin: 0 auto !important; padding: 0 !important;
+        transform: none !important; background: white !important;
         box-shadow: none !important;
         print-color-adjust: exact !important;
         -webkit-print-color-adjust: exact !important;
-        page-break-after: avoid !important;
-        page-break-inside: avoid !important;
+        page-break-after: avoid !important; page-break-inside: avoid !important;
     }
-
-    /* Força a impressão de backgrounds em Webkit/Chrome/Safari */
-    * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 
-body { 
-    font-family: 'Inter', sans-serif; 
+body {
+    font-family: 'Inter', sans-serif;
     background-color: #f8fafc;
     overflow-x: hidden;
 }
 
-/* Dark mode scrollbar */
-.dark body {
-    background-color: #0f172a;
-    color: #f8fafc;
-}
+.dark body { background-color: #0f172a; color: #f8fafc; }
 
-/* Scrollbar Cross-Browser (Firefox + Webkit) */
-.custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: #e2e8f0 transparent;
-}
-.dark .custom-scrollbar {
-    scrollbar-color: #334155 transparent;
-}
-
+/* ── Scrollbar ── */
+.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
+.dark .custom-scrollbar { scrollbar-color: #334155 transparent; }
 .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 
-.paper-texture {
-    background-image: url('https://www.transparenttextures.com/patterns/clean-gray-paper.png');
-}
-.dark .paper-texture {
-    background-image: none;
-    background-color: #020617;
-}
-
+/* ── Base Animations ── */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.animate-in {
-    animation: fadeIn 0.5s ease-out forwards;
-}
+.animate-in { animation: fadeIn 0.5s ease-out forwards; }
 
 @keyframes slideInUp {
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
-.toast-animate {
-    animation: slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+.toast-animate { animation: slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+/* ── New: Counter animation ── */
+@keyframes countUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.count-animate { animation: countUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── New: Shimmer effect (skeleton loader) ── */
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+.shimmer {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 1.5s infinite linear;
+}
+.dark .shimmer {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background-size: 1000px 100%;
 }
 
-@keyframes sectionHighlight {
-    0% { background-color: rgba(37, 99, 235, 0.15); transform: scale(1.02); }
-    100% { background-color: transparent; transform: scale(1); }
+/* ── New: Gradient border ── */
+.gradient-border {
+    position: relative;
+    background: white;
+    border-radius: 16px;
 }
-.section-highlight {
-    animation: sectionHighlight 1.2s ease-out;
-    border-radius: 1rem;
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #2563eb, #6366f1, #8b5cf6);
+    z-index: -1;
+}
+.dark .gradient-border { background: #1e293b; }
+
+/* ── New: Glow effect for ATS score ── */
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.6); }
+}
+.glow-blue { animation: glowPulse 2s ease-in-out infinite; }
+@keyframes glowGreen {
+    0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.6); }
+}
+.glow-green { animation: glowGreen 2s ease-in-out infinite; }
+
+/* ── New: Typing cursor ── */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.typing-cursor::after {
+    content: '|';
+    display: inline-block;
+    animation: blink 1s step-start infinite;
+    color: #2563eb;
+    font-weight: 300;
 }
 
-.font-serif-premium {
-    font-family: 'Playfair Display', serif;
+/* ── New: Hero floating cards ── */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(-2deg); }
+    50% { transform: translateY(-10px) rotate(-1deg); }
+}
+@keyframes float2 {
+    0%, 100% { transform: translateY(-5px) rotate(2deg); }
+    50% { transform: translateY(5px) rotate(3deg); }
+}
+.float-card-1 { animation: float 4s ease-in-out infinite; }
+.float-card-2 { animation: float2 5s ease-in-out infinite; }
+
+/* ── New: Slide in from left/right ── */
+@keyframes slideFromLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideFromRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.slide-from-left { animation: slideFromLeft 0.6s ease-out both; }
+.slide-from-right { animation: slideFromRight 0.6s ease-out both; }
+
+/* ── New: Scale in ── */
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+.scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── New: Stagger delays ── */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+
+/* ── New: Noise texture overlay ── */
+.noise-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
 }
 
+/* ── New: ATS Progress ring ── */
+.ats-ring {
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── New: Tag chip hover ── */
+.chip {
+    transition: all 0.15s ease;
+}
+.chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* ── New: Testimonial card ── */
+.testimonial-card {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.testimonial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Paper texture ── */
+.paper-texture {
+    background-image: url('https://www.transparenttextures.com/patterns/clean-gray-paper.png');
+}
+.dark .paper-texture { background-image: none; background-color: #020617; }
+
+/* ── New: Gradient text ── */
+.gradient-text {
+    background: linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── New: Status badge pulse ── */
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.3); }
+}
+.status-dot { animation: statusPulse 2s ease-in-out infinite; }
+
+/* ── New: Step progress line ── */
+.step-line {
+    position: relative;
+}
+.step-line::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: #2563eb;
+    transition: width 0.3s ease;
+    width: 0;
+}
+.step-line.active::after { width: 100%; }
+
+/* ── Scan-line effect for tech-dark template preview ── */
+@keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+}
