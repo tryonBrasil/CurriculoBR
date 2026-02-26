@@ -17,6 +17,37 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [slug]);
 
+  // Inject Article JSON-LD for SEO
+  useEffect(() => {
+    if (!post) return;
+    const existingScript = document.getElementById('article-jsonld');
+    if (existingScript) existingScript.remove();
+
+    const script = document.createElement('script');
+    script.id = 'article-jsonld';
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": post.title,
+      "description": post.description,
+      "datePublished": post.date,
+      "dateModified": post.date,
+      "author": { "@type": "Organization", "name": "CurriculoBR" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "CurriculoBR",
+        "url": "https://curriculo-br.vercel.app/",
+        "logo": { "@type": "ImageObject", "url": "https://curriculo-br.vercel.app/og-image.png" }
+      },
+      "mainEntityOfPage": { "@type": "WebPage", "@id": `https://curriculo-br.vercel.app/blog/${post.slug}` },
+      "image": "https://curriculo-br.vercel.app/og-image.png"
+    });
+    document.head.appendChild(script);
+
+    return () => { document.getElementById('article-jsonld')?.remove(); };
+  }, [post]);
+
   if (!post) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-center px-6">
@@ -30,6 +61,8 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
 
   const postIndex = BLOG_POSTS.findIndex(p => p.slug === slug);
   const related = BLOG_POSTS.filter((_, i) => i !== postIndex).slice(0, 3);
+  const shareUrl = `https://curriculo-br.vercel.app/blog/${post.slug}`;
+  const shareText = encodeURIComponent(`${post.title} — CurriculoBR`);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
@@ -76,6 +109,30 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
           <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed">
             {post.description}
           </p>
+          {/* Share buttons */}
+          <div className="flex items-center gap-3 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Compartilhar:</span>
+            <a
+              href={`https://api.whatsapp.com/send?text=${shareText}%20${encodeURIComponent(shareUrl)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors"
+            >
+              <i className="fab fa-whatsapp text-sm"></i> WhatsApp
+            </a>
+            <a
+              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-[#0077b5] hover:bg-[#005f94] text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors"
+            >
+              <i className="fab fa-linkedin text-sm"></i> LinkedIn
+            </a>
+            <button
+              onClick={() => { navigator.clipboard?.writeText(shareUrl); }}
+              className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wide transition-colors"
+            >
+              <i className="fas fa-link text-sm"></i> Copiar Link
+            </button>
+          </div>
         </div>
 
         {/* Ad — before content */}
