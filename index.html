@@ -15,8 +15,8 @@
     <!-- SEO PRINCIPAL                               -->
     <!-- ═══════════════════════════════════════════ -->
     <title>CurriculoBR — Gerador de Currículos Profissionais Grátis</title>
-    <meta name="description" content="Crie seu currículo profissional grátis em minutos. Escolha entre 9 modelos modernos, personalize e baixe em PDF. 100% online, sem cadastro.">
-    <meta name="keywords" content="gerador de currículo grátis, fazer currículo online, currículo profissional PDF, modelo de currículo, currículo sem experiência, currículo 2025, currículo 2026, criar currículo grátis, currículo com IA, baixar currículo PDF, modelos de currículo profissional, currículo primeiro emprego, como fazer currículo">
+    <meta name="description" content="Crie seu currículo profissional grátis em minutos. Escolha entre 15 modelos modernos, análise ATS com IA, carta de apresentação e baixe em PDF. 100% online, sem cadastro.">
+    <meta name="keywords" content="gerador de currículo grátis, fazer currículo online, currículo profissional PDF, modelo de currículo, currículo sem experiência, currículo 2025, currículo 2026, criar currículo grátis, currículo com IA, baixar currículo PDF, modelos de currículo profissional, currículo primeiro emprego, como fazer currículo, análise ATS, score currículo">
     <meta name="author" content="CurriculoBR">
     <meta name="robots" content="index, follow">
 
@@ -32,7 +32,7 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="CurriculoBR">
     <meta property="og:title" content="CurriculoBR — Crie seu Currículo Profissional Grátis">
-    <meta property="og:description" content="Gerador de currículos online grátis. 9 modelos profissionais, download em PDF, sem cadastro. Rápido e fácil.">
+    <meta property="og:description" content="Gerador de currículos online grátis. 15 modelos profissionais, análise ATS com IA, download em PDF, sem cadastro. Rápido e fácil.">
     <meta property="og:url" content="https://curriculo-br.vercel.app/">
     <meta property="og:image" content="https://curriculo-br.vercel.app/og-image.png">
     <meta property="og:image:width" content="1200">
@@ -138,6 +138,10 @@
     .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+    @keyframes zoom-in-95 { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .zoom-in-95 { animation: zoom-in-95 0.2s ease-out; }
   </style>
 </head>
 <body class="text-slate-900 dark:text-slate-100 transition-colors duration-300">
