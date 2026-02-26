@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { ResumeData, TemplateId, Experience, Education, Skill, Language, Course } from './types';
+import { ResumeData, TemplateId, Experience, Education, Language, Course } from './types';
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
@@ -72,7 +72,6 @@ export default function App() {
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
   
@@ -754,7 +753,44 @@ export default function App() {
             </div>
           </div>
         </main>
-        
+
+        {/* Blog section on home */}
+        <section className="relative z-10 py-16 px-6 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">Blog</span>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1 uppercase tracking-tight">Dicas para seu Currículo</h3>
+              </div>
+              <button onClick={() => navigateTo('/blog', 'blog')} className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest hidden md:block">
+                Ver todos <i className="fas fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { slug: 'como-fazer-curriculo-sem-experiencia', title: 'Como Fazer um Currículo Sem Experiência', cat: 'Iniciantes' },
+                { slug: 'erros-mais-comuns-no-curriculo', title: '10 Erros Mais Comuns no Currículo', cat: 'Dicas' },
+                { slug: 'habilidades-mais-valorizadas-mercado-2025', title: 'Habilidades Mais Valorizadas em 2025', cat: 'Mercado' },
+              ].map(post => (
+                <div
+                  key={post.slug}
+                  onClick={() => { setBlogSlug(post.slug); navigateTo(`/blog/${post.slug}`, 'blog-post'); }}
+                  className="cursor-pointer group bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 hover:border-blue-400 hover:shadow-lg transition-all duration-200"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2 block">{post.cat}</span>
+                  <h4 className="font-black text-slate-900 dark:text-white text-sm leading-tight group-hover:text-blue-600 transition-colors">{post.title}</h4>
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase mt-4">Ler artigo →</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 text-center md:hidden">
+              <button onClick={() => navigateTo('/blog', 'blog')} className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest">
+                Ver todos os artigos <i className="fas fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
         <footer className="relative z-10 py-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center">
           <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 mb-4">
              <button onClick={() => navigateTo('/sobre', 'sobre')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Sobre</button>
