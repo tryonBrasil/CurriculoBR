@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { ResumeData, TemplateId, Experience, Education, Language, Course } from './types';
+import { ResumeData, TemplateId, Experience, Education, Skill, Language, Course } from './types';
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
@@ -18,7 +18,9 @@ import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWit
 import { extractTextFromPDF } from './services/pdfService';
 import { 
   validateEmailError, 
-  validatePhoneError
+  validatePhoneError,
+  validateURLError,
+  validateDateRange
 } from './services/validationService';
 
 const STEPS = [
@@ -285,6 +287,8 @@ export default function App() {
     let error: string | null = null;
     if (field === 'email') error = validateEmailError(value);
     if (field === 'phone') error = validatePhoneError(value);
+    if (field === 'website') error = validateURLError(value, 'URL');
+    if (field === 'linkedin') error = validateURLError(value, 'LinkedIn');
     setErrors(prev => ({ ...prev, [field]: error }));
   };
 
@@ -919,11 +923,17 @@ export default function App() {
 
                   <div className="space-y-2">
                     <Input label="Nome Completo" value={data.personalInfo?.fullName || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, fullName: v}}))} placeholder="Ex: João da Silva" />
+                    <Input label="Cargo / Título Profissional" value={data.personalInfo?.jobTitle || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, jobTitle: v}}))} placeholder="Ex: Analista de Marketing Sênior" />
                     <div className="grid grid-cols-2 gap-4">
                       <Input label="E-mail" value={data.personalInfo?.email || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, email: v}}))} placeholder="email@exemplo.com" error={errors.email} onBlur={() => validateField('email', data.personalInfo?.email || '')} />
                       <Input label="Telefone" value={data.personalInfo?.phone || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, phone: v}}))} placeholder="(11) 99999-9999" error={errors.phone} onBlur={() => validateField('phone', data.personalInfo?.phone || '')} />
                     </div>
                     <Input label="Localização" value={data.personalInfo?.location || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, location: v}}))} placeholder="Cidade, Estado" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input label="LinkedIn" value={data.personalInfo?.linkedin || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, linkedin: v}}))} placeholder="linkedin.com/in/seu-perfil" />
+                      <Input label="Site / Portfólio" value={data.personalInfo?.website || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, website: v}}))} placeholder="https://seusite.com" />
+                    </div>
+                    <Input label="CNH (opcional)" value={data.personalInfo?.drivingLicense || ''} onChange={(v) => updateData(p => ({...p, personalInfo: {...p.personalInfo, drivingLicense: v}}))} placeholder="Ex: CNH B" />
                   </div>
                 </div>
               )}
@@ -940,7 +950,7 @@ export default function App() {
                       <Input label="Cargo" value={exp.position} onChange={(v) => updateItem('experiences', exp.id, 'position', v)} />
                       <div className="grid grid-cols-2 gap-2">
                         <Input label="Início" value={exp.startDate} onChange={(v) => updateItem('experiences', exp.id, 'startDate', v)} placeholder="Ex: Jan 2020" />
-                        <Input label="Fim" value={exp.endDate} onChange={(v) => updateItem('experiences', exp.id, 'endDate', v)} placeholder="Ex: Atual" />
+                        <Input label="Fim" value={exp.endDate} onChange={(v) => { updateItem('experiences', exp.id, 'endDate', v); const r = validateDateRange(exp.startDate, v); if (!r.valid) setErrors(p => ({...p, [`exp_date_${exp.id}`]: r.error || null})); else setErrors(p => ({...p, [`exp_date_${exp.id}`]: null})); }} placeholder="Ex: Atual" error={errors[`exp_date_${exp.id}`] || undefined} />
                       </div>
                       <div className="mt-2 relative">
                          <div className="flex justify-between items-center mb-1">
