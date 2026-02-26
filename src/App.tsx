@@ -1081,6 +1081,67 @@ export default function App() {
            </div>
         </div>
 
+        {/* ===== PREVIEW CENTRAL ===== */}
+        <div
+          ref={previewContainerRef}
+          className={`flex-1 bg-slate-100 dark:bg-slate-950 overflow-hidden flex flex-col transition-all duration-300 ${mobileView === 'preview' ? 'flex' : 'hidden md:flex'}`}
+        >
+          {/* Toolbar da preview */}
+          <div className="no-print h-12 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pré-visualização</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setPreviewScale(s => Math.max(0.3, s - 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm">
+                <i className="fas fa-minus"></i>
+              </button>
+              <span className="text-[10px] font-black text-slate-500 w-10 text-center">{Math.round(previewScale * 100)}%</span>
+              <button onClick={() => setPreviewScale(s => Math.min(0.9, s + 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm">
+                <i className="fas fa-plus"></i>
+              </button>
+              <button onClick={fitToScreen} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm ml-1" title="Ajustar à tela">
+                <i className="fas fa-expand"></i>
+              </button>
+            </div>
+            <button onClick={handlePrint} className="md:hidden bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+              <i className="fas fa-file-pdf mr-1"></i> PDF
+            </button>
+          </div>
+
+          {/* Área de scroll com o currículo escalado */}
+          <div className="flex-1 overflow-auto flex justify-center items-start py-8 px-4 custom-scrollbar">
+            <div
+              className="print-area shadow-2xl"
+              style={{
+                width: `${794 * previewScale}px`,
+                height: `${1123 * previewScale}px`,
+                minWidth: `${794 * previewScale}px`,
+                minHeight: `${1123 * previewScale}px`,
+                position: 'relative',
+              }}
+            >
+              <div
+                style={{
+                  transform: `scale(${previewScale})`,
+                  transformOrigin: 'top left',
+                  width: '794px',
+                  height: '1123px',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  fontFamily,
+                }}
+              >
+                <ResumePreview
+                  data={data}
+                  template={template}
+                  fontSize={fontSize}
+                  onSectionClick={handleSectionClick}
+                  onReorder={(newOrder) => updateData(prev => ({ ...prev, sectionOrder: newOrder }))}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className={`no-print border-l border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 z-40 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden fixed inset-y-0 right-0 lg:static ${isSidebarOpen ? 'w-[300px] translate-x-0' : 'w-0 lg:w-0 translate-x-full lg:translate-x-0'}`}>
            <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-800/30 h-16">
               <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2"><i className="fas fa-palette text-blue-600"></i> Estilo</h2>
