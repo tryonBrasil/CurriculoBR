@@ -255,3 +255,80 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
     throw error;
   }
 };
+
+export interface ATSAnalysis {
+  score: number; // 0-100
+  summary: string;
+  strengths: string[];
+  improvements: string[];
+  keywords: string[];
+  verdict: 'fraco' | 'regular' | 'bom' | 'excelente';
+}
+
+export const analyzeResumeATS = async (resumeText: string): Promise<ATSAnalysis> => {
+  const ai = getAI();
+  try {
+    const prompt = `Analise este currículo do ponto de vista de um sistema ATS (Applicant Tracking System) e de um recrutador brasileiro. 
+    
+Currículo:
+"""
+${resumeText}
+"""
+
+Retorne APENAS um JSON válido com esta estrutura:
+{
+  "score": <número de 0 a 100>,
+  "summary": "<resumo da análise em 1-2 frases>",
+  "strengths": ["<ponto forte 1>", "<ponto forte 2>", "<ponto forte 3>"],
+  "improvements": ["<melhoria prioritária 1>", "<melhoria 2>", "<melhoria 3>"],
+  "keywords": ["<palavra-chave detectada 1>", "<palavra-chave 2>", "<palavra-chave 3>", "<palavra-chave 4>", "<palavra-chave 5>"],
+  "verdict": "<'fraco' | 'regular' | 'bom' | 'excelente'>"
+}
+
+Critérios de pontuação ATS:
+- Informações de contato completas: +15pts
+- Resumo/objetivo profissional: +15pts
+- Experiência profissional com descrições detalhadas: +25pts
+- Educação: +15pts
+- Habilidades técnicas relevantes: +15pts
+- Idiomas: +10pts
+- Cursos/certificações: +5pts
+Penalize: falta de palavras-chave, texto vago, ausência de datas, seções incompletas.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: { parts: [{ text: prompt }] },
+      config: {
+        responseMimeType: 'application/json',
+        thinkingConfig: { thinkingBudget: 0 },
+      },
+    });
+
+    if (response.text) {
+      return JSON.parse(response.text);
+    }
+    throw new Error('No response');
+  } catch (error) {
+    console.error('Erro Gemini (ATS):', error);
+    throw error;
+  }
+};
+
+export const generateInterviewQuestions = async (position: string, skills: string[]): Promise<string[]> => {
+  const ai = getAI();
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: { parts: [{ text: `Gere 5 perguntas de entrevista para o cargo "${position}" com habilidades: ${skills.join(', ')}` }] },
+      config: {
+        systemInstruction: 'Retorne exatamente 5 perguntas de entrevista relevantes para o cargo e habilidades mencionados, focadas no mercado brasileiro. Retorne apenas as perguntas, uma por linha, sem numeração ou marcadores.',
+        thinkingConfig: { thinkingBudget: 0 },
+      },
+    });
+    const text = response.text || '';
+    return text.split('\n').filter(q => q.trim().length > 0).slice(0, 5);
+  } catch (error) {
+    console.error('Erro Gemini (Interview):', error);
+    return [];
+  }
+};
