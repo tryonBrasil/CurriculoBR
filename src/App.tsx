@@ -754,6 +754,52 @@ export default function App() {
           </div>
         </main>
 
+        {/* ── Features / Benefícios ── */}
+        <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+          <div className="max-w-5xl mx-auto">
+            <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoBR?</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { icon: 'fa-file-alt', title: '9 Modelos', desc: 'Designs modernos e profissionais prontos para usar' },
+                { icon: 'fa-wand-magic-sparkles', title: 'IA Integrada', desc: 'Google Gemini sugere textos e habilidades pra você' },
+                { icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe em PDF de alta qualidade sem pagar nada' },
+                { icon: 'fa-user-slash', title: 'Sem Cadastro', desc: '100% online, sem criar conta, sem cartão de crédito' },
+              ].map(f => (
+                <div key={f.icon} className="flex flex-col items-center text-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+                  <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                    <i className={`fas ${f.icon} text-blue-600 dark:text-blue-400 text-lg`}></i>
+                  </div>
+                  <h3 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-wide">{f.title}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Social proof */}
+            <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-8 text-center">
+              <div>
+                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">+15.000</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p>
+              </div>
+              <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
+              <div>
+                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">9</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p>
+              </div>
+              <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
+              <div>
+                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">100%</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Grátis, sempre</p>
+              </div>
+              <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
+              <div>
+                <p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9★</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Blog section on home */}
         <section className="relative z-10 py-16 px-6 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
