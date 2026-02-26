@@ -14,7 +14,7 @@ import Contato from './Contato';
 import BlogList from './blog/BlogList';
 import BlogPost from './blog/BlogPost';
 import { useResumeHistory } from './hooks/useResumeHistory';
-import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI } from './services/geminiService';
+import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI, generateCoverLetterStream } from './services/geminiService';
 import { extractTextFromPDF } from './services/pdfService';
 import { 
   validateEmailError, 
@@ -33,16 +33,28 @@ const STEPS = [
   { id: 'summary', label: 'Resumo', icon: 'fa-align-left' },
 ];
 
-const TEMPLATES = [
-  { id: 'modern_blue', label: 'Modern Blue', desc: 'Profissional e Limpo' },
-  { id: 'executive_navy', label: 'Executive Navy', desc: 'Premium e Luxuoso' },
-  { id: 'modern_vitae', label: 'Modern Vitae', desc: 'Elegante e Espaçoso' },
-  { id: 'classic_serif', label: 'Classic Serif', desc: 'Tradicional Acadêmico' },
-  { id: 'swiss_minimal', label: 'Swiss Minimal', desc: 'Design Suíço' },
-  { id: 'teal_sidebar', label: 'Teal Sidebar', desc: 'Corporativo Moderno' },
-  { id: 'executive_red', label: 'Executive Red', desc: 'Liderança Sênior' },
-  { id: 'corporate_gray', label: 'Corporate Gray', desc: 'Minimalista Pro' },
-  { id: 'minimal_red_line', label: 'Minimal Red', desc: 'Impacto Visual' },
+const FREE_TEMPLATES = [
+  { id: 'modern_blue',     label: 'Modern Blue',    desc: 'Profissional e Limpo' },
+  { id: 'executive_navy',  label: 'Executive Navy', desc: 'Premium e Luxuoso' },
+  { id: 'modern_vitae',    label: 'Modern Vitae',   desc: 'Elegante e Espaçoso' },
+  { id: 'classic_serif',   label: 'Classic Serif',  desc: 'Tradicional Acadêmico' },
+  { id: 'swiss_minimal',   label: 'Swiss Minimal',  desc: 'Design Suíço' },
+  { id: 'teal_sidebar',    label: 'Teal Sidebar',   desc: 'Corporativo Moderno' },
+  { id: 'executive_red',   label: 'Executive Red',  desc: 'Liderança Sênior' },
+  { id: 'corporate_gray',  label: 'Corporate Gray', desc: 'Minimalista Pro' },
+  { id: 'minimal_red_line',label: 'Minimal Red',    desc: 'Impacto Visual' },
+];
+
+// Alias mantém compatibilidade com código que usa TEMPLATES
+const TEMPLATES = FREE_TEMPLATES;
+
+const PREMIUM_TEMPLATES = [
+  { id: 'aurora_dark',       label: 'Aurora Dark',      desc: 'Dark Mode Gradiente',   badge: 'Novo' },
+  { id: 'creative_portfolio',label: 'Creative Portfolio',desc: 'Design de Portfólio',   badge: 'Popular' },
+  { id: 'minimalist_pro',    label: 'Minimalist Pro',   desc: 'Ultra Minimalista',      badge: '' },
+  { id: 'bold_impact',       label: 'Bold Impact',      desc: 'Tipografia Forte',       badge: 'Novo' },
+  { id: 'soft_pastel',       label: 'Soft Pastel',      desc: 'Elegante e Feminino',    badge: '' },
+  { id: 'tech_dark',         label: 'Tech Dark',        desc: 'Para Área de TI',        badge: 'Popular' },
 ];
 
 const FONTS = [
@@ -72,6 +84,18 @@ export default function App() {
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Cover Letter state
+  const [clJobTitle, setClJobTitle] = useState('');
+  const [clCompany, setClCompany]   = useState('');
+  const [clTone, setClTone]         = useState<'formal'|'dinamico'|'criativo'>('formal');
+  const [clHighlights, setClHighlights] = useState('');
+  const [clResult, setClResult]     = useState('');
+  const [isGeneratingCL, setIsGeneratingCL] = useState(false);
+
+  // Templates visibility
+  const [showFreeTemplates, setShowFreeTemplates]     = useState(true);
+  const [showPremiumTemplates, setShowPremiumTemplates] = useState(true);
   
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
   
@@ -647,60 +671,265 @@ export default function App() {
   }
 
   if (view === 'cover-letter-page') {
-    const hasData = data.personalInfo?.fullName || (data.experiences && data.experiences.length > 0);
+    const hasData = !!(data.personalInfo?.fullName || (data.experiences && data.experiences.length > 0));
+
+    const handleGenerateCL = async () => {
+      if (!clJobTitle || !clCompany) { showToast('Preencha o cargo e a empresa.', 'error'); return; }
+      setIsGeneratingCL(true);
+      setClResult('');
+      try {
+        await generateCoverLetterStream({
+          candidateName: data.personalInfo?.fullName || 'Candidato',
+          jobTitle: clJobTitle,
+          company: clCompany,
+          tone: clTone,
+          highlights: clHighlights,
+          experiences: data.experiences?.map(e => `${e.position} na ${e.company}`).join('; ') || '',
+          skills: data.skills?.map(s => s.name).join(', ') || '',
+        }, (text) => setClResult(text));
+      } finally { setIsGeneratingCL(false); }
+    };
+
+    const handleCopyLetter = () => {
+      navigator.clipboard?.writeText(clResult);
+      showToast('Carta copiada para a área de transferência!');
+    };
+
+    const handlePrintLetter = () => {
+      const w = window.open('', '_blank');
+      if (!w) return;
+      w.document.write(`
+        <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+        <title>Carta de Apresentação — ${clJobTitle}</title>
+        <style>
+          body { font-family: 'Georgia', serif; max-width: 680px; margin: 60px auto; padding: 0 40px; color: #1e293b; line-height: 1.8; font-size: 15px; }
+          p { margin-bottom: 1.2em; text-align: justify; }
+          .header { border-bottom: 2px solid #2563eb; padding-bottom: 24px; margin-bottom: 32px; }
+          .name { font-size: 22px; font-weight: bold; color: #0f172a; }
+          .meta { font-size: 12px; color: #64748b; margin-top: 4px; }
+          .date { text-align: right; margin-bottom: 32px; color: #64748b; font-size: 13px; }
+        </style></head><body>
+        <div class="header">
+          <div class="name">${data.personalInfo?.fullName || 'Candidato'}</div>
+          <div class="meta">${data.personalInfo?.email || ''} · ${data.personalInfo?.phone || ''}</div>
+        </div>
+        <div class="date">${new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        ${clResult.split('\n\n').map(p => `<p>${p.replace(/\n/g,' ')}</p>`).join('')}
+        </body></html>
+      `);
+      w.document.close();
+      w.print();
+    };
+
+    const tones = [
+      { id: 'formal',    label: 'Formal',    icon: 'fa-briefcase',   desc: 'Executivo e tradicional' },
+      { id: 'dinamico',  label: 'Dinâmico',  icon: 'fa-bolt',        desc: 'Confiante e proativo' },
+      { id: 'criativo',  label: 'Criativo',  icon: 'fa-paint-brush', desc: 'Autêntico e diferenciado' },
+    ];
 
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
+      <div className={`min-h-screen flex flex-col transition-colors duration-300 ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
         {globalOverlays}
-        <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50">
+        {/* Header */}
+        <header className="h-16 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-xs"></i></div>
-              <span className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white">Curriculo<span className="text-blue-600">BR</span></span>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-xs"></i></div>
+            <span className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white hidden sm:block">Curriculo<span className="text-blue-600">BR</span></span>
           </div>
-          <div className="flex gap-3">
-             <button onClick={() => navigateTo('/', 'home')} className="px-4 py-2 text-xs font-bold uppercase text-slate-500 hover:text-blue-600 transition-colors">Voltar ao Início</button>
-             <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-               <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-             </button>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
+            <button onClick={() => navigateTo('/', 'editor')} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors rounded-full">Currículo</button>
+            <span className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white bg-blue-600 rounded-full">Carta</span>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'} text-sm`}></i>
+            </button>
           </div>
         </header>
-        <main className="flex-1 p-8 md:p-12 overflow-y-auto">
-           <div className="max-w-2xl mx-auto space-y-8">
-              <div className="text-center space-y-2 mb-8">
-                 <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Gerador de <span className="text-blue-600">Carta</span></h1>
-                 <p className="text-slate-500 dark:text-slate-400">Crie uma carta de apresentação personalizada e persuasiva usando Inteligência Artificial.</p>
+
+        <main className="flex-1 max-w-6xl mx-auto w-full px-4 md:px-8 py-8 md:py-12">
+
+          <div className="text-center mb-10">
+            <span className="inline-block px-4 py-2 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+              <i className="fas fa-envelope-open-text mr-1"></i> Gerador com IA
+            </span>
+            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+              Carta de <span className="text-blue-600">Apresentação</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto">Preencha os dados abaixo e nossa IA criará uma carta profissional e personalizada para você em segundos.</p>
+          </div>
+
+          {!hasData && (
+            <div className="mb-8 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl p-5 flex gap-4 items-start">
+              <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex items-center justify-center text-amber-600 shrink-0 mt-0.5">
+                <i className="fas fa-lightbulb"></i>
               </div>
-
-              {!hasData && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50 p-6 rounded-2xl flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                   <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/50 rounded-full flex items-center justify-center text-yellow-600 dark:text-yellow-400 shrink-0">
-                      <i className="fas fa-info-circle text-xl"></i>
-                   </div>
-                   <div className="flex-1">
-                      <h3 className="text-sm font-bold text-yellow-800 dark:text-yellow-300 uppercase tracking-wide">Dados Faltando</h3>
-                      <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">Para criar uma carta realmente boa, a IA precisa conhecer seu histórico profissional. Importe seu currículo para começar.</p>
-                   </div>
-                   <button onClick={() => setIsImportModalOpen(true)} className="px-6 py-3 bg-yellow-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-yellow-700 transition-all shrink-0">
-                      Importar PDF
-                   </button>
-                </div>
-              )}
-
-              <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 text-center border border-slate-100 dark:border-slate-700">
-                <div className="w-16 h-16 bg-blue-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <i className="fas fa-envelope-open-text text-blue-600 text-2xl"></i>
-                </div>
-                <h3 className="font-black text-slate-900 dark:text-white uppercase text-lg mb-2">Em Breve</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">O gerador de carta de apresentação está sendo desenvolvido. Enquanto isso, crie seu currículo completo!</p>
-                <button onClick={() => navigateTo('/', 'templates')} className="bg-blue-600 text-white px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors">
-                  <i className="fas fa-magic mr-2"></i> Criar Currículo
+              <div>
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">Dica: importe seu currículo para melhores resultados</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">Com seu histórico profissional carregado, a IA gera uma carta muito mais personalizada.</p>
+                <button onClick={() => setIsImportModalOpen(true)} className="mt-3 text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest hover:underline">
+                  <i className="fas fa-file-import mr-1"></i> Importar PDF →
                 </button>
               </div>
-              
-              <div className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-8">
-                  <AdUnit slotId="" format="horizontal" />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* ── Formulário ── */}
+            <div className="space-y-5">
+              <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+                  <i className="fas fa-user-tie text-blue-600"></i> Dados da Candidatura
+                </h2>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cargo / Vaga</label>
+                    <input
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      placeholder="Ex: Desenvolvedor Front-End Sênior"
+                      value={clJobTitle}
+                      onChange={e => setClJobTitle(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Empresa</label>
+                    <input
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      placeholder="Ex: Google, Nubank, Ambev..."
+                      value={clCompany}
+                      onChange={e => setClCompany(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Seu Nome (para a carta)</label>
+                    <input
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      placeholder="Nome completo"
+                      value={data.personalInfo?.fullName || ''}
+                      onChange={e => updateData(p => ({...p, personalInfo: {...p.personalInfo, fullName: e.target.value}}))}
+                    />
+                  </div>
+                </div>
               </div>
-           </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+                  <i className="fas fa-sliders-h text-blue-600"></i> Tom da Carta
+                </h2>
+                <div className="grid grid-cols-3 gap-3">
+                  {tones.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setClTone(t.id as typeof clTone)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${clTone === t.id ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'border-slate-100 dark:border-slate-700 hover:border-blue-300'}`}
+                    >
+                      <i className={`fas ${t.icon} ${clTone === t.id ? 'text-blue-600' : 'text-slate-400'}`}></i>
+                      <span className={`text-[10px] font-black uppercase tracking-wide ${clTone === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>{t.label}</span>
+                      <span className="text-[9px] text-slate-400 text-center leading-tight">{t.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <i className="fas fa-star text-blue-600"></i> Destaques Adicionais
+                  <span className="ml-auto text-[9px] font-bold text-slate-300 normal-case tracking-normal">Opcional</span>
+                </h2>
+                <textarea
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all resize-none h-28 leading-relaxed"
+                  placeholder="Ex: Sou apaixonado por produtos que impactam milhões de usuários. Tenho certificação AWS e contribuo para projetos open-source..."
+                  value={clHighlights}
+                  onChange={e => setClHighlights(e.target.value)}
+                />
+              </div>
+
+              <button
+                onClick={handleGenerateCL}
+                disabled={isGeneratingCL || !clJobTitle || !clCompany}
+                className="w-full py-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-xl active:scale-98 flex items-center justify-center gap-3"
+              >
+                {isGeneratingCL
+                  ? <><i className="fas fa-circle-notch fa-spin"></i> Gerando carta...</>
+                  : <><i className="fas fa-wand-magic-sparkles"></i> Gerar Carta com IA</>
+                }
+              </button>
+            </div>
+
+            {/* ── Preview da carta ── */}
+            <div className="flex flex-col">
+              <div className={`flex-1 bg-white dark:bg-slate-800 rounded-3xl border ${clResult ? 'border-blue-200 dark:border-blue-800/50 shadow-xl' : 'border-slate-100 dark:border-slate-700'} overflow-hidden flex flex-col transition-all duration-500`} style={{ minHeight: '500px' }}>
+                {/* Topo do documento */}
+                <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Carta de Apresentação</p>
+                    {clJobTitle && <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mt-0.5">{clJobTitle} • {clCompany}</p>}
+                  </div>
+                  {clResult && (
+                    <div className="flex gap-2">
+                      <button onClick={handleCopyLetter} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 transition-colors" title="Copiar">
+                        <i className="fas fa-copy text-sm"></i>
+                      </button>
+                      <button onClick={handlePrintLetter} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-600 transition-colors" title="Imprimir / Salvar PDF">
+                        <i className="fas fa-print text-sm"></i>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Conteúdo */}
+                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                  {!clResult && !isGeneratingCL && (
+                    <div className="h-full flex flex-col items-center justify-center text-center gap-4 opacity-40">
+                      <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                        <i className="fas fa-envelope-open-text text-slate-400 text-2xl"></i>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-400">Sua carta aparecerá aqui</p>
+                        <p className="text-xs text-slate-300 dark:text-slate-600 mt-1">Preencha o formulário e clique em "Gerar Carta"</p>
+                      </div>
+                    </div>
+                  )}
+                  {(clResult || isGeneratingCL) && (
+                    <div className="font-serif text-[15px] leading-[1.85] text-slate-700 dark:text-slate-200 space-y-4">
+                      {/* Data e cabeçalho do candidato */}
+                      <div className="pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                        <p className="text-sm font-black text-slate-900 dark:text-white">{data.personalInfo?.fullName || 'Candidato'}</p>
+                        <p className="text-xs text-slate-400">{data.personalInfo?.email} {data.personalInfo?.phone && `· ${data.personalInfo.phone}`}</p>
+                        <p className="text-xs text-slate-400 mt-3">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                      </div>
+                      {clResult
+                        ? clResult.split('\n\n').map((p, i) => <p key={i} className="text-justify">{p.replace(/\n/g, ' ')}</p>)
+                        : <div className="flex items-center gap-2 text-blue-600"><i className="fas fa-circle-notch fa-spin"></i><span className="text-sm font-bold">Gerando sua carta...</span></div>
+                      }
+                      {isGeneratingCL && clResult && <span className="inline-block w-1.5 h-5 bg-blue-500 rounded-sm animate-pulse ml-1 align-middle"></span>}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer com ações */}
+                {clResult && !isGeneratingCL && (
+                  <div className="p-5 border-t border-slate-100 dark:border-slate-700 flex gap-3 bg-slate-50/50 dark:bg-slate-900/50">
+                    <button onClick={handleCopyLetter} className="flex-1 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest hover:border-blue-400 hover:text-blue-600 transition-all flex items-center justify-center gap-2">
+                      <i className="fas fa-copy"></i> Copiar
+                    </button>
+                    <button onClick={handlePrintLetter} className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg">
+                      <i className="fas fa-file-pdf"></i> Salvar PDF
+                    </button>
+                    <button onClick={handleGenerateCL} className="py-3 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:border-blue-400 hover:text-blue-600 transition-all flex items-center justify-center gap-2" title="Gerar novamente">
+                      <i className="fas fa-redo"></i>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* AdUnit */}
+              <div className="mt-6">
+                <AdUnit slotId="" format="horizontal" />
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     );
@@ -855,38 +1084,152 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
         {globalOverlays}
-        <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50">
+        <header className="h-16 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 md:px-8 sticky top-0 z-50">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
              <i className="fas fa-arrow-left text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"></i>
-             <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Voltar</span>
+             <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 hidden sm:block">Voltar</span>
           </div>
-          <h1 className="font-black text-xl text-slate-800 dark:text-white uppercase tracking-tight">Escolha seu Modelo</h1>
+          <h1 className="font-black text-lg text-slate-800 dark:text-white uppercase tracking-tight">Escolha seu Modelo</h1>
           <div className="w-20"></div>
         </header>
-        <main className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar flex flex-col md:flex-row gap-8">
-          <div className="hidden lg:block w-[300px] shrink-0">
-             <div className="sticky top-8">
-                <AdUnit slotId="" format="vertical" className="min-h-[600px]" />
-             </div>
-          </div>
-          <div className="flex-1 max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-              {TEMPLATES.map((t) => (
-                <div key={t.id} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group border border-slate-100 dark:border-slate-700 flex flex-col">
-                  <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
-                    <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
-                    <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                       <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform">Usar este</button>
-                    </div>
+
+        <main className="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar">
+          <div className="max-w-6xl mx-auto space-y-12">
+
+            {/* ── Seção Gratuitos ── */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
+                    <i className="fas fa-unlock text-white text-xs"></i>
                   </div>
-                  <div className="p-6 flex flex-col gap-2">
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{t.desc}</p>
-                    <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="mt-4 w-full py-3 border-2 border-slate-100 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 font-bold text-xs uppercase tracking-widest hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 dark:hover:border-blue-600 transition-all">Selecionar</button>
+                  <div>
+                    <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Modelos Gratuitos</h2>
+                    <p className="text-[10px] text-slate-400 font-bold">{FREE_TEMPLATES.length} modelos disponíveis</p>
                   </div>
                 </div>
-              ))}
+                <button
+                  onClick={() => setShowFreeTemplates(v => !v)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                >
+                  <i className={`fas ${showFreeTemplates ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
+                  {showFreeTemplates ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+
+              {showFreeTemplates && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {FREE_TEMPLATES.map((t) => (
+                    <div key={t.id} className={`bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group border-2 flex flex-col ${template === t.id ? 'border-blue-600 ring-4 ring-blue-100 dark:ring-blue-900/30' : 'border-transparent hover:border-blue-200 dark:hover:border-blue-800'}`}>
+                      <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                        <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
+                        {template === t.id && (
+                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
+                            <i className="fas fa-check text-[8px]"></i> Ativo
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
+                            Usar este
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-5 flex flex-col gap-1.5">
+                        <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
+                        <p className="text-xs text-slate-400">{t.desc}</p>
+                        <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${template === t.id ? 'bg-blue-600 text-white' : 'border-2 border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}>
+                          {template === t.id ? '✓ Selecionado' : 'Selecionar'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* ── Separador ── */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
+              <div className="relative flex justify-center">
+                <span className="bg-slate-50 dark:bg-slate-900 px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Em breve</span>
+              </div>
             </div>
+
+            {/* ── Seção Premium ── */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <i className="fas fa-crown text-white text-xs"></i>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Modelos Premium</h2>
+                      <span className="text-[9px] font-black px-2 py-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full uppercase tracking-wide">Em Breve</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-bold">{PREMIUM_TEMPLATES.length} modelos exclusivos chegando</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPremiumTemplates(v => !v)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                >
+                  <i className={`fas ${showPremiumTemplates ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
+                  {showPremiumTemplates ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+
+              {showPremiumTemplates && (
+                <>
+                  <div className="mb-5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700/40 rounded-2xl p-4 flex items-center gap-3">
+                    <i className="fas fa-star text-amber-500 text-lg"></i>
+                    <p className="text-xs text-amber-800 dark:text-amber-300 font-bold">Designs exclusivos com layouts avançados, paletas de cores premium e tipografia especial. Serão lançados em breve gratuitamente.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {PREMIUM_TEMPLATES.map((t) => (
+                      <div key={t.id} className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col relative opacity-80 hover:opacity-100 transition-opacity duration-300 group">
+                        {/* Badge */}
+                        {t.badge && (
+                          <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
+                            {t.badge}
+                          </div>
+                        )}
+                        {/* Lock overlay */}
+                        <div className="relative aspect-[210/297] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 overflow-hidden flex items-center justify-center">
+                          {/* Blurred placeholder */}
+                          <div className="absolute inset-0 flex flex-col gap-2 p-4 opacity-30 pointer-events-none">
+                            <div className="h-8 bg-slate-300 dark:bg-slate-600 rounded-lg w-3/4"></div>
+                            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                            <div className="mt-4 space-y-2">
+                              {[1,2,3,4,5].map(i => <div key={i} className="h-2 bg-slate-200 dark:bg-slate-700 rounded" style={{width:`${60+i*7}%`}}></div>)}
+                            </div>
+                            <div className="mt-4 space-y-2">
+                              {[1,2,3].map(i => <div key={i} className="h-2 bg-slate-200 dark:bg-slate-700 rounded" style={{width:`${80-i*10}%`}}></div>)}
+                            </div>
+                          </div>
+                          {/* Lock icon */}
+                          <div className="relative z-10 flex flex-col items-center gap-3">
+                            <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-2xl shadow-xl flex items-center justify-center border border-slate-100 dark:border-slate-600">
+                              <i className="fas fa-crown text-amber-400 text-2xl"></i>
+                            </div>
+                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest bg-white/80 dark:bg-slate-800/80 px-3 py-1 rounded-full backdrop-blur-sm">Premium</span>
+                          </div>
+                        </div>
+                        <div className="p-5">
+                          <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
+                          <p className="text-xs text-slate-400 mt-0.5">{t.desc}</p>
+                          <button disabled className="mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest border-2 border-dashed border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400 cursor-not-allowed flex items-center justify-center gap-2">
+                            <i className="fas fa-lock text-[10px]"></i> Em Breve
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </section>
+
           </div>
         </main>
       </div>
@@ -909,57 +1252,61 @@ export default function App() {
         />
       )}
 
-      <nav className="no-print h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-sm"></i></div>
-          <h1 className="font-extrabold text-lg md:text-xl tracking-tighter text-slate-800 dark:text-white uppercase italic hidden sm:block">Curriculo<span className="text-blue-600">BR</span></h1>
+      <nav className="no-print h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-3 md:px-6 z-50 shrink-0">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
+          <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-xs"></i></div>
+          <h1 className="font-extrabold text-base tracking-tighter text-slate-800 dark:text-white uppercase italic hidden sm:block">Curriculo<span className="text-blue-600">BR</span></h1>
         </div>
         
+        {/* Mobile toggle Editar/Visualizar */}
         <div className="flex md:hidden bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
            <button 
              onClick={() => setMobileView('editor')} 
-             className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${mobileView === 'editor' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+             className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all flex items-center gap-1.5 ${mobileView === 'editor' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
            >
-             Editar
+             <i className="fas fa-pencil-alt text-[9px]"></i> Editar
            </button>
            <button 
              onClick={() => setMobileView('preview')} 
-             className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${mobileView === 'preview' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+             className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all flex items-center gap-1.5 ${mobileView === 'preview' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
            >
-             Visualizar
+             <i className="fas fa-eye text-[9px]"></i> Ver
            </button>
         </div>
 
-        <div className="hidden lg:flex items-center gap-8">
-           <div className="flex items-center gap-2 mr-4">
+        <div className="hidden lg:flex items-center gap-6">
+           <div className="flex items-center gap-2">
               <button onClick={undo} disabled={!canUndo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canUndo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Desfazer"><i className="fas fa-undo text-xs"></i></button>
               <button onClick={redo} disabled={!canRedo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canRedo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Refazer"><i className="fas fa-redo text-xs"></i></button>
            </div>
            <div className="flex items-center gap-3">
-              <div className="w-32 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-28 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all duration-1000 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-600'}`} style={{ width: `${cvScore}%` }}></div>
               </div>
-              <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{cvScore}% Completo</span>
+              <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{cvScore}%</span>
            </div>
-           
-           <div className="relative">
-             <button 
-               onClick={() => { handlePrint(); }}
-               className="bg-blue-600 text-white px-8 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
-             >
-               <i className="fas fa-file-pdf"></i> Baixar PDF
-             </button>
-           </div>
+           <button 
+             onClick={handlePrint}
+             className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
+           >
+             <i className="fas fa-file-pdf"></i> Baixar PDF
+           </button>
         </div>
         
-        <button className="lg:hidden w-8 h-8 flex items-center justify-center text-slate-600 dark:text-slate-300" onClick={() => setIsSidebarOpen(true)}>
-             <i className="fas fa-cog"></i>
-        </button>
+        {/* Mobile right buttons */}
+        <div className="flex md:hidden items-center gap-1">
+          <button onClick={handlePrint} className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wide flex items-center gap-1">
+            <i className="fas fa-file-pdf text-[9px]"></i> PDF
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center text-slate-500 dark:text-slate-300" onClick={() => setIsSidebarOpen(true)}>
+            <i className="fas fa-palette text-sm"></i>
+          </button>
+        </div>
       </nav>
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        <div className={`no-print w-full md:w-[400px] lg:w-[450px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 shadow-xl transition-all duration-300 absolute md:relative inset-0 md:inset-auto ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className={`no-print w-full md:w-[390px] lg:w-[430px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
            
            <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 shrink-0 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2">
              {STEPS.map((step, idx) => (
@@ -1165,10 +1512,23 @@ export default function App() {
               )}
            </div>
 
-           <div className="p-6 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 no-print bg-white dark:bg-slate-900 z-10">
-              <button onClick={prevStep} className={`flex-1 py-4 font-bold text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors ${currentStep === 0 ? 'invisible' : ''}`}>Anterior</button>
-              <button onClick={nextStep} className="flex-[2] py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
-                {currentStep === STEPS.length - 1 ? 'Exportar PDF' : 'Próximo Passo'}
+           <div className="p-4 md:p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0 no-print bg-white dark:bg-slate-900 z-10">
+              {/* Score on mobile */}
+              <div className="flex md:hidden items-center gap-1.5 min-w-0">
+                <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-500'}`} style={{width:`${cvScore}%`}}></div>
+                </div>
+                <span className="text-[9px] font-black text-slate-400 uppercase">{cvScore}%</span>
+              </div>
+              <button onClick={prevStep} className={`hidden md:block flex-1 py-4 font-bold text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors ${currentStep === 0 ? 'invisible' : ''}`}>Anterior</button>
+              <button onClick={prevStep} className={`md:hidden w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-400 transition-colors active:scale-95 ${currentStep === 0 ? 'invisible' : ''}`}>
+                <i className="fas fa-chevron-left text-sm"></i>
+              </button>
+              <button onClick={nextStep} className="flex-1 py-3 md:py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
+                {currentStep === STEPS.length - 1
+                  ? <><i className="fas fa-file-pdf mr-1"></i> Exportar PDF</>
+                  : <><span className="hidden sm:inline">Próximo</span><i className="fas fa-chevron-right sm:ml-1.5 text-xs"></i></>
+                }
               </button>
            </div>
         </div>
@@ -1179,22 +1539,23 @@ export default function App() {
           className={`flex-1 bg-slate-100 dark:bg-slate-950 overflow-hidden flex flex-col transition-all duration-300 ${mobileView === 'preview' ? 'flex' : 'hidden md:flex'}`}
         >
           {/* Toolbar da preview */}
-          <div className="no-print h-12 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pré-visualização</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setPreviewScale(s => Math.max(0.3, s - 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm">
-                <i className="fas fa-minus"></i>
+          <div className="no-print h-11 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hidden sm:block">Pré-visualização A4</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:hidden">{template.replace('_',' ')}</span>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPreviewScale(s => Math.max(0.2, s - 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <i className="fas fa-minus text-xs"></i>
               </button>
-              <span className="text-[10px] font-black text-slate-500 w-10 text-center">{Math.round(previewScale * 100)}%</span>
-              <button onClick={() => setPreviewScale(s => Math.min(0.9, s + 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm">
-                <i className="fas fa-plus"></i>
+              <span className="text-[10px] font-black text-slate-500 w-9 text-center">{Math.round(previewScale * 100)}%</span>
+              <button onClick={() => setPreviewScale(s => Math.min(1, s + 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <i className="fas fa-plus text-xs"></i>
               </button>
-              <button onClick={fitToScreen} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm ml-1" title="Ajustar à tela">
-                <i className="fas fa-expand"></i>
+              <button onClick={fitToScreen} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-1" title="Ajustar à tela">
+                <i className="fas fa-expand text-xs"></i>
               </button>
             </div>
-            <button onClick={handlePrint} className="md:hidden bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-              <i className="fas fa-file-pdf mr-1"></i> PDF
+            <button onClick={() => { setMobileView('editor'); }} className="md:hidden text-[9px] font-black text-blue-600 uppercase tracking-wide flex items-center gap-1">
+              <i className="fas fa-pencil-alt text-[9px]"></i> Editar
             </button>
           </div>
 
@@ -1266,17 +1627,35 @@ export default function App() {
               </section>
 
               <section>
-                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Templates</h3>
-                 <div className="space-y-4">
-                    {TEMPLATES.map(t => (
-                      <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-4 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-50 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-600'}`}>
-                         <TemplateThumbnail template={t.id as TemplateId} className="w-16 h-20" />
-                         <div className="text-left flex-1 min-w-0">
-                           <p className={`text-[10px] font-black uppercase truncate ${template === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
-                           <p className="text-[8px] text-slate-400 font-bold uppercase truncate">{t.desc}</p>
-                         </div>
-                      </button>
-                    ))}
+                 <div className="flex justify-between items-center mb-4">
+                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Templates</h3>
+                   <button onClick={() => setShowFreeTemplates(v => !v)} className="text-[9px] text-slate-400 hover:text-blue-600 font-black uppercase transition-colors flex items-center gap-1">
+                     <i className={`fas ${showFreeTemplates ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                     {showFreeTemplates ? 'Ocultar' : 'Mostrar'}
+                   </button>
+                 </div>
+                 {showFreeTemplates && (
+                   <div className="space-y-3">
+                     {FREE_TEMPLATES.map(t => (
+                       <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-50 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-600'}`}>
+                          <TemplateThumbnail template={t.id as TemplateId} className="w-14 h-[74px] shrink-0" />
+                          <div className="text-left flex-1 min-w-0">
+                            <p className={`text-[10px] font-black uppercase truncate ${template === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
+                            <p className="text-[8px] text-slate-400 font-bold uppercase truncate">{t.desc}</p>
+                          </div>
+                          {template === t.id && <i className="fas fa-check text-blue-600 text-xs shrink-0"></i>}
+                       </button>
+                     ))}
+                   </div>
+                 )}
+                 {/* Premium teaser in sidebar */}
+                 <div className="mt-4 p-3 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700/40">
+                   <div className="flex items-center gap-2 mb-1">
+                     <i className="fas fa-crown text-amber-500 text-xs"></i>
+                     <p className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wide">Premium — Em Breve</p>
+                   </div>
+                   <p className="text-[9px] text-amber-600 dark:text-amber-500">6 novos modelos exclusivos chegando.</p>
+                   <button onClick={() => { handleTemplateSelect(template); navigateTo('/', 'templates'); }} className="mt-2 text-[9px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wide hover:underline">Ver todos →</button>
                  </div>
               </section>
               <section className="pt-4 border-t border-slate-50 dark:border-slate-800">
