@@ -195,10 +195,77 @@ export default function App() {
 
   const handlePrint = () => {
     try {
-      window.print();
+      // Captura o elemento já renderizado do currículo
+      const el = document.getElementById('resume-preview-container');
+      if (!el) {
+        showToast('Não foi possível gerar o PDF. Tente novamente.', 'error');
+        return;
+      }
+
+      // Clona o HTML do currículo com estilos inline preservados
+      const clone = el.cloneNode(true) as HTMLElement;
+
+      // Remove atributos de interação que não devem ir para o PDF
+      clone.querySelectorAll('[draggable]').forEach(e => e.removeAttribute('draggable'));
+      clone.querySelectorAll('.no-print, [class*="cursor-"], [class*="hover:"]').forEach(e => {
+        (e as HTMLElement).style.cursor = 'default';
+      });
+
+      // Coleta todos os <style> e <link rel=stylesheet> da página atual
+      const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+        .map(el => el.outerHTML)
+        .join('\n');
+
+      const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currículo — ${data.personalInfo.fullName || 'CurriculoBR'}</title>
+  ${styles}
+  <style>
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html, body { margin: 0; padding: 0; background: white; }
+    body { display: flex; justify-content: center; align-items: flex-start; }
+    #print-root {
+      width: 210mm;
+      height: 297mm;
+      overflow: hidden;
+      position: relative;
+      box-shadow: none !important;
+    }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      html, body { width: 210mm; height: 297mm; }
+      #print-root { box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="print-root">${clone.innerHTML}</div>
+  <script>
+    // Espera fontes e imagens carregarem antes de imprimir
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+        setTimeout(function() { window.close(); }, 1000);
+      }, 800);
+    };
+  <\/script>
+</body>
+</html>`;
+
+      const w = window.open('', '_blank', 'width=900,height=700');
+      if (!w) {
+        showToast('Pop-up bloqueado. Permita pop-ups e tente novamente.', 'error');
+        return;
+      }
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
     } catch (e) {
-      console.error("Erro ao imprimir:", e);
-      showToast("Não foi possível iniciar a impressão. Tente Ctrl+P.", "error");
+      console.error('Erro ao gerar PDF:', e);
+      showToast('Erro ao gerar PDF. Tente novamente.', 'error');
     }
   };
 
