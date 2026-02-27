@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { ResumeData, TemplateId, Experience, Education, Language, Course } from './types';
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
@@ -6,23 +6,32 @@ import ResumePreview from './components/ResumePreview';
 import Toast from './components/Toast';
 import TemplateThumbnail from './components/TemplateThumbnail';
 import ConfirmModal from './components/ConfirmModal';
-import PhotoCropModal from './components/PhotoCropModal';
 import AdUnit from './components/AdUnit';
 import CookieConsent from './components/CookieConsent';
-import ATSPanel from './components/ATSPanel';
-import Sobre from './Sobre';
-import Contato from './Contato';
-import BlogList from './blog/BlogList';
-import BlogPost from './blog/BlogPost';
 import { useResumeHistory } from './hooks/useResumeHistory';
 import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI, generateCoverLetterStream } from './services/geminiService';
-import { extractTextFromPDF } from './services/pdfService';
-import { 
-  validateEmailError, 
+// pdfService é carregado sob demanda para não incluir pdfjs no bundle inicial
+import {
+  validateEmailError,
   validatePhoneError,
   validateURLError,
   validateDateRange
 } from './services/validationService';
+
+// Lazy-loaded: só baixam quando o usuário navega para essas páginas
+const PhotoCropModal = lazy(() => import('./components/PhotoCropModal'));
+const ATSPanel      = lazy(() => import('./components/ATSPanel'));
+const Sobre         = lazy(() => import('./Sobre'));
+const Contato       = lazy(() => import('./Contato'));
+const BlogList      = lazy(() => import('./blog/BlogList'));
+const BlogPost      = lazy(() => import('./blog/BlogPost'));
+
+// Fallback leve para Suspense
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+    <i className="fas fa-circle-notch fa-spin text-2xl text-blue-500"></i>
+  </div>
+);
 
 const STEPS = [
   { id: 'info', label: 'Dados', icon: 'fa-id-card' },
@@ -325,6 +334,8 @@ export default function App() {
 
     setIsExtractingPdf(true);
     try {
+      // Import dinâmico: pdfjs (~330kB) só é baixado quando o usuário usa esta função
+      const { extractTextFromPDF } = await import('./services/pdfService');
       const text = await extractTextFromPDF(file);
       if (text.trim().length === 0) {
         showToast("Não foi possível ler o texto deste PDF. Ele pode ser uma imagem escaneada.", "error");
@@ -571,7 +582,7 @@ export default function App() {
     <>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <CookieConsent />
-      {isATSPanelOpen && <ATSPanel data={data} onClose={() => setIsATSPanelOpen(false)} />}
+      {isATSPanelOpen && <Suspense fallback={null}><ATSPanel data={data} onClose={() => setIsATSPanelOpen(false)} /></Suspense>}
       
       {isImportModalOpen && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
@@ -711,32 +722,36 @@ export default function App() {
   }
 
   if (view === 'sobre') {
-    return <Sobre onVoltar={() => navigateTo('/', 'home')} onCriarCurriculo={() => navigateTo('/', 'templates')} />;
+    return <Suspense fallback={<PageLoader />}><Sobre onVoltar={() => navigateTo('/', 'home')} onCriarCurriculo={() => navigateTo('/', 'templates')} /></Suspense>;
   }
 
   if (view === 'contato') {
-    return <Contato onVoltar={() => navigateTo('/', 'home')} />;
+    return <Suspense fallback={<PageLoader />}><Contato onVoltar={() => navigateTo('/', 'home')} /></Suspense>;
   }
 
   if (view === 'blog') {
     return (
-      <BlogList
-        onVoltar={() => navigateTo('/', 'home')}
-        onPost={(slug) => { setBlogSlug(slug); navigateTo(`/blog/${slug}`, 'blog-post'); }}
-        onCriarCurriculo={() => navigateTo('/', 'templates')}
-      />
+      <Suspense fallback={<PageLoader />}>
+        <BlogList
+          onVoltar={() => navigateTo('/', 'home')}
+          onPost={(slug) => { setBlogSlug(slug); navigateTo(`/blog/${slug}`, 'blog-post'); }}
+          onCriarCurriculo={() => navigateTo('/', 'templates')}
+        />
+      </Suspense>
     );
   }
 
   if (view === 'blog-post') {
     return (
-      <BlogPost
-        slug={blogSlug}
-        onVoltar={() => navigateTo('/', 'home')}
-        onBlog={() => navigateTo('/blog', 'blog')}
-        onPost={(slug) => { setBlogSlug(slug); navigateTo(`/blog/${slug}`, 'blog-post'); }}
-        onCriarCurriculo={() => navigateTo('/', 'templates')}
-      />
+      <Suspense fallback={<PageLoader />}>
+        <BlogPost
+          slug={blogSlug}
+          onVoltar={() => navigateTo('/', 'home')}
+          onBlog={() => navigateTo('/blog', 'blog')}
+          onPost={(slug) => { setBlogSlug(slug); navigateTo(`/blog/${slug}`, 'blog-post'); }}
+          onCriarCurriculo={() => navigateTo('/', 'templates')}
+        />
+      </Suspense>
     );
   }
 
@@ -1336,11 +1351,13 @@ export default function App() {
       )}
 
       {isPhotoModalOpen && pendingPhoto && (
-        <PhotoCropModal 
-          imageSrc={pendingPhoto} 
-          onConfirm={handlePhotoConfirm} 
-          onCancel={() => { setIsPhotoModalOpen(false); setPendingPhoto(null); }} 
-        />
+        <Suspense fallback={null}>
+          <PhotoCropModal
+            imageSrc={pendingPhoto}
+            onConfirm={handlePhotoConfirm}
+            onCancel={() => { setIsPhotoModalOpen(false); setPendingPhoto(null); }}
+          />
+        </Suspense>
       )}
 
       <nav className="no-print h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-3 md:px-6 z-50 shrink-0">
