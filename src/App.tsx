@@ -98,7 +98,9 @@ export default function App() {
   const [showPremiumTemplates, setShowPremiumTemplates] = useState(true);
   
   const [isATSPanelOpen, setIsATSPanelOpen] = useState(false);
-  
+
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
+
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
   
