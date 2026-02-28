@@ -256,3 +256,32 @@ body {
 @keyframes slide-in-from-top { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes slide-in-from-bottom { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .animate-in { animation-fill-mode: both; }
+
+/* ── Logo integration: white pill on dark backgrounds ── */
+.logo-nav {
+  /* padding suave para dar "respiro" à logo nos headers */
+  padding: 4px 6px;
+  border-radius: 10px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Em dark mode os headers ficam escuros → pill branco semitransparente */
+.dark .logo-nav {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+
+/* Em light mode: sem fundo extra (logo já tem contraste) */
+.logo-nav:hover {
+  opacity: 0.88;
+}
+
+/* Logo hero na home: maior, com sombra leve */
+.logo-hero {
+  filter: drop-shadow(0 2px 8px rgba(30,58,138,0.13));
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.logo-hero:hover {
+  filter: drop-shadow(0 4px 16px rgba(30,58,138,0.22));
+  transform: scale(1.02);
+}

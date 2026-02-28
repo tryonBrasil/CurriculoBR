@@ -25,8 +25,9 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
             <i className="fa fa-arrow-left"></i> Voltar
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <img src="/logo.png" alt="CurriculoBR" className="h-7 w-auto object-contain" />
-          <span className="font-semibold text-slate-700 dark:text-slate-200">CurriculoBR</span>
+          <span className="logo-nav inline-flex">
+            <img src="/logo.png" alt="CurriculoBR" className="h-8 w-auto object-contain" />
+          </span>
         </div>
       </header>
 

@@ -28,9 +28,10 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
         <button onClick={onVoltar} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-bold text-sm uppercase tracking-widest">
           <i className="fas fa-arrow-left text-xs"></i> Voltar
         </button>
-        <div className="flex-1 flex justify-center items-center gap-2">
-          <img src="/logo.png" alt="CurriculoBR" className="h-8 w-auto object-contain" />
-          <span className="font-black text-lg uppercase tracking-tight text-slate-900 dark:text-white italic">Currículo<span className="text-blue-600">BR</span></span>
+        <div className="flex-1 flex justify-center items-center">
+          <span className="logo-nav inline-flex">
+            <img src="/logo.png" alt="CurriculoBR" className="h-9 w-auto object-contain" />
+          </span>
         </div>
         <div className="w-16"></div>
       </header>

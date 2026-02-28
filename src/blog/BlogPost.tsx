@@ -74,10 +74,11 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             <button onClick={onBlog} className="text-slate-400 hover:text-blue-600 transition-colors">
               <i className="fas fa-arrow-left"></i>
             </button>
-            <img src="/logo.png" alt="CurriculoBR" className="h-8 w-auto object-contain" />
-            <button onClick={onBlog} className="font-black text-sm uppercase tracking-tight text-slate-800 dark:text-white italic hover:text-blue-600 transition-colors">
-              Currículo<span className="text-blue-600">BR</span>
-              <span className="ml-2 text-xs font-bold text-slate-400 not-italic">/ Blog</span>
+            <button onClick={onBlog} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <span className="logo-nav inline-flex">
+                <img src="/logo.png" alt="CurriculoBR" className="h-8 w-auto object-contain" />
+              </span>
+              <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">/ Blog</span>
             </button>
           </div>
           <button
