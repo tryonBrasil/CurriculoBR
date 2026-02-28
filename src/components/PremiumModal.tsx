@@ -2,19 +2,18 @@ import React, { useState } from 'react';
 
 interface PremiumModalProps {
   onClose: () => void;
-  onSuccess: () => void;
   templateLabel?: string;
 }
 
 const PREMIUM_BENEFITS = [
   { emoji: '🎨', text: '10 templates exclusivos desbloqueados' },
-  { emoji: '🚫', text: 'Sem "Feito com CurriculoBR" no PDF' },
   { emoji: '♾️', text: 'Acesso vitalício — paga uma vez, usa sempre' },
   { emoji: '📱', text: 'Funciona no celular, tablet e computador' },
   { emoji: '⚡', text: 'Todos os recursos de IA incluídos' },
+  { emoji: '🚀', text: 'Novos templates futuros incluídos sem custo extra' },
 ];
 
-const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, onSuccess, templateLabel }) => {
+const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,8 +25,8 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, onSuccess, templat
       if (!res.ok) throw new Error('Erro ao conectar com o servidor de pagamento.');
       const data = await res.json();
 
-      // Em dev usa sandbox, em prod usa init_point
-      const checkoutUrl = data.sandbox_init_point || data.init_point;
+      // Prod usa init_point; sandbox_init_point é fallback apenas para ambiente de teste
+      const checkoutUrl = data.init_point || data.sandbox_init_point;
       if (!checkoutUrl) throw new Error('Link de pagamento não retornado.');
 
       // Salva flag de "pagamento iniciado" para verificar ao voltar
