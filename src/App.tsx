@@ -121,6 +121,15 @@ export default function App() {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
+  // Mostra toast de boas-vindas quando premium é ativado via retorno do MP
+  const prevIsPremium = React.useRef(isPremium);
+  React.useEffect(() => {
+    if (!prevIsPremium.current && isPremium) {
+      showToast('🎉 Premium ativado! Todos os templates desbloqueados!', 'success');
+    }
+    prevIsPremium.current = isPremium;
+  }, [isPremium]);
+
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
   
@@ -664,7 +673,6 @@ export default function App() {
           <PremiumModal
             templateLabel={premiumModalTemplate}
             onClose={() => setIsPremiumModalOpen(false)}
-            onSuccess={() => { setIsPremiumModalOpen(false); showToast('🎉 Premium ativado! Aproveite todos os templates!', 'success'); }}
           />
         </Suspense>
       )}
