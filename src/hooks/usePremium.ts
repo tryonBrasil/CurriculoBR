@@ -3,9 +3,15 @@ import { useState, useEffect, useCallback } from 'react';
 const STORAGE_KEY = 'cbr_premium_v1';
 const PENDING_KEY = 'cbr_pending_payment';
 
+// Chave usada para armazenar o flag de acesso do dono
+const OWNER_KEY = 'cbr_owner_v1';
+
 export function usePremium() {
   const [isPremium, setIsPremium] = useState<boolean>(() => {
-    return localStorage.getItem(STORAGE_KEY) === 'true';
+    return (
+      localStorage.getItem(STORAGE_KEY) === 'true' ||
+      localStorage.getItem(OWNER_KEY) === 'true'
+    );
   });
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -59,8 +65,34 @@ export function usePremium() {
   const revokePremium = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem('cbr_premium_payment_id');
+    localStorage.removeItem(OWNER_KEY);
     setIsPremium(false);
   }, []);
 
-  return { isPremium, isVerifying, unlockForTesting, revokePremium };
+  /**
+   * ownerUnlock — verifica a senha secreta no servidor e, se correta,
+   * grava o acesso de dono no localStorage deste dispositivo.
+   * Retorna { ok: boolean; error?: string }
+   */
+  const ownerUnlock = useCallback(async (secret: string): Promise<{ ok: boolean; error?: string }> => {
+    if (!secret.trim()) return { ok: false, error: 'Digite a senha.' };
+    try {
+      const res = await fetch('/api/owner-unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        localStorage.setItem(OWNER_KEY, 'true');
+        setIsPremium(true);
+        return { ok: true };
+      }
+      return { ok: false, error: data.error || 'Senha incorreta.' };
+    } catch {
+      return { ok: false, error: 'Erro de conexão. Tente novamente.' };
+    }
+  }, []);
+
+  return { isPremium, isVerifying, unlockForTesting, revokePremium, ownerUnlock };
 }
