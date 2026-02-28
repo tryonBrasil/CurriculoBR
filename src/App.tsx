@@ -9,6 +9,7 @@ import ConfirmModal from './components/ConfirmModal';
 import AdUnit from './components/AdUnit';
 import CookieConsent from './components/CookieConsent';
 import { useResumeHistory } from './hooks/useResumeHistory';
+import { usePremium } from './hooks/usePremium';
 import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI, generateCoverLetterStream } from './services/geminiService';
 // pdfService é carregado sob demanda para não incluir pdfjs no bundle inicial
 import {
@@ -25,6 +26,7 @@ const Sobre         = lazy(() => import('./Sobre'));
 const Contato       = lazy(() => import('./Contato'));
 const BlogList      = lazy(() => import('./blog/BlogList'));
 const BlogPost      = lazy(() => import('./blog/BlogPost'));
+const PremiumModal  = lazy(() => import('./components/PremiumModal'));
 
 // Fallback leve para Suspense
 const PageLoader = () => (
@@ -44,26 +46,29 @@ const STEPS = [
 ];
 
 const FREE_TEMPLATES = [
-  { id: 'modern_blue',        label: 'Modern Blue',        desc: 'Profissional e Limpo',    badge: '🔥 Mais usado',   badgeColor: 'bg-orange-500' },
-  { id: 'executive_navy',     label: 'Executive Navy',     desc: 'Premium e Luxuoso',       badge: '💎 Premium',      badgeColor: 'bg-indigo-600' },
-  { id: 'modern_vitae',       label: 'Modern Vitae',       desc: 'Elegante e Espaçoso',     badge: '',                badgeColor: '' },
-  { id: 'classic_serif',      label: 'Classic Serif',      desc: 'Tradicional Acadêmico',   badge: '📚 Acadêmico',    badgeColor: 'bg-amber-600' },
-  { id: 'swiss_minimal',      label: 'Swiss Minimal',      desc: 'Design Suíço',            badge: '',                badgeColor: '' },
-  { id: 'teal_sidebar',       label: 'Teal Sidebar',       desc: 'Corporativo Moderno',     badge: '⭐ Popular',      badgeColor: 'bg-teal-600' },
-  { id: 'executive_red',      label: 'Executive Red',      desc: 'Liderança Sênior',        badge: '',                badgeColor: '' },
-  { id: 'corporate_gray',     label: 'Corporate Gray',     desc: 'Minimalista Pro',         badge: '',                badgeColor: '' },
-  { id: 'minimal_red_line',   label: 'Minimal Red',        desc: 'Impacto Visual',          badge: '',                badgeColor: '' },
-  { id: 'aurora_dark',        label: 'Aurora Dark',        desc: 'Dark Mode Gradiente',     badge: '🌟 Destaque',     badgeColor: 'bg-purple-600' },
-  { id: 'creative_portfolio', label: 'Creative Portfolio', desc: 'Design de Portfólio',     badge: '🎨 Criativo',     badgeColor: 'bg-rose-500' },
-  { id: 'minimalist_pro',     label: 'Minimalist Pro',     desc: 'Ultra Minimalista',       badge: '',                badgeColor: '' },
-  { id: 'bold_impact',        label: 'Bold Impact',        desc: 'Tipografia Forte',        badge: '💥 Ousado',       badgeColor: 'bg-violet-600' },
-  { id: 'soft_pastel',        label: 'Soft Pastel',        desc: 'Elegante e Feminino',     badge: '🌸 Delicado',     badgeColor: 'bg-pink-500' },
-  { id: 'tech_dark',          label: 'Tech Dark',          desc: 'Para Área de TI',         badge: '💻 TI & Dev',     badgeColor: 'bg-green-600' },
+  { id: 'modern_blue',      label: 'Modern Blue',    desc: 'Profissional e Limpo',   badge: '🔥 Mais usado', badgeColor: 'bg-orange-500' },
+  { id: 'classic_serif',    label: 'Classic Serif',  desc: 'Tradicional Acadêmico',  badge: '📚 Acadêmico',  badgeColor: 'bg-amber-600'  },
+  { id: 'modern_vitae',     label: 'Modern Vitae',   desc: 'Elegante e Espaçoso',    badge: '',              badgeColor: ''              },
+  { id: 'swiss_minimal',    label: 'Swiss Minimal',  desc: 'Design Suíço',           badge: '',              badgeColor: ''              },
+  { id: 'corporate_gray',   label: 'Corporate Gray', desc: 'Minimalista Pro',         badge: '',              badgeColor: ''              },
 ];
 
-// Alias mantém compatibilidade com código que usa TEMPLATES
-const TEMPLATES = FREE_TEMPLATES;
+// 10 templates premium — desbloqueados após pagamento de R$9,90
+const PREMIUM_TEMPLATES_LIST = [
+  { id: 'executive_navy',     label: 'Executive Navy',     desc: 'Premium e Luxuoso',    badge: '💎 Luxo',        badgeColor: 'bg-indigo-600' },
+  { id: 'teal_sidebar',       label: 'Teal Sidebar',       desc: 'Corporativo Moderno',  badge: '⭐ Popular',     badgeColor: 'bg-teal-600'   },
+  { id: 'executive_red',      label: 'Executive Red',      desc: 'Liderança Sênior',     badge: '',               badgeColor: ''              },
+  { id: 'minimal_red_line',   label: 'Minimal Red',        desc: 'Impacto Visual',       badge: '',               badgeColor: ''              },
+  { id: 'aurora_dark',        label: 'Aurora Dark',        desc: 'Dark Mode Gradiente',  badge: '🌟 Destaque',    badgeColor: 'bg-purple-600' },
+  { id: 'creative_portfolio', label: 'Creative Portfolio', desc: 'Design de Portfólio',  badge: '🎨 Criativo',    badgeColor: 'bg-rose-500'   },
+  { id: 'minimalist_pro',     label: 'Minimalist Pro',     desc: 'Ultra Minimalista',    badge: '',               badgeColor: ''              },
+  { id: 'bold_impact',        label: 'Bold Impact',        desc: 'Tipografia Forte',     badge: '💥 Ousado',      badgeColor: 'bg-violet-600' },
+  { id: 'soft_pastel',        label: 'Soft Pastel',        desc: 'Elegante e Feminino',  badge: '🌸 Delicado',    badgeColor: 'bg-pink-500'   },
+  { id: 'tech_dark',          label: 'Tech Dark',          desc: 'Para Área de TI',      badge: '💻 TI & Dev',    badgeColor: 'bg-green-600'  },
+];
 
+// Alias mantém compatibilidade
+const TEMPLATES = FREE_TEMPLATES;
 const PREMIUM_TEMPLATES: { id: string; label: string; desc: string; badge: string }[] = [];
 
 const FONTS = [
@@ -109,6 +114,11 @@ export default function App() {
   const [isATSPanelOpen, setIsATSPanelOpen] = useState(false);
 
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
+
+  // Premium
+  const { isPremium, isVerifying, unlockForTesting } = usePremium();
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
@@ -536,6 +546,14 @@ export default function App() {
   }, [view, isSidebarOpen, fitToScreen]);
 
   const handleTemplateSelect = (selectedTemplate: TemplateId) => {
+    // Verifica se é template premium e usuário não tem acesso
+    const isPremiumTemplate = PREMIUM_TEMPLATES_LIST.some(t => t.id === selectedTemplate);
+    if (isPremiumTemplate && !isPremium) {
+      const tpl = PREMIUM_TEMPLATES_LIST.find(t => t.id === selectedTemplate);
+      setPremiumModalTemplate(tpl?.label || selectedTemplate);
+      setIsPremiumModalOpen(true);
+      return;
+    }
     setTemplate(selectedTemplate);
     updateData(INITIAL_RESUME_DATA);
     navigateTo('/', 'editor');
@@ -583,7 +601,26 @@ export default function App() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <CookieConsent />
       {isATSPanelOpen && <Suspense fallback={null}><ATSPanel data={data} onClose={() => setIsATSPanelOpen(false)} /></Suspense>}
-      
+
+      {/* Banner de verificação de pagamento */}
+      {isVerifying && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-blue-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 text-sm font-black animate-in slide-in-from-top-4 duration-300">
+          <i className="fas fa-circle-notch fa-spin"></i>
+          Verificando seu pagamento...
+        </div>
+      )}
+
+      {/* Modal Premium */}
+      {isPremiumModalOpen && (
+        <Suspense fallback={null}>
+          <PremiumModal
+            templateLabel={premiumModalTemplate}
+            onClose={() => setIsPremiumModalOpen(false)}
+            onSuccess={() => { setIsPremiumModalOpen(false); showToast('🎉 Premium ativado! Aproveite todos os templates!', 'success'); }}
+          />
+        </Suspense>
+      )}
+
       {isImportModalOpen && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
@@ -1291,48 +1328,33 @@ export default function App() {
         <main className="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar">
           <div className="max-w-6xl mx-auto space-y-12">
 
-            {/* ── Seção Todos os Modelos ── */}
+            {/* ── Seção Gratuitos ── */}
             <section>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
-                    <span className="text-base">🎨</span>
+                    <span className="text-base">🆓</span>
                   </div>
                   <div>
-                    <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Todos os Modelos</h2>
-                    <p className="text-[10px] text-slate-400 font-bold">{FREE_TEMPLATES.length} designs prontos para você arrasar</p>
+                    <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Gratuitos</h2>
+                    <p className="text-[10px] text-slate-400 font-bold">{FREE_TEMPLATES.length} modelos para começar agora</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowFreeTemplates(v => !v)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                >
+                <button onClick={() => setShowFreeTemplates(v => !v)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-wide hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
                   <i className={`fas ${showFreeTemplates ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
                   {showFreeTemplates ? 'Ocultar' : 'Mostrar'}
                 </button>
               </div>
-
               {showFreeTemplates && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {FREE_TEMPLATES.map((t) => (
                     <div key={t.id} className={`bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group border-2 flex flex-col ${template === t.id ? 'border-blue-600 ring-4 ring-blue-100 dark:ring-blue-900/30' : 'border-transparent hover:border-blue-200 dark:hover:border-blue-800'}`}>
                       <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
                         <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
-                        {/* Badge de destaque */}
-                        {t.badge && (
-                          <div className={`absolute top-3 left-3 ${t.badgeColor} text-white text-[9px] font-black px-2 py-1 rounded-full`}>
-                            {t.badge}
-                          </div>
-                        )}
-                        {template === t.id && (
-                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
-                            ✓ Ativo
-                          </div>
-                        )}
+                        {t.badge && <div className={`absolute top-3 left-3 ${t.badgeColor} text-white text-[9px] font-black px-2 py-1 rounded-full`}>{t.badge}</div>}
+                        {template === t.id && <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded-full">✓ Ativo</div>}
                         <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform flex items-center gap-2">
-                            🎯 Usar este
-                          </button>
+                          <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform flex items-center gap-2">🎯 Usar este</button>
                         </div>
                       </div>
                       <div className="p-5 flex flex-col gap-1.5">
@@ -1344,6 +1366,96 @@ export default function App() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </section>
+
+            {/* ── Seção Premium ── */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-base">👑</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Premium</h2>
+                      {isPremium
+                        ? <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">✓ Ativado</span>
+                        : <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">R$ 9,90 único</span>
+                      }
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-bold">{PREMIUM_TEMPLATES_LIST.length} designs exclusivos</p>
+                  </div>
+                </div>
+                {!isPremium && (
+                  <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black uppercase tracking-wide hover:opacity-90 transition-all shadow-md active:scale-95">
+                    🔓 Desbloquear tudo
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {PREMIUM_TEMPLATES_LIST.map((t) => {
+                  const unlocked = isPremium;
+                  return (
+                    <div key={t.id} className={`rounded-3xl overflow-hidden shadow-lg transition-all duration-300 group border-2 flex flex-col ${unlocked ? 'bg-white dark:bg-slate-800 hover:shadow-2xl hover:-translate-y-2' : 'bg-slate-50 dark:bg-slate-800/60'} ${template === t.id ? 'border-amber-500 ring-4 ring-amber-100 dark:ring-amber-900/30' : unlocked ? 'border-transparent hover:border-amber-300 dark:hover:border-amber-700' : 'border-slate-200 dark:border-slate-700'}`}>
+                      <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                        <TemplateThumbnail template={t.id as TemplateId} className={`w-full h-full ${!unlocked ? 'opacity-50 blur-[1px]' : ''}`} />
+                        {t.badge && <div className={`absolute top-3 left-3 ${t.badgeColor} text-white text-[9px] font-black px-2 py-1 rounded-full`}>{t.badge}</div>}
+                        {template === t.id && unlocked && <div className="absolute top-3 right-3 bg-amber-500 text-white text-[9px] font-black px-2 py-1 rounded-full">✓ Ativo</div>}
+
+                        {/* Overlay de cadeado para não-premium */}
+                        {!unlocked && (
+                          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 group-hover:bg-slate-900/50 transition-colors">
+                            <div className="w-14 h-14 bg-white/90 dark:bg-slate-900/90 rounded-2xl flex items-center justify-center shadow-xl">
+                              <span className="text-2xl">🔒</span>
+                            </div>
+                            <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl scale-90 group-hover:scale-100 transition-transform">
+                              👑 Desbloquear — R$ 9,90
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Overlay hover para usuário premium */}
+                        {unlocked && (
+                          <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform">🎯 Usar este</button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-5 flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
+                          {!unlocked && <span className="text-[9px]">🔒</span>}
+                        </div>
+                        <p className="text-xs text-slate-400">{t.desc}</p>
+                        {unlocked
+                          ? <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 ${template === t.id ? 'bg-amber-500 text-white shadow-lg' : 'border-2 border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-amber-500 hover:text-white hover:border-amber-500 hover:shadow-md'}`}>
+                              {template === t.id ? '✓ Selecionado' : 'Selecionar este'}
+                            </button>
+                          : <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className="mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:opacity-90 active:scale-95 transition-all shadow-md">
+                              👑 Desbloquear — R$ 9,90
+                            </button>
+                        }
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Banner CTA se não for premium */}
+              {!isPremium && (
+                <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-3xl border border-amber-200 dark:border-amber-700/40 flex flex-col md:flex-row items-center gap-5">
+                  <div className="text-5xl">👑</div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="font-black text-slate-900 dark:text-white text-lg">Desbloqueie todos os 10 templates</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Pagamento único de <strong>R$ 9,90</strong> — acesso vitalício, sem assinatura, sem reencher nada. ✌️</p>
+                  </div>
+                  <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="shrink-0 px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all">
+                    🔓 Quero o Premium
+                  </button>
                 </div>
               )}
             </section>
@@ -1785,14 +1897,49 @@ export default function App() {
                      ))}
                    </div>
                  )}
-                 {/* New templates highlight in sidebar */}
-                 <div className="mt-4 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700/40">
-                   <div className="flex items-center gap-2 mb-1">
-                     <i className="fas fa-sparkles text-blue-500 text-xs"></i>
-                     <p className="text-[10px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-wide">6 Novos Modelos!</p>
+
+                 {/* Separador Premium na sidebar */}
+                 <div className="pt-4 mt-2">
+                   <div className="flex items-center gap-2 mb-3">
+                     <div className="flex-1 h-px bg-gradient-to-r from-amber-300 to-orange-400"></div>
+                     <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1">
+                       👑 Premium
+                     </span>
+                     <div className="flex-1 h-px bg-gradient-to-l from-amber-300 to-orange-400"></div>
                    </div>
-                   <p className="text-[9px] text-blue-600 dark:text-blue-500">Aurora Dark, Tech Dark, Creative Portfolio e mais.</p>
-                   <button onClick={() => { handleTemplateSelect(template); navigateTo('/', 'templates'); }} className="mt-2 text-[9px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-wide hover:underline">Ver todos →</button>
+                   <div className="space-y-3">
+                     {PREMIUM_TEMPLATES_LIST.map(t => {
+                       const unlocked = isPremium;
+                       const isActive = template === t.id;
+                       return (
+                         <button
+                           key={t.id}
+                           onClick={() => handleTemplateSelect(t.id as TemplateId)}
+                           className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group relative ${isActive && unlocked ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/20 shadow-sm' : unlocked ? 'border-slate-50 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700' : 'border-slate-100 dark:border-slate-800 opacity-80 hover:opacity-100'}`}
+                         >
+                           <div className="relative w-14 h-[74px] shrink-0">
+                             <TemplateThumbnail template={t.id as TemplateId} className={`w-full h-full ${!unlocked ? 'opacity-40 blur-[1px]' : ''}`} />
+                             {!unlocked && (
+                               <div className="absolute inset-0 flex items-center justify-center">
+                                 <span className="text-lg">🔒</span>
+                               </div>
+                             )}
+                           </div>
+                           <div className="text-left flex-1 min-w-0">
+                             <p className={`text-[10px] font-black uppercase truncate ${isActive && unlocked ? 'text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
+                             <p className="text-[8px] text-slate-400 font-bold uppercase truncate">{unlocked ? t.desc : 'Premium 👑'}</p>
+                           </div>
+                           {isActive && unlocked && <i className="fas fa-check text-amber-500 text-xs shrink-0"></i>}
+                         </button>
+                       );
+                     })}
+                   </div>
+
+                   {!isPremium && (
+                     <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="mt-4 w-full py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2">
+                       🔓 Desbloquear — R$ 9,90
+                     </button>
+                   )}
                  </div>
               </section>
               <section className="pt-4 border-t border-slate-50 dark:border-slate-800">
