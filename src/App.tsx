@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
-import { ResumeData, TemplateId, Experience, Education, Language, Course } from './types';
+import { ResumeData, TemplateId, Experience, Education, Language, Course, Project } from './types';
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
@@ -41,6 +41,7 @@ const STEPS = [
   { id: 'education',     label: 'Educação',    icon: 'fa-graduation-cap',   emoji: '🎓' },
   { id: 'languages',     label: 'Idiomas',     icon: 'fa-language',         emoji: '🌍' },
   { id: 'certifications',label: 'Cursos',      icon: 'fa-certificate',      emoji: '🏆' },
+  { id: 'projects',      label: 'Projetos',    icon: 'fa-code-branch',      emoji: '🚀' },
   { id: 'skills',        label: 'Skills',      icon: 'fa-bolt',             emoji: '⚡' },
   { id: 'summary',       label: 'Resumo',      icon: 'fa-align-left',       emoji: '✍️' },
 ];
@@ -146,7 +147,7 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.data) setHistoryDirect({ past: [], present: { ...INITIAL_RESUME_DATA, ...parsed.data }, future: [] });
+        if (parsed.data) setHistoryDirect({ past: [], present: { ...INITIAL_RESUME_DATA, ...parsed.data, projects: parsed.data.projects || [] }, future: [] });
         if (parsed.template) setTemplate(parsed.template);
         if (parsed.fontSize) setFontSize(parsed.fontSize);
         if (parsed.fontFamily) setFontFamily(parsed.fontFamily);
@@ -172,6 +173,10 @@ export default function App() {
     } else if (path.startsWith('/blog/')) {
       setBlogSlug(path.replace('/blog/', ''));
       setView('blog-post');
+    } else if (path === '/premium-success' || path === '/premium-failure' || path === '/premium-pending') {
+      // MP redirects — clear path and show home (usePremium hook handles the verification)
+      window.history.replaceState({}, '', '/');
+      setView('home');
     }
     
     const handlePopState = () => {
@@ -183,6 +188,11 @@ export default function App() {
       else if (p === '/contato') setView('contato');
       else if (p === '/blog') setView('blog');
       else if (p.startsWith('/blog/')) { setBlogSlug(p.replace('/blog/', '')); setView('blog-post'); }
+      // MP back_urls redirect to these paths — always bring back to home
+      else if (p === '/premium-success' || p === '/premium-failure' || p === '/premium-pending') {
+        window.history.replaceState({}, '', '/');
+        setView('home');
+      }
       else if (p === '/') setView('home');
     };
     window.addEventListener('popstate', handlePopState);
@@ -405,7 +415,7 @@ export default function App() {
     setErrors(prev => ({ ...prev, [field]: error }));
   };
 
-  const addItem = (listName: 'experiences' | 'education' | 'languages' | 'courses') => {
+  const addItem = (listName: 'experiences' | 'education' | 'languages' | 'courses' | 'projects') => {
     const id = Math.random().toString(36).substr(2, 9);
     if (listName === 'experiences') {
       const newItem: Experience = { id, company: '', position: '', location: '', startDate: '', endDate: '', current: false, description: '' };
@@ -419,17 +429,20 @@ export default function App() {
     } else if (listName === 'courses') {
       const newItem: Course = { id, name: '', institution: '', year: '' };
       updateData(prev => ({ ...prev, courses: [newItem, ...(prev.courses || [])] }));
+    } else if (listName === 'projects') {
+      const newItem: Project = { id, name: '', description: '', url: '', technologies: '' };
+      updateData(prev => ({ ...prev, projects: [newItem, ...(prev.projects || [])] }));
     }
   };
 
-  const removeItem = (listName: 'experiences' | 'education' | 'languages' | 'courses', id: string) => {
+  const removeItem = (listName: 'experiences' | 'education' | 'languages' | 'courses' | 'projects', id: string) => {
     updateData(prev => ({
       ...prev,
       [listName]: (prev[listName] as any[]).filter(item => item.id !== id)
     }));
   };
 
-  const updateItem = <T extends 'experiences' | 'education' | 'languages' | 'courses'>(
+  const updateItem = <T extends 'experiences' | 'education' | 'languages' | 'courses' | 'projects'>(
     listName: T, 
     id: string, 
     field: string, 
@@ -511,7 +524,13 @@ export default function App() {
   };
 
   const handleSectionClick = useCallback((sectionId: string) => {
-    const stepIdx = STEPS.findIndex(s => s.id === sectionId);
+    // Map section IDs to step IDs (some differ)
+    const sectionToStep: Record<string, string> = {
+      'extras': 'certifications',
+      'projects': 'projects',
+    };
+    const stepId = sectionToStep[sectionId] || sectionId;
+    const stepIdx = STEPS.findIndex(s => s.id === stepId);
     if (stepIdx !== -1) {
       setCurrentStep(stepIdx);
       setHighlightedStep(sectionId);
@@ -557,6 +576,35 @@ export default function App() {
     setTemplate(selectedTemplate);
     updateData(INITIAL_RESUME_DATA);
     navigateTo('/', 'editor');
+  };
+
+  // Animated counter component for home page stats
+  const AnimatedCounter = ({ target, suffix = '' }: { target: number; suffix?: string }) => {
+    const [count, setCount] = React.useState(0);
+    const ref = React.useRef<HTMLSpanElement>(null);
+    React.useEffect(() => {
+      const el = ref.current;
+      if (!el) return;
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          observer.disconnect();
+          let start = 0;
+          const duration = 1500;
+          const step = (timestamp: number) => {
+            if (!start) start = timestamp;
+            const progress = Math.min((timestamp - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(eased * target));
+            if (progress < 1) requestAnimationFrame(step);
+            else setCount(target);
+          };
+          requestAnimationFrame(step);
+        }
+      }, { threshold: 0.5 });
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, [target]);
+    return <span ref={ref}>{count.toLocaleString('pt-BR')}{suffix}</span>;
   };
 
   const nextStep = () => {
@@ -1143,11 +1191,10 @@ export default function App() {
               ))}
             </div>
 
-            {/* Social proof */}
             <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-8 text-center">
-              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">+15.000 🎉</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p></div>
+              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">+<AnimatedCounter target={15000} /> 🎉</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">15 🎨</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p></div>
+              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400"><AnimatedCounter target={15} /> 🎨</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
               <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">100% 💚</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Grátis, sempre</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
@@ -1274,7 +1321,7 @@ export default function App() {
               {[
                 { slug: 'como-fazer-curriculo-sem-experiencia', title: 'Como Fazer um Currículo Sem Experiência', cat: 'Iniciantes' },
                 { slug: 'erros-mais-comuns-no-curriculo', title: '10 Erros Mais Comuns no Currículo', cat: 'Dicas' },
-                { slug: 'habilidades-mais-valorizadas-mercado-2025', title: 'Habilidades Mais Valorizadas em 2025', cat: 'Mercado' },
+                { slug: 'o-que-e-ats-e-como-passar-pela-triagem', title: 'O Que é ATS e Como Passar pela Triagem', cat: '🔥 ATS & Tech' },
               ].map(post => (
                 <div
                   key={post.slug}
@@ -1702,6 +1749,39 @@ export default function App() {
                       <div className="text-4xl mb-2">🏆</div>
                       <p className="text-xs font-bold text-slate-400">Nenhum curso ainda.</p>
                       <p className="text-xs text-slate-300 mt-1">Até aquele curso de Excel de 2018 pode entrar! 😂</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === 'projects' && (
+                <div className="animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🚀 Projetos</h2>
+                    <button onClick={() => addItem('projects')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-6">Mostre o que você construiu! Projetos pessoais, open source, apps, sites... 🔨</p>
+                  {(data.projects || []).map(proj => (
+                    <div key={proj.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-emerald-400 shadow-sm hover:shadow-md transition-shadow">
+                      <button onClick={() => removeItem('projects', proj.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
+                      <Input label="Nome do Projeto" value={proj.name} onChange={(v) => updateItem('projects', proj.id, 'name', v)} placeholder="Ex: App de Finanças Pessoais" />
+                      <Input label="Tecnologias" value={proj.technologies} onChange={(v) => updateItem('projects', proj.id, 'technologies', v)} placeholder="Ex: React, Node.js, PostgreSQL" />
+                      <Input label="Link (opcional)" value={proj.url} onChange={(v) => updateItem('projects', proj.id, 'url', v)} placeholder="https://github.com/seu-projeto" />
+                      <div className="mt-2">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Descrição</label>
+                        <textarea
+                          className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm h-24 outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 resize-none transition-all"
+                          value={proj.description}
+                          onChange={(e) => updateItem('projects', proj.id, 'description', e.target.value)}
+                          placeholder="O que o projeto faz e qual problema resolve..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {(!data.projects || data.projects.length === 0) && (
+                    <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                      <div className="text-5xl mb-3">🚀</div>
+                      <p className="text-sm font-bold text-slate-400">Nenhum projeto ainda.</p>
+                      <p className="text-xs text-slate-300 mt-1">Para devs e designers, projetos valem ouro! ✨</p>
                     </div>
                   )}
                 </div>

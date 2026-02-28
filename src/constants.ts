@@ -10,8 +10,8 @@ export const INITIAL_RESUME_DATA: ResumeData = {
     website: '',
     linkedin: '',
     jobTitle: '',
-    drivingLicense: '', // Inicializa vazio
-    photoUrl: 'https://i.pravatar.cc/300?img=32',
+    drivingLicense: '',
+    photoUrl: '',
   },
   summary: '',
   experiences: [],
@@ -19,7 +19,8 @@ export const INITIAL_RESUME_DATA: ResumeData = {
   skills: [],
   languages: [],
   courses: [],
-  sectionOrder: ['summary', 'experience', 'education', 'skills', 'extras']
+  projects: [],
+  sectionOrder: ['summary', 'experience', 'education', 'skills', 'extras', 'projects']
 };
 
 export const MOCK_RESUME_DATA: ResumeData = {
@@ -73,5 +74,6 @@ export const MOCK_RESUME_DATA: ResumeData = {
     { id: 'c1', name: 'BNCC e Metodologias Ativas', institution: 'PUC-SP', year: '2023' },
     { id: 'c2', name: 'Ensino em Ambiente Virtual', institution: 'UFRB', year: '2022' },
   ],
-  sectionOrder: ['summary', 'experience', 'education', 'skills', 'extras']
+  projects: [],
+  sectionOrder: ['summary', 'experience', 'education', 'skills', 'extras', 'projects']
 };

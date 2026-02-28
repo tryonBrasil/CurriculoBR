@@ -40,7 +40,15 @@ export interface Course {
   year: string;
 }
 
-export type SectionId = 'summary' | 'experience' | 'education' | 'skills' | 'extras';
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  technologies: string;
+}
+
+export type SectionId = 'summary' | 'experience' | 'education' | 'skills' | 'extras' | 'projects';
 
 export interface ResumeData {
   personalInfo: {
@@ -60,6 +68,7 @@ export interface ResumeData {
   skills: Skill[];
   languages: Language[];
   courses: Course[];
+  projects: Project[];
   sectionOrder: SectionId[];
 }
 
