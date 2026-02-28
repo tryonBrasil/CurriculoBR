@@ -34,31 +34,31 @@ const PageLoader = () => (
 );
 
 const STEPS = [
-  { id: 'info', label: 'Dados', icon: 'fa-id-card' },
-  { id: 'experience', label: 'Experiência', icon: 'fa-briefcase' },
-  { id: 'education', label: 'Educação', icon: 'fa-graduation-cap' },
-  { id: 'languages', label: 'Idiomas', icon: 'fa-language' },
-  { id: 'certifications', label: 'Cursos', icon: 'fa-certificate' },
-  { id: 'skills', label: 'Habilidades', icon: 'fa-bolt' },
-  { id: 'summary', label: 'Resumo', icon: 'fa-align-left' },
+  { id: 'info',          label: 'Você',        icon: 'fa-id-card',         emoji: '🧑' },
+  { id: 'experience',    label: 'Experiência', icon: 'fa-briefcase',        emoji: '💼' },
+  { id: 'education',     label: 'Educação',    icon: 'fa-graduation-cap',   emoji: '🎓' },
+  { id: 'languages',     label: 'Idiomas',     icon: 'fa-language',         emoji: '🌍' },
+  { id: 'certifications',label: 'Cursos',      icon: 'fa-certificate',      emoji: '🏆' },
+  { id: 'skills',        label: 'Skills',      icon: 'fa-bolt',             emoji: '⚡' },
+  { id: 'summary',       label: 'Resumo',      icon: 'fa-align-left',       emoji: '✍️' },
 ];
 
 const FREE_TEMPLATES = [
-  { id: 'modern_blue',        label: 'Modern Blue',       desc: 'Profissional e Limpo' },
-  { id: 'executive_navy',     label: 'Executive Navy',    desc: 'Premium e Luxuoso' },
-  { id: 'modern_vitae',       label: 'Modern Vitae',      desc: 'Elegante e Espaçoso' },
-  { id: 'classic_serif',      label: 'Classic Serif',     desc: 'Tradicional Acadêmico' },
-  { id: 'swiss_minimal',      label: 'Swiss Minimal',     desc: 'Design Suíço' },
-  { id: 'teal_sidebar',       label: 'Teal Sidebar',      desc: 'Corporativo Moderno' },
-  { id: 'executive_red',      label: 'Executive Red',     desc: 'Liderança Sênior' },
-  { id: 'corporate_gray',     label: 'Corporate Gray',    desc: 'Minimalista Pro' },
-  { id: 'minimal_red_line',   label: 'Minimal Red',       desc: 'Impacto Visual' },
-  { id: 'aurora_dark',        label: 'Aurora Dark',       desc: 'Dark Mode Gradiente' },
-  { id: 'creative_portfolio', label: 'Creative Portfolio',desc: 'Design de Portfólio' },
-  { id: 'minimalist_pro',     label: 'Minimalist Pro',    desc: 'Ultra Minimalista' },
-  { id: 'bold_impact',        label: 'Bold Impact',       desc: 'Tipografia Forte' },
-  { id: 'soft_pastel',        label: 'Soft Pastel',       desc: 'Elegante e Feminino' },
-  { id: 'tech_dark',          label: 'Tech Dark',         desc: 'Para Área de TI' },
+  { id: 'modern_blue',        label: 'Modern Blue',        desc: 'Profissional e Limpo',    badge: '🔥 Mais usado',   badgeColor: 'bg-orange-500' },
+  { id: 'executive_navy',     label: 'Executive Navy',     desc: 'Premium e Luxuoso',       badge: '💎 Premium',      badgeColor: 'bg-indigo-600' },
+  { id: 'modern_vitae',       label: 'Modern Vitae',       desc: 'Elegante e Espaçoso',     badge: '',                badgeColor: '' },
+  { id: 'classic_serif',      label: 'Classic Serif',      desc: 'Tradicional Acadêmico',   badge: '📚 Acadêmico',    badgeColor: 'bg-amber-600' },
+  { id: 'swiss_minimal',      label: 'Swiss Minimal',      desc: 'Design Suíço',            badge: '',                badgeColor: '' },
+  { id: 'teal_sidebar',       label: 'Teal Sidebar',       desc: 'Corporativo Moderno',     badge: '⭐ Popular',      badgeColor: 'bg-teal-600' },
+  { id: 'executive_red',      label: 'Executive Red',      desc: 'Liderança Sênior',        badge: '',                badgeColor: '' },
+  { id: 'corporate_gray',     label: 'Corporate Gray',     desc: 'Minimalista Pro',         badge: '',                badgeColor: '' },
+  { id: 'minimal_red_line',   label: 'Minimal Red',        desc: 'Impacto Visual',          badge: '',                badgeColor: '' },
+  { id: 'aurora_dark',        label: 'Aurora Dark',        desc: 'Dark Mode Gradiente',     badge: '🌟 Destaque',     badgeColor: 'bg-purple-600' },
+  { id: 'creative_portfolio', label: 'Creative Portfolio', desc: 'Design de Portfólio',     badge: '🎨 Criativo',     badgeColor: 'bg-rose-500' },
+  { id: 'minimalist_pro',     label: 'Minimalist Pro',     desc: 'Ultra Minimalista',       badge: '',                badgeColor: '' },
+  { id: 'bold_impact',        label: 'Bold Impact',        desc: 'Tipografia Forte',        badge: '💥 Ousado',       badgeColor: 'bg-violet-600' },
+  { id: 'soft_pastel',        label: 'Soft Pastel',        desc: 'Elegante e Feminino',     badge: '🌸 Delicado',     badgeColor: 'bg-pink-500' },
+  { id: 'tech_dark',          label: 'Tech Dark',          desc: 'Para Área de TI',         badge: '💻 TI & Dev',     badgeColor: 'bg-green-600' },
 ];
 
 // Alias mantém compatibilidade com código que usa TEMPLATES
@@ -1044,36 +1044,41 @@ export default function App() {
           <div className="max-w-5xl w-full space-y-8">
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
               <span className="inline-flex items-center gap-2 py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-                <span className="status-dot w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
-                Gerador de Currículos com IA — 100% Grátis
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse"></span>
+                ✨ Grátis, sem cadastro, sem enrolação
               </span>
-              <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Seu currículo perfeito, <br className="hidden md:block"/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">em minutos.</span></h2>
-              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">Combine design profissional com o poder da Inteligência Artificial para conquistar a vaga dos seus sonhos.</p>
+              <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                Seu currículo novo,<br className="hidden md:block"/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">em minutos. 🚀</span>
+              </h2>
+              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
+                Design profissional + IA do Google Gemini. Chega de currículo no Word que parece de 2008. 😅
+              </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <button onClick={() => navigateTo('/', 'templates')} className="group bg-blue-600 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 hover:scale-[1.05] transition-all shadow-2xl flex items-center gap-3">
-                Criar do Zero <i className="fas fa-magic group-hover:rotate-12 transition-transform"></i>
+              <button onClick={() => navigateTo('/', 'templates')} className="group bg-blue-600 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-700 hover:scale-[1.05] active:scale-[0.98] transition-all shadow-2xl flex items-center gap-3">
+                Criar meu Currículo 🎯 <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
               </button>
-              <button onClick={() => setIsImportModalOpen(true)} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xl flex items-center gap-3">
-                Importar Currículo <i className="fas fa-file-import"></i>
+              <button onClick={() => setIsImportModalOpen(true)} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl flex items-center gap-3">
+                📄 Importar PDF <i className="fas fa-file-import text-slate-400"></i>
               </button>
             </div>
 
             <div className="mt-4">
-               <button onClick={() => navigateTo('/carta-de-apresentacao', 'cover-letter-page')} className="text-slate-400 hover:text-blue-600 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto">
-                 <i className="fas fa-envelope-open-text"></i> Precisa apenas de uma Carta de Apresentação?
+               <button onClick={() => navigateTo('/carta-de-apresentacao', 'cover-letter-page')} className="text-slate-400 hover:text-blue-600 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto group">
+                 ✉️ Precisa de uma Carta de Apresentação também? <i className="fas fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
                </button>
             </div>
 
             {/* Trust bar */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-              <span className="flex items-center gap-1.5"><i className="fas fa-user-slash text-blue-600"></i> Sem Cadastro</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🙈 Sem Cadastro</span>
               <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5"><i className="fas fa-lock text-blue-600"></i> 100% Privado</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🔒 100% Privado</span>
               <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5"><i className="fas fa-file-pdf text-blue-600"></i> PDF Grátis</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">📄 PDF Grátis</span>
               <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5"><i className="fas fa-brain text-blue-600"></i> IA Integrada</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🤖 IA Integrada</span>
             </div>
 
             <div className="mt-12 max-w-3xl mx-auto">
@@ -1085,19 +1090,17 @@ export default function App() {
         {/* ── Features / Benefícios ── */}
         <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
-            <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoBR?</p>
+            <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoBR? 🤔</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos e exclusivos para cada perfil profissional' },
-                { icon: 'fa-wand-magic-sparkles', title: 'IA Integrada', desc: 'Google Gemini sugere textos, habilidades e faz análise ATS' },
-                { icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe em PDF de alta qualidade sem pagar nada' },
-                { icon: 'fa-user-slash', title: 'Sem Cadastro', desc: '100% online, sem criar conta, sem cartão de crédito' },
+                { emoji: '🎨', icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos para cada perfil — do conservador ao criativo' },
+                { emoji: '🤖', icon: 'fa-wand-magic-sparkles', title: 'IA do Gemini', desc: 'Sugere textos, habilidades e analisa seu currículo em tempo real' },
+                { emoji: '📄', icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe em alta qualidade sem pagar nada, nem com email' },
+                { emoji: '🙈', icon: 'fa-user-slash', title: 'Zero Cadastro', desc: 'Nem criou conta, nem vai criar. Abre e já usa. Ponto.' },
               ].map(f => (
-                <div key={f.icon} className="flex flex-col items-center text-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-                  <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                    <i className={`fas ${f.icon} text-blue-600 dark:text-blue-400 text-lg`}></i>
-                  </div>
-                  <h3 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-wide">{f.title}</h3>
+                <div key={f.icon} className="flex flex-col items-center text-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 cursor-default group">
+                  <div className="text-3xl group-hover:scale-125 transition-transform duration-300">{f.emoji}</div>
+                  <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">{f.title}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
                 </div>
               ))}
@@ -1105,13 +1108,13 @@ export default function App() {
 
             {/* Social proof */}
             <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-8 text-center">
-              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">+15.000</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p></div>
+              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">+15.000 🎉</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">15</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p></div>
+              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">15 🎨</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">100%</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Grátis, sempre</p></div>
+              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">100% 💚</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Grátis, sempre</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div><p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9★</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p></div>
+              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9 ⭐</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p></div>
             </div>
           </div>
         </section>
@@ -1278,7 +1281,10 @@ export default function App() {
              <i className="fas fa-arrow-left text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"></i>
              <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 hidden sm:block">Voltar</span>
           </div>
-          <h1 className="font-black text-lg text-slate-800 dark:text-white uppercase tracking-tight">Escolha seu Modelo</h1>
+          <div className="text-center">
+            <h1 className="font-black text-lg text-slate-800 dark:text-white uppercase tracking-tight">Escolha seu Estilo ✨</h1>
+            <p className="text-[10px] text-slate-400 font-medium hidden sm:block">Qual vai ser o look do seu próximo emprego?</p>
+          </div>
           <div className="w-20"></div>
         </header>
 
@@ -1290,11 +1296,11 @@ export default function App() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
-                    <i className="fas fa-th-large text-white text-xs"></i>
+                    <span className="text-base">🎨</span>
                   </div>
                   <div>
                     <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Todos os Modelos</h2>
-                    <p className="text-[10px] text-slate-400 font-bold">{FREE_TEMPLATES.length} modelos gratuitos disponíveis</p>
+                    <p className="text-[10px] text-slate-400 font-bold">{FREE_TEMPLATES.length} designs prontos para você arrasar</p>
                   </div>
                 </div>
                 <button
@@ -1309,25 +1315,31 @@ export default function App() {
               {showFreeTemplates && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {FREE_TEMPLATES.map((t) => (
-                    <div key={t.id} className={`bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group border-2 flex flex-col ${template === t.id ? 'border-blue-600 ring-4 ring-blue-100 dark:ring-blue-900/30' : 'border-transparent hover:border-blue-200 dark:hover:border-blue-800'}`}>
+                    <div key={t.id} className={`bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group border-2 flex flex-col ${template === t.id ? 'border-blue-600 ring-4 ring-blue-100 dark:ring-blue-900/30' : 'border-transparent hover:border-blue-200 dark:hover:border-blue-800'}`}>
                       <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
                         <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
-                        {template === t.id && (
-                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
-                            <i className="fas fa-check text-[8px]"></i> Ativo
+                        {/* Badge de destaque */}
+                        {t.badge && (
+                          <div className={`absolute top-3 left-3 ${t.badgeColor} text-white text-[9px] font-black px-2 py-1 rounded-full`}>
+                            {t.badge}
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform">
-                            Usar este
+                        {template === t.id && (
+                          <div className="absolute top-3 right-3 bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded-full uppercase tracking-wide flex items-center gap-1">
+                            ✓ Ativo
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform flex items-center gap-2">
+                            🎯 Usar este
                           </button>
                         </div>
                       </div>
                       <div className="p-5 flex flex-col gap-1.5">
                         <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
                         <p className="text-xs text-slate-400">{t.desc}</p>
-                        <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${template === t.id ? 'bg-blue-600 text-white' : 'border-2 border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}>
-                          {template === t.id ? '✓ Selecionado' : 'Selecionar'}
+                        <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 ${template === t.id ? 'bg-blue-600 text-white shadow-lg' : 'border-2 border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-md'}`}>
+                          {template === t.id ? '✓ Selecionado — Vamos lá!' : 'Selecionar este'}
                         </button>
                       </div>
                     </div>
@@ -1425,12 +1437,12 @@ export default function App() {
            
            <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 shrink-0 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2">
              {STEPS.map((step, idx) => (
-               <button 
-                key={step.id} 
-                onClick={() => setCurrentStep(idx)} 
-                className={`flex-1 min-w-[70px] py-4 flex flex-col items-center gap-2 transition-all relative px-1 shrink-0 ${currentStep === idx ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm rounded-t-lg mt-1' : 'text-slate-400 grayscale hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
+               <button
+                key={step.id}
+                onClick={() => setCurrentStep(idx)}
+                className={`flex-1 min-w-[70px] py-4 flex flex-col items-center gap-1.5 transition-all relative px-1 shrink-0 ${currentStep === idx ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm rounded-t-lg mt-1' : 'text-slate-400 grayscale hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
                >
-                 <i className={`fas ${step.icon} text-[14px]`}></i>
+                 <span className={`text-base leading-none transition-transform ${currentStep === idx ? 'scale-125' : 'group-hover:scale-110'}`}>{step.emoji}</span>
                  <span className="text-[9px] font-black uppercase tracking-[0.1em] whitespace-nowrap">{step.label}</span>
                  {currentStep === idx && <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full"></div>}
                </button>
@@ -1440,15 +1452,16 @@ export default function App() {
            <div ref={editorScrollRef} className={`flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 transition-colors duration-500 ${highlightedStep ? 'bg-blue-50/20 dark:bg-blue-900/10' : ''}`}>
               {activeTab === 'info' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Informações Pessoais</h2>
-                  
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">🧑 Sobre Você</h2>
+                  <p className="text-xs text-slate-400 mb-6">Essas são as primeiras impressões — capriche! ✨</p>
+
                   <div className="flex items-center gap-6 mb-6">
                     <div className="relative group cursor-pointer" onClick={() => photoInputRef.current?.click()}>
                       <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden">
                         {data.personalInfo?.photoUrl ? (
                           <img src={data.personalInfo.photoUrl} alt="Perfil" className="w-full h-full object-cover" />
                         ) : (
-                          <i className="fas fa-camera text-slate-400 text-2xl group-hover:text-blue-500 transition-colors"></i>
+                          <span className="text-3xl group-hover:scale-125 transition-transform">📸</span>
                         )}
                       </div>
                       <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1457,8 +1470,8 @@ export default function App() {
                       <input type="file" ref={photoInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
                     </div>
                     <div>
-                       <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">Sua Foto</h3>
-                       <p className="text-xs text-slate-400 max-w-[200px] leading-tight mt-1">Recomendamos uma foto profissional, com fundo neutro e boa iluminação.</p>
+                       <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">📷 Sua Foto</h3>
+                       <p className="text-xs text-slate-400 max-w-[200px] leading-tight mt-1">Sorria! Uma boa foto aumenta muito as chances de chamarem você. 😊</p>
                        {data.personalInfo?.photoUrl && (
                            <button onClick={(e) => { e.stopPropagation(); updateData(p => ({...p, personalInfo: {...p.personalInfo, photoUrl: ''}})); }} className="text-[10px] text-red-500 font-bold uppercase mt-2 hover:underline">Remover foto</button>
                        )}
@@ -1483,12 +1496,13 @@ export default function App() {
               )}
               {activeTab === 'experience' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Experiências</h2>
-                    <button onClick={() => addItem('experiences')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">💼 Experiências</h2>
+                    <button onClick={() => addItem('experiences')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
+                  <p className="text-xs text-slate-400 mb-6">Seus maiores feitos vão aqui. Não seja modesto! 💪</p>
                   {data.experiences?.map(exp => (
-                    <div key={exp.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-blue-400 shadow-sm">
+                    <div key={exp.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-blue-400 shadow-sm hover:shadow-md transition-shadow">
                       <button onClick={() => removeItem('experiences', exp.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
                       <Input label="Empresa" value={exp.company} onChange={(v) => updateItem('experiences', exp.id, 'company', v)} />
                       <Input label="Cargo" value={exp.position} onChange={(v) => updateItem('experiences', exp.id, 'position', v)} />
@@ -1499,8 +1513,8 @@ export default function App() {
                       <div className="mt-2 relative">
                          <div className="flex justify-between items-center mb-1">
                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Descrição</label>
-                           <button onClick={() => handleEnhance(exp.description, 'experiência', 'experiences', exp.id)} disabled={!exp.description || isEnhancing === exp.id} className="text-[9px] text-blue-600 dark:text-blue-400 font-black uppercase hover:text-blue-800 transition-colors">
-                            <i className={`fas ${isEnhancing === exp.id ? 'fa-circle-notch fa-spin' : 'fa-magic'}`}></i> IA
+                           <button onClick={() => handleEnhance(exp.description, 'experiência', 'experiences', exp.id)} disabled={!exp.description || isEnhancing === exp.id} className="text-[9px] text-blue-600 dark:text-blue-400 font-black uppercase hover:text-blue-800 transition-colors flex items-center gap-1">
+                            <i className={`fas ${isEnhancing === exp.id ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}`}></i> 🤖 Melhorar com IA
                            </button>
                          </div>
                          <textarea className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm h-32 outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 resize-none transition-all" value={exp.description} onChange={(e) => updateItem('experiences', exp.id, 'description', e.target.value)} />
@@ -1508,21 +1522,23 @@ export default function App() {
                     </div>
                   ))}
                   {data.experiences.length === 0 && (
-                     <div className="text-center py-10 opacity-50">
-                        <i className="fas fa-briefcase text-4xl mb-2 text-slate-300"></i>
-                        <p className="text-sm font-bold text-slate-400">Adicione suas experiências profissionais</p>
+                     <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                        <div className="text-5xl mb-3">💼</div>
+                        <p className="text-sm font-bold text-slate-400">Nenhuma experiência ainda.</p>
+                        <p className="text-xs text-slate-300 mt-1">Todo mundo começa do zero! Adicione a sua. 😄</p>
                      </div>
                   )}
                 </div>
               )}
               {activeTab === 'education' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Educação</h2>
-                    <button onClick={() => addItem('education')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🎓 Educação</h2>
+                    <button onClick={() => addItem('education')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
+                  <p className="text-xs text-slate-400 mb-6">Onde você aprendeu a ser incrível! 🏫</p>
                   {data.education?.map(edu => (
-                    <div key={edu.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-indigo-400 shadow-sm">
+                    <div key={edu.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-indigo-400 shadow-sm hover:shadow-md transition-shadow">
                       <button onClick={() => removeItem('education', edu.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
                       <Input label="Instituição" value={edu.institution} onChange={(v) => updateItem('education', edu.id, 'institution', v)} />
                       <Input label="Grau/Curso" value={edu.degree} onChange={(v) => updateItem('education', edu.id, 'degree', v)} />
@@ -1533,31 +1549,34 @@ export default function App() {
               )}
               {activeTab === 'languages' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Idiomas</h2>
-                    <button onClick={() => addItem('languages')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🌍 Idiomas</h2>
+                    <button onClick={() => addItem('languages')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
+                  <p className="text-xs text-slate-400 mb-6">Fala inglês? Ótimo. Fala mandarim? Melhor ainda. 😏</p>
                   {data.languages?.map(lang => (
-                    <div key={lang.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-green-400 shadow-sm">
+                    <div key={lang.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-green-400 shadow-sm hover:shadow-md transition-shadow">
                       <button onClick={() => removeItem('languages', lang.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
                       <Input label="Idioma" value={lang.name} onChange={(v) => updateItem('languages', lang.id, 'name', v)} placeholder="Ex: Inglês" />
                       <Input label="Nível" value={lang.level} onChange={(v) => updateItem('languages', lang.id, 'level', v)} placeholder="Ex: Fluente, Intermediário" />
                     </div>
                   ))}
                   {(!data.languages || data.languages.length === 0) && (
-                    <div className="text-center p-8 text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                      <i className="fas fa-language text-2xl mb-2"></i>
-                      <p className="text-xs">Nenhum idioma adicionado.</p>
+                    <div className="text-center p-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                      <div className="text-4xl mb-2">🌍</div>
+                      <p className="text-xs font-bold text-slate-400">Nenhum idioma adicionado ainda.</p>
+                      <p className="text-xs text-slate-300 mt-1">Até o "Português nativo" conta! 🇧🇷</p>
                     </div>
                   )}
                 </div>
               )}
               {activeTab === 'certifications' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Cursos e Certificações</h2>
-                    <button onClick={() => addItem('courses')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 transition-colors">+ Adicionar</button>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🏆 Cursos e Certificações</h2>
+                    <button onClick={() => addItem('courses')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
+                  <p className="text-xs text-slate-400 mb-6">Cursos, certificações e tudo que você aprendeu além da faculdade. 📚</p>
                   {data.courses?.map(cert => (
                     <div key={cert.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-yellow-400 shadow-sm">
                       <button onClick={() => removeItem('courses', cert.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
@@ -1567,21 +1586,23 @@ export default function App() {
                     </div>
                   ))}
                   {(!data.courses || data.courses.length === 0) && (
-                    <div className="text-center p-8 text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                      <i className="fas fa-certificate text-2xl mb-2"></i>
-                      <p className="text-xs">Nenhuma certificação adicionada.</p>
+                    <div className="text-center p-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                      <div className="text-4xl mb-2">🏆</div>
+                      <p className="text-xs font-bold text-slate-400">Nenhum curso ainda.</p>
+                      <p className="text-xs text-slate-300 mt-1">Até aquele curso de Excel de 2018 pode entrar! 😂</p>
                     </div>
                   )}
                 </div>
               )}
               {activeTab === 'skills' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Habilidades</h2>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">⚡ Skills</h2>
                      <button onClick={handleSuggestSkills} disabled={isEnhancing === 'skills-suggest'} className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
-                      <i className={`fas ${isEnhancing === 'skills-suggest' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}`}></i> Sugerir
+                      <i className={`fas ${isEnhancing === 'skills-suggest' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}`}></i> 🤖 Sugerir com IA
                     </button>
                   </div>
+                  <p className="text-xs text-slate-400 mb-6">Separe por vírgula. Seja honesto — ninguém quer "expert em tudo". 😅</p>
                   <div className="relative">
                     <textarea
                       className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-40 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all"
@@ -1595,32 +1616,33 @@ export default function App() {
                         }));
                         updateData(p => ({...p, skills: newSkills}));
                       }}
-                      placeholder="Liste suas habilidades separadas por vírgula..."
+                      placeholder="Ex: Excel, Comunicação, Photoshop, Gestão de Projetos..."
                     />
                   </div>
                 </div>
               )}
               {activeTab === 'summary' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Resumo Profissional</h2>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">✍️ Resumo Profissional</h2>
                     <button onClick={handleGenerateSummary} disabled={!data.skills?.length || isEnhancing === 'summary-gen'} className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
-                      <i className={`fas ${isEnhancing === 'summary-gen' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic'}`}></i> Gerar com IA
+                      <i className={`fas ${isEnhancing === 'summary-gen' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic'}`}></i> 🤖 Gerar com IA
                     </button>
                   </div>
+                  <p className="text-xs text-slate-400 mb-6">Seu pitch de 3 linhas para o recrutador. A IA faz por você! 🚀</p>
                   <div className="relative">
-                    <textarea 
-                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-64 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all" 
-                      value={data.summary} 
+                    <textarea
+                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-64 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all"
+                      value={data.summary}
                       onChange={(e) => updateData(prev => ({ ...prev, summary: e.target.value }))}
-                      placeholder="Escreva um pouco sobre você e suas principais conquistas..." 
+                      placeholder="Clica em '🤖 Gerar com IA' e deixa a mágica acontecer... ou escreva você mesmo!"
                     />
-                    <button 
-                      onClick={() => handleEnhance(data.summary, 'resumo')} 
+                    <button
+                      onClick={() => handleEnhance(data.summary, 'resumo')}
                       disabled={!data.summary || isEnhancing === 'resumo'}
-                      className="absolute bottom-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:text-blue-600 transition-all"
+                      className="absolute bottom-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:text-blue-600 transition-all active:scale-95"
                     >
-                      <i className={`fas ${isEnhancing === 'resumo' ? 'fa-circle-notch fa-spin' : 'fa-magic'} mr-1`}></i> Refinar
+                      <i className={`fas ${isEnhancing === 'resumo' ? 'fa-circle-notch fa-spin' : 'fa-magic'} mr-1`}></i> ✨ Refinar
                     </button>
                   </div>
                 </div>
@@ -1631,18 +1653,18 @@ export default function App() {
               {/* Score on mobile */}
               <div className="flex md:hidden items-center gap-1.5 min-w-0">
                 <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-500'}`} style={{width:`${cvScore}%`}}></div>
+                  <div className={`h-full rounded-full transition-all duration-700 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-500'}`} style={{width:`${cvScore}%`}}></div>
                 </div>
-                <span className="text-[9px] font-black text-slate-400 uppercase">{cvScore}%</span>
+                <span className="text-[9px] font-black text-slate-400 uppercase">{cvScore}% {cvScore > 70 ? '🔥' : '📝'}</span>
               </div>
-              <button onClick={prevStep} className={`hidden md:block flex-1 py-4 font-bold text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors ${currentStep === 0 ? 'invisible' : ''}`}>Anterior</button>
+              <button onClick={prevStep} className={`hidden md:block flex-1 py-4 font-bold text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors ${currentStep === 0 ? 'invisible' : ''}`}>← Anterior</button>
               <button onClick={prevStep} className={`md:hidden w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-400 transition-colors active:scale-95 ${currentStep === 0 ? 'invisible' : ''}`}>
                 <i className="fas fa-chevron-left text-sm"></i>
               </button>
               <button onClick={nextStep} className="flex-1 py-3 md:py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
                 {currentStep === STEPS.length - 1
-                  ? <><i className="fas fa-file-pdf mr-1"></i> Exportar PDF</>
-                  : <><span className="hidden sm:inline">Próximo</span><i className="fas fa-chevron-right sm:ml-1.5 text-xs"></i></>
+                  ? <><span>🎉 Baixar PDF!</span></>
+                  : <><span className="hidden sm:inline">Próximo →</span><i className="fas fa-chevron-right sm:hidden text-xs"></i></>
                 }
               </button>
            </div>
