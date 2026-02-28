@@ -11,10 +11,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'MP_ACCESS_TOKEN não configurado' });
   }
 
-  // URL base da aplicação (Vercel injeta automaticamente em produção)
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:5173';
+  // VERCEL_PROJECT_PRODUCTION_URL é o domínio estável (custom domain ou .vercel.app fixo)
+  // VERCEL_URL muda a cada deploy — não usar para back_urls
+  // SITE_URL pode ser configurada manualmente no Vercel para domínio customizado
+  const baseUrl =
+    process.env.SITE_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : 'http://localhost:5173');
 
   try {
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
