@@ -117,9 +117,15 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, isVerifying, unlockForTesting } = usePremium();
+  const { isPremium, isVerifying, unlockForTesting, revokePremium, ownerUnlock } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
+
+  // Modal secreto do dono (ativado com Ctrl+Shift+O)
+  const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
+  const [ownerSecret, setOwnerSecret] = useState('');
+  const [ownerLoading, setOwnerLoading] = useState(false);
+  const [ownerError, setOwnerError] = useState('');
 
   // Mostra toast de boas-vindas quando premium é ativado via retorno do MP
   const prevIsPremium = React.useRef(isPremium);
@@ -130,6 +136,19 @@ export default function App() {
     prevIsPremium.current = isPremium;
   }, [isPremium]);
 
+  // Atalho de teclado secreto para o modal do dono: Ctrl+Shift+O
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+        e.preventDefault();
+        setOwnerSecret('');
+        setOwnerError('');
+        setIsOwnerModalOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
   
@@ -229,6 +248,20 @@ export default function App() {
 
   const showToast = (message: string, type: 'error' | 'success' = 'success') => {
     setToast({ message, type });
+  };
+
+  const handleOwnerUnlock = async () => {
+    setOwnerLoading(true);
+    setOwnerError('');
+    const result = await ownerUnlock(ownerSecret);
+    setOwnerLoading(false);
+    if (result.ok) {
+      setIsOwnerModalOpen(false);
+      setOwnerSecret('');
+      showToast('👑 Acesso de dono ativado! Todos os templates desbloqueados.', 'success');
+    } else {
+      setOwnerError(result.error || 'Erro desconhecido.');
+    }
   };
 
   const handlePrint = () => {
@@ -658,6 +691,61 @@ export default function App() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <CookieConsent />
       {isATSPanelOpen && <Suspense fallback={null}><ATSPanel data={data} onClose={() => setIsATSPanelOpen(false)} /></Suspense>}
+
+      {/* Modal secreto do dono (Ctrl+Shift+O) */}
+      {isOwnerModalOpen && (
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setIsOwnerModalOpen(false); }}
+        >
+          <div className="bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-700 p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 bg-amber-500/20 rounded-xl flex items-center justify-center">
+                <i className="fas fa-crown text-amber-400 text-sm"></i>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-widest">Acesso do Dono</h3>
+                <p className="text-[10px] text-slate-500">CurriculoBR · Admin</p>
+              </div>
+              <button onClick={() => setIsOwnerModalOpen(false)} className="ml-auto text-slate-600 hover:text-slate-300 transition-colors">
+                <i className="fas fa-times text-xs"></i>
+              </button>
+            </div>
+
+            <div className="relative mb-4">
+              <input
+                type="password"
+                autoFocus
+                value={ownerSecret}
+                onChange={e => { setOwnerSecret(e.target.value); setOwnerError(''); }}
+                onKeyDown={e => e.key === 'Enter' && !ownerLoading && handleOwnerUnlock()}
+                placeholder="Senha secreta..."
+                className="w-full bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all"
+              />
+              {ownerError && (
+                <p className="text-[10px] text-red-400 font-bold mt-2 flex items-center gap-1">
+                  <i className="fas fa-exclamation-circle"></i> {ownerError}
+                </p>
+              )}
+            </div>
+
+            <button
+              onClick={handleOwnerUnlock}
+              disabled={ownerLoading || !ownerSecret.trim()}
+              className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+            >
+              {ownerLoading
+                ? <><i className="fas fa-circle-notch fa-spin"></i> Verificando...</>
+                : <><i className="fas fa-unlock-alt"></i> Desbloquear</>
+              }
+            </button>
+
+            <p className="text-center text-[9px] text-slate-700 mt-4 uppercase tracking-widest">
+              Ctrl+Shift+O para fechar
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Banner de verificação de pagamento */}
       {isVerifying && (
