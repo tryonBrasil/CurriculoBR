@@ -30,7 +30,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
         </button>
         <div className="flex-1 flex justify-center items-center">
           <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoBR" className="h-9 w-auto object-contain" />
+            <img src="/logo.png" alt="CurriculoBR" className="h-10 w-auto object-contain" />
           </span>
         </div>
         <div className="w-16"></div>

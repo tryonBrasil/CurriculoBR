@@ -26,7 +26,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoBR" className="h-8 w-auto object-contain" />
+            <img src="/logo.png" alt="CurriculoBR" className="h-10 w-auto object-contain" />
           </span>
         </div>
       </header>
