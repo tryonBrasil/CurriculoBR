@@ -15,6 +15,16 @@ export function usePremium() {
   });
   const [isVerifying, setIsVerifying] = useState(false);
 
+  // Sincroniza isPremium quando o PremiumModal grava via Pix (dispara evento 'storage')
+  useEffect(() => {
+    const onStorage = () => {
+      const now = localStorage.getItem(STORAGE_KEY) === 'true' || localStorage.getItem(OWNER_KEY) === 'true';
+      setIsPremium(now);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   // Verifica pagamento ao voltar do Mercado Pago
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

@@ -761,6 +761,11 @@ export default function App() {
           <PremiumModal
             templateLabel={premiumModalTemplate}
             onClose={() => setIsPremiumModalOpen(false)}
+            onUnlocked={() => {
+              setIsPremiumModalOpen(false);
+              showToast('🎉 Pix confirmado! Todos os templates desbloqueados!', 'success');
+              window.dispatchEvent(new Event('storage'));
+            }}
           />
         </Suspense>
       )}
