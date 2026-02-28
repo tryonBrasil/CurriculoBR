@@ -24,13 +24,13 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col">
-      <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center px-6 md:px-12 sticky top-0 z-50">
+      <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center px-6 md:px-12 sticky top-0 z-50">
         <button onClick={onVoltar} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-bold text-sm uppercase tracking-widest">
           <i className="fas fa-arrow-left text-xs"></i> Voltar
         </button>
         <div className="flex-1 flex justify-center items-center">
           <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoBR" className="h-10 w-auto object-contain" />
+            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
           </span>
         </div>
         <div className="w-16"></div>

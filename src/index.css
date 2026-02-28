@@ -257,46 +257,71 @@ body {
 @keyframes slide-in-from-bottom { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .animate-in { animation-fill-mode: both; }
 
-/* ── Logo nav: pill branco com sombra nos headers internos ── */
+/* ══════════════════════════════════════════════
+   LOGO — fundo adaptativo ao tema light/dark
+   ══════════════════════════════════════════════ */
+
+/* ── Logo nos headers internos (nav / headers de página) ── */
 .logo-nav {
-  padding: 5px 10px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 2px 10px rgba(30,58,138,0.10), 0 1px 3px rgba(0,0,0,0.07);
-  border: 1px solid rgba(30,58,138,0.07);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  padding: 6px 14px 6px 10px;
+  border-radius: 16px;
+  /* Light mode: fundo branco limpo */
+  background: #ffffff;
+  box-shadow:
+    0 2px 12px rgba(30,58,138,0.10),
+    0 1px 4px  rgba(0,0,0,0.06);
+  border: 1px solid rgba(30,58,138,0.08);
+  display: inline-flex;
+  align-items: center;
+  transition: box-shadow 0.22s ease, transform 0.22s ease;
 }
 .logo-nav:hover {
-  box-shadow: 0 4px 18px rgba(30,58,138,0.16), 0 2px 6px rgba(0,0,0,0.09);
+  box-shadow:
+    0 6px 22px rgba(30,58,138,0.18),
+    0 2px 8px  rgba(0,0,0,0.10);
   transform: translateY(-1px);
 }
+/* Dark mode: fundo slate-800 combinando com o header escuro */
 .dark .logo-nav {
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 2px 14px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.20);
+  background: #1e293b;           /* slate-800 */
+  box-shadow:
+    0 2px 14px rgba(0,0,0,0.40),
+    0 1px 5px  rgba(0,0,0,0.25);
+  border-color: rgba(148,163,184,0.12);  /* slate-400/12 */
 }
 
-/* ── Logo hero na home: grande, com card branco destacado ── */
+/* ── Logo hero na home ── */
 .logo-hero-wrapper {
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 20px;
-  padding: 10px 22px 10px 16px;
-  box-shadow: 0 4px 24px rgba(30,58,138,0.13), 0 1px 6px rgba(0,0,0,0.07);
-  border: 1px solid rgba(30,58,138,0.08);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  /* Light mode: branco puro */
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 12px 26px 12px 18px;
+  box-shadow:
+    0 6px 32px rgba(30,58,138,0.14),
+    0 2px 8px  rgba(0,0,0,0.07),
+    inset 0 1px 0 rgba(255,255,255,1);
+  border: 1px solid rgba(30,58,138,0.09);
   display: inline-flex;
   align-items: center;
   cursor: pointer;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 .logo-hero-wrapper:hover {
-  box-shadow: 0 8px 36px rgba(30,58,138,0.20), 0 2px 10px rgba(0,0,0,0.10);
-  transform: translateY(-2px) scale(1.015);
+  box-shadow:
+    0 12px 44px rgba(30,58,138,0.22),
+    0 4px 14px  rgba(0,0,0,0.11);
+  transform: translateY(-3px) scale(1.018);
 }
+/* Dark mode home: fundo slate-800 com sombra forte */
 .dark .logo-hero-wrapper {
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 4px 28px rgba(0,0,0,0.40), 0 2px 8px rgba(0,0,0,0.25);
+  background: #1e293b;           /* slate-800 */
+  box-shadow:
+    0 6px 36px rgba(0,0,0,0.50),
+    0 2px 10px rgba(0,0,0,0.30);
+  border-color: rgba(148,163,184,0.14);
 }
 
 .logo-hero {
-  filter: drop-shadow(0 1px 3px rgba(30,58,138,0.10));
   display: block;
+  filter: drop-shadow(0 1px 2px rgba(30,58,138,0.08));
 }

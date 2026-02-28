@@ -76,7 +76,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             </button>
             <button onClick={onBlog} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <span className="logo-nav inline-flex">
-                <img src="/logo.png" alt="CurriculoBR" className="h-10 w-auto object-contain" />
+                <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
               </span>
               <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">/ Blog</span>
             </button>

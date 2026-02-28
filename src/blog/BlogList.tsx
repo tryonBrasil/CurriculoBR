@@ -30,7 +30,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
               <i className="fas fa-arrow-left"></i>
             </button>
             <span className="logo-nav inline-flex">
-              <img src="/logo.png" alt="CurriculoBR" className="h-10 w-auto object-contain" />
+              <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
             </span>
             <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">
               / Blog
