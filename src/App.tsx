@@ -47,25 +47,25 @@ const STEPS = [
 ];
 
 const FREE_TEMPLATES = [
-  { id: 'modern_blue',      label: 'Modern Blue',    desc: 'Profissional e Limpo',   badge: '🔥 Mais usado', badgeColor: 'bg-orange-500' },
   { id: 'classic_serif',    label: 'Classic Serif',  desc: 'Tradicional Acadêmico',  badge: '📚 Acadêmico',  badgeColor: 'bg-amber-600'  },
-  { id: 'modern_vitae',     label: 'Modern Vitae',   desc: 'Elegante e Espaçoso',    badge: '',              badgeColor: ''              },
   { id: 'swiss_minimal',    label: 'Swiss Minimal',  desc: 'Design Suíço',           badge: '',              badgeColor: ''              },
   { id: 'corporate_gray',   label: 'Corporate Gray', desc: 'Minimalista Pro',         badge: '',              badgeColor: ''              },
 ];
 
-// 10 templates premium — desbloqueados após pagamento de R$9,90
+// 12 templates premium — desbloqueados após pagamento de R$9,90
 const PREMIUM_TEMPLATES_LIST = [
-  { id: 'executive_navy',     label: 'Executive Navy',     desc: 'Premium e Luxuoso',    badge: '💎 Luxo',        badgeColor: 'bg-indigo-600' },
-  { id: 'teal_sidebar',       label: 'Teal Sidebar',       desc: 'Corporativo Moderno',  badge: '⭐ Popular',     badgeColor: 'bg-teal-600'   },
-  { id: 'executive_red',      label: 'Executive Red',      desc: 'Liderança Sênior',     badge: '',               badgeColor: ''              },
-  { id: 'minimal_red_line',   label: 'Minimal Red',        desc: 'Impacto Visual',       badge: '',               badgeColor: ''              },
-  { id: 'aurora_dark',        label: 'Aurora Dark',        desc: 'Dark Mode Gradiente',  badge: '🌟 Destaque',    badgeColor: 'bg-purple-600' },
-  { id: 'creative_portfolio', label: 'Creative Portfolio', desc: 'Design de Portfólio',  badge: '🎨 Criativo',    badgeColor: 'bg-rose-500'   },
-  { id: 'minimalist_pro',     label: 'Minimalist Pro',     desc: 'Ultra Minimalista',    badge: '',               badgeColor: ''              },
-  { id: 'bold_impact',        label: 'Bold Impact',        desc: 'Tipografia Forte',     badge: '💥 Ousado',      badgeColor: 'bg-violet-600' },
-  { id: 'soft_pastel',        label: 'Soft Pastel',        desc: 'Elegante e Feminino',  badge: '🌸 Delicado',    badgeColor: 'bg-pink-500'   },
-  { id: 'tech_dark',          label: 'Tech Dark',          desc: 'Para Área de TI',      badge: '💻 TI & Dev',    badgeColor: 'bg-green-600'  },
+  { id: 'modern_blue',        label: 'Modern Blue',        desc: 'Profissional e Limpo',    badge: '🔥 Mais usado',  badgeColor: 'bg-orange-500' },
+  { id: 'modern_vitae',       label: 'Modern Vitae',       desc: 'Elegante e Espaçoso',     badge: '⭐ Popular',     badgeColor: 'bg-blue-600'   },
+  { id: 'executive_navy',     label: 'Executive Navy',     desc: 'Premium e Luxuoso',       badge: '💎 Luxo',        badgeColor: 'bg-indigo-600' },
+  { id: 'teal_sidebar',       label: 'Teal Sidebar',       desc: 'Corporativo Moderno',     badge: '',               badgeColor: ''              },
+  { id: 'executive_red',      label: 'Executive Red',      desc: 'Liderança Sênior',        badge: '',               badgeColor: ''              },
+  { id: 'minimal_red_line',   label: 'Minimal Red',        desc: 'Impacto Visual',          badge: '',               badgeColor: ''              },
+  { id: 'aurora_dark',        label: 'Aurora Dark',        desc: 'Dark Mode Gradiente',     badge: '🌟 Destaque',    badgeColor: 'bg-purple-600' },
+  { id: 'creative_portfolio', label: 'Creative Portfolio', desc: 'Design de Portfólio',     badge: '🎨 Criativo',    badgeColor: 'bg-rose-500'   },
+  { id: 'minimalist_pro',     label: 'Minimalist Pro',     desc: 'Ultra Minimalista',       badge: '',               badgeColor: ''              },
+  { id: 'bold_impact',        label: 'Bold Impact',        desc: 'Tipografia Forte',        badge: '💥 Ousado',      badgeColor: 'bg-violet-600' },
+  { id: 'soft_pastel',        label: 'Soft Pastel',        desc: 'Elegante e Feminino',     badge: '🌸 Delicado',    badgeColor: 'bg-pink-500'   },
+  { id: 'tech_dark',          label: 'Tech Dark',          desc: 'Para Área de TI',         badge: '💻 TI & Dev',    badgeColor: 'bg-green-600'  },
 ];
 
 // Alias mantém compatibilidade
@@ -1417,7 +1417,7 @@ export default function App() {
               {[
                 { slug: 'como-fazer-curriculo-sem-experiencia', title: 'Como Fazer um Currículo Sem Experiência', cat: 'Iniciantes' },
                 { slug: 'erros-mais-comuns-no-curriculo', title: '10 Erros Mais Comuns no Currículo', cat: 'Dicas' },
-                { slug: 'o-que-e-ats-e-como-passar-pela-triagem', title: 'O Que é ATS e Como Passar pela Triagem', cat: '🔥 ATS & Tech' },
+                { slug: 'o-que-e-ats-e-como-passar-pela-triagem', title: 'O Que é ATS e Como Passar pela Triagem', cat: 'ATS & Tech' },
               ].map(post => (
                 <div
                   key={post.slug}
@@ -1593,7 +1593,7 @@ export default function App() {
                 <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-3xl border border-amber-200 dark:border-amber-700/40 flex flex-col md:flex-row items-center gap-5">
                   <div className="text-5xl">👑</div>
                   <div className="flex-1 text-center md:text-left">
-                    <h3 className="font-black text-slate-900 dark:text-white text-lg">Desbloqueie todos os 10 templates</h3>
+                    <h3 className="font-black text-slate-900 dark:text-white text-lg">Desbloqueie todos os 12 templates</h3>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Pagamento único de <strong>R$ 9,90</strong> — acesso vitalício, sem assinatura, sem reencher nada. ✌️</p>
                   </div>
                   <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="shrink-0 px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all">

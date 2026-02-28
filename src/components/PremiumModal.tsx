@@ -6,7 +6,7 @@ interface PremiumModalProps {
 }
 
 const PREMIUM_BENEFITS = [
-  { emoji: '🎨', text: '10 templates exclusivos desbloqueados' },
+  { emoji: '🎨', text: '12 templates exclusivos desbloqueados' },
   { emoji: '♾️', text: 'Acesso vitalício — paga uma vez, usa sempre' },
   { emoji: '📱', text: 'Funciona no celular, tablet e computador' },
   { emoji: '⚡', text: 'Todos os recursos de IA incluídos' },

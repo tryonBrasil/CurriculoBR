@@ -8,7 +8,7 @@ interface BlogListProps {
   onCriarCurriculo: () => void;
 }
 
-const CATEGORIES = ['Todos', 'Iniciantes', 'Dicas', 'Conteúdo', 'Mercado', 'Tecnologia', 'Estratégia'];
+const CATEGORIES = ['Todos', 'Iniciantes', 'Dicas', 'Conteúdo', 'Mercado', 'ATS & Tech', 'Estratégia'];
 
 const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo }) => {
   const [activeCategory, setActiveCategory] = useState('Todos');
