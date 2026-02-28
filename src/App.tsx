@@ -872,7 +872,7 @@ export default function App() {
             <p>Ao acessar e usar o <strong>CurriculoBR</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de utilizar nossos serviços.</p>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Uso do Serviço</h3>
-                <p>O CurriculoBR é um serviço gratuito para criação de currículos profissionais. Você pode usá-lo para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.</p>
+                <p>O CurriculoBR é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usá-lo para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">2. Responsabilidade pelo Conteúdo</h3>
@@ -1004,8 +1004,8 @@ export default function App() {
         {/* Header */}
         <header className="h-16 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-xs"></i></div>
-            <span className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white hidden sm:block">Curriculo<span className="text-blue-600">BR</span></span>
+            <img src="/logo.png" alt="CurriculoBR" className="h-9 w-auto object-contain" />
+            <span className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white hidden sm:block">Currículo<span className="text-blue-600">BR</span></span>
           </div>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
             <button onClick={() => navigateTo('/', 'editor')} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors rounded-full">Currículo</button>
@@ -1214,10 +1214,8 @@ export default function App() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square bg-indigo-50 dark:bg-indigo-900/20 rounded-full blur-[120px] opacity-60"></div>
         <header className="relative z-10 h-24 flex items-center justify-between px-8 md:px-20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3">
-               <i className="fas fa-file-invoice text-lg"></i>
-            </div>
-            <h1 className="font-black text-2xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Curriculo<span className="text-blue-600">BR</span></h1>
+            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+            <h1 className="font-black text-2xl tracking-tighter text-slate-800 dark:text-white uppercase italic">Currículo<span className="text-blue-600">BR</span></h1>
           </div>
           <div className="flex gap-4">
              <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -1231,7 +1229,7 @@ export default function App() {
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
               <span className="inline-flex items-center gap-2 py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse"></span>
-                ✨ Grátis, sem cadastro, sem enrolação
+                ✨ Grátis para começar, sem cadastro, sem enrolação
               </span>
               <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                 Seu currículo novo,<br className="hidden md:block"/>
@@ -1297,7 +1295,7 @@ export default function App() {
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
               <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400"><AnimatedCounter target={15} /> 🎨</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">100% 💚</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Grátis, sempre</p></div>
+              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">3 💚</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos gratuitos</p></div>
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
               <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9 ⭐</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p></div>
             </div>
@@ -1634,8 +1632,8 @@ export default function App() {
 
       <nav className="no-print h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-3 md:px-6 z-50 shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
-          <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg"><i className="fas fa-file-invoice text-xs"></i></div>
-          <h1 className="font-extrabold text-base tracking-tighter text-slate-800 dark:text-white uppercase italic hidden sm:block">Curriculo<span className="text-blue-600">BR</span></h1>
+          <img src="/logo.png" alt="CurriculoBR" className="h-8 w-auto object-contain" />
+          <h1 className="font-extrabold text-base tracking-tighter text-slate-800 dark:text-white uppercase italic hidden sm:block">Currículo<span className="text-blue-600">BR</span></h1>
         </div>
         
         {/* Mobile toggle Editar/Visualizar */}
