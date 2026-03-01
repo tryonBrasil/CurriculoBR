@@ -10,6 +10,8 @@ import AdUnit from './components/AdUnit';
 import CookieConsent from './components/CookieConsent';
 import { useResumeHistory } from './hooks/useResumeHistory';
 import { usePremium } from './hooks/usePremium';
+import { useAuth } from './hooks/useAuth';
+import { useCloudSave } from './hooks/useCloudSave';
 import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI, generateCoverLetterStream } from './services/geminiService';
 // pdfService é carregado sob demanda para não incluir pdfjs no bundle inicial
 import {
@@ -26,7 +28,10 @@ const Sobre         = lazy(() => import('./Sobre'));
 const Contato       = lazy(() => import('./Contato'));
 const BlogList      = lazy(() => import('./blog/BlogList'));
 const BlogPost      = lazy(() => import('./blog/BlogPost'));
-const PremiumModal  = lazy(() => import('./components/PremiumModal'));
+const PremiumModal         = lazy(() => import('./components/PremiumModal'));
+const AuthModal            = lazy(() => import('./components/AuthModal'));
+const SaveModal            = lazy(() => import('./components/SaveModal'));
+const CloudResumesModal    = lazy(() => import('./components/CloudResumesModal'));
 
 // Fallback leve para Suspense
 const PageLoader = () => (
@@ -111,6 +116,15 @@ export default function App() {
   // Templates visibility
   const [showFreeTemplates, setShowFreeTemplates]     = useState(true);
   const [showPremiumTemplates, setShowPremiumTemplates] = useState(true);
+
+  // ── Auth + Cloud Save ─────────────────────────────────
+  const { user, signInWithGoogle, signOut } = useAuth();
+  const { saving: cloudSaving, loading: cloudLoading, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
+  const [currentCloudId, setCurrentCloudId]         = useState<string | null>(null);
+  const [currentCloudName, setCurrentCloudName]     = useState<string>('');
+  const [isAuthModalOpen, setIsAuthModalOpen]       = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen]       = useState(false);
+  const [isCloudResumesOpen, setIsCloudResumesOpen] = useState(false);
   
   const [isATSPanelOpen, setIsATSPanelOpen] = useState(false);
 
@@ -345,6 +359,48 @@ export default function App() {
       console.error('Erro ao gerar PDF:', e);
       showToast('Erro ao gerar PDF. Tente novamente.', 'error');
     }
+  };
+
+  // ── Cloud Save handlers ─────────────────────────────────────────────
+  const handleCloudSave = async (name: string) => {
+    const result = await saveResume({
+      resumeId:   currentCloudId ?? undefined,
+      name,
+      data,
+      template,
+      fontSize,
+      fontFamily,
+    });
+    if (result.ok) {
+      setCurrentCloudId(result.resumeId ?? currentCloudId);
+      setCurrentCloudName(name);
+      setIsSaveModalOpen(false);
+      showToast(`✅ "${name}" salvo na nuvem!`, 'success');
+    } else {
+      showToast(result.error || 'Erro ao salvar.', 'error');
+    }
+  };
+
+  const handleLoadCloudResume = (resume: { id: string; name: string; data: ResumeData; template: TemplateId; fontSize: number; fontFamily: string }) => {
+    updateData({ ...INITIAL_RESUME_DATA, ...resume.data });
+    setTemplate(resume.template);
+    setFontSize(resume.fontSize ?? 12);
+    setFontFamily(resume.fontFamily ?? "'Inter', sans-serif");
+    setCurrentCloudId(resume.id);
+    setCurrentCloudName(resume.name);
+    setIsCloudResumesOpen(false);
+    showToast(`📂 "${resume.name}" carregado!`, 'success');
+  };
+
+  const handleOpenCloudResumes = async () => {
+    if (!user) { setIsAuthModalOpen(true); return; }
+    await listResumes();
+    setIsCloudResumesOpen(true);
+  };
+
+  const handleSaveToCloud = () => {
+    if (!user) { setIsAuthModalOpen(true); return; }
+    setIsSaveModalOpen(true);
   };
 
   const handleClearData = () => {
@@ -1625,6 +1681,49 @@ export default function App() {
         <ConfirmModal isOpen={confirmModal.isOpen} title={confirmModal.title} message={confirmModal.message} onConfirm={confirmModal.action} onCancel={() => setConfirmModal(null)} />
       )}
 
+      {/* Modal de login Google */}
+      {isAuthModalOpen && (
+        <Suspense fallback={null}>
+          <AuthModal
+            onClose={() => setIsAuthModalOpen(false)}
+            onSignIn={async () => {
+              const result = await signInWithGoogle();
+              if (result.ok) showToast('✅ Bem-vindo! Seus dados estão seguros.', 'success');
+              return result;
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* Modal salvar na nuvem */}
+      {isSaveModalOpen && (
+        <Suspense fallback={null}>
+          <SaveModal
+            defaultName={currentCloudName || (data.personalInfo?.fullName ? `Currículo de ${data.personalInfo.fullName.split(' ')[0]}` : 'Meu Currículo')}
+            saving={cloudSaving}
+            isUpdate={!!currentCloudId}
+            onSave={handleCloudSave}
+            onClose={() => setIsSaveModalOpen(false)}
+          />
+        </Suspense>
+      )}
+
+      {/* Modal meus currículos na nuvem */}
+      {isCloudResumesOpen && user && (
+        <Suspense fallback={null}>
+          <CloudResumesModal
+            user={user}
+            resumes={cloudResumes}
+            loading={cloudLoading}
+            currentResumeId={currentCloudId}
+            onLoad={handleLoadCloudResume}
+            onDelete={deleteResume}
+            onSignOut={async () => { await signOut(); setIsCloudResumesOpen(false); showToast('Você saiu da conta.', 'success'); }}
+            onClose={() => setIsCloudResumesOpen(false)}
+          />
+        </Suspense>
+      )}
+
       {isPhotoModalOpen && pendingPhoto && (
         <Suspense fallback={null}>
           <PhotoCropModal
@@ -1675,12 +1774,47 @@ export default function App() {
               </div>
               <span className="text-sm font-bold text-slate-600 dark:text-slate-400">{cvScore}%</span>
            </div>
+           {/* Botão salvar na nuvem */}
+           <button
+             onClick={handleSaveToCloud}
+             title={user ? 'Salvar na nuvem' : 'Login para salvar na nuvem'}
+             className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/40 rounded-full font-bold text-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all"
+           >
+             <i className={`fas ${cloudSaving ? 'fa-circle-notch fa-spin' : currentCloudId ? 'fa-cloud-upload-alt' : 'fa-cloud'} text-xs`}></i>
+             <span className="hidden xl:inline">{user ? (currentCloudId ? 'Atualizar' : 'Salvar') : 'Nuvem'}</span>
+           </button>
+
            <button 
              onClick={handlePrint}
              className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
            >
              <i className="fas fa-file-pdf"></i> Baixar PDF
            </button>
+
+           {/* Avatar / Login */}
+           {user ? (
+             <button
+               onClick={handleOpenCloudResumes}
+               className="flex items-center gap-2 group"
+               title="Meus currículos"
+             >
+               {user.photoURL
+                 ? <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full ring-2 ring-blue-200 dark:ring-blue-700" />
+                 : <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-black">{(user.displayName || user.email || 'U')[0].toUpperCase()}</div>
+               }
+               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors hidden xl:inline">
+                 {(user.displayName || user.email || '').split(' ')[0]}
+               </span>
+             </button>
+           ) : (
+             <button
+               onClick={() => setIsAuthModalOpen(true)}
+               className="flex items-center gap-2 px-4 py-2 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 rounded-full font-semibold text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+             >
+               <i className="fas fa-user-circle text-sm"></i>
+               <span className="hidden xl:inline">Entrar</span>
+             </button>
+           )}
         </div>
         
         {/* Mobile right buttons */}
