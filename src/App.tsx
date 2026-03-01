@@ -921,7 +921,7 @@ export default function App() {
               className="w-full h-40 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm mb-6 outline-none focus:ring-2 focus:ring-blue-500 dark:text-white resize-none"
             />
             <div className="flex gap-4">
-              <button onClick={() => setIsImportModalOpen(false)} className="flex-1 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-widest">Cancelar</button>
+              <button onClick={() => setIsImportModalOpen(false)} className="flex-1 py-4 font-bold text-slate-500 uppercase text-sm tracking-wide">Cancelar</button>
               <button 
                 onClick={handleImportSubmit} 
                 disabled={isImporting || !importText.trim()}
@@ -1177,7 +1177,7 @@ export default function App() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cargo / Vaga</label>
+                    <label className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-1.5">Cargo / Vaga</label>
                     <input
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                       placeholder="Ex: Desenvolvedor Front-End Sênior"
@@ -1186,7 +1186,7 @@ export default function App() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Empresa</label>
+                    <label className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-1.5">Empresa</label>
                     <input
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                       placeholder="Ex: Google, Nubank, Ambev..."
@@ -1195,7 +1195,7 @@ export default function App() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Seu Nome (para a carta)</label>
+                    <label className="block text-sm font-bold text-slate-600 dark:text-slate-300 mb-1.5">Seu Nome (para a carta)</label>
                     <input
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-sm bg-slate-50 dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                       placeholder="Nome completo"
@@ -1218,8 +1218,8 @@ export default function App() {
                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${clTone === t.id ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'border-slate-100 dark:border-slate-700 hover:border-blue-300'}`}
                     >
                       <i className={`fas ${t.icon} ${clTone === t.id ? 'text-blue-600' : 'text-slate-400'}`}></i>
-                      <span className={`text-[10px] font-black uppercase tracking-wide ${clTone === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>{t.label}</span>
-                      <span className="text-[9px] text-slate-400 text-center leading-tight">{t.desc}</span>
+                      <span className={`text-sm font-black uppercase tracking-wide ${clTone === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>{t.label}</span>
+                      <span className="text-xs text-slate-400 text-center leading-tight">{t.desc}</span>
                     </button>
                   ))}
                 </div>
@@ -1355,13 +1355,13 @@ export default function App() {
                   ? <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full" />
                   : <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black">{(user.displayName || user.email || 'U')[0].toUpperCase()}</div>
                 }
-                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 hidden sm:inline">Meus Currículos</span>
+                <span className="text-sm font-black text-slate-500 dark:text-slate-400 hidden sm:inline">Meus Currículos</span>
                 <i className="fas fa-cloud text-[9px] text-emerald-500"></i>
               </button>
             ) : (
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-800 font-black text-[10px] text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 uppercase tracking-widest transition-all shadow-sm"
+                className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-full border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-800 font-black text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 uppercase tracking-wide transition-all shadow-sm"
               >
                 <i className="fas fa-cloud text-emerald-500 text-sm"></i>
                 Salvar na Nuvem
@@ -1419,7 +1419,7 @@ export default function App() {
         {/* ── Features / Benefícios ── */}
         <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
-            <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoBR? 🤔</p>
+            <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12 text-sm">Por que o CurriculoBR? 🤔</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
                 { emoji: '🎨', icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos para cada perfil — do conservador ao criativo' },
@@ -1523,7 +1523,7 @@ export default function App() {
         {/* ── Testimonials ── */}
         <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
-            <p className="text-center text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400 mb-3">Depoimentos</p>
+            <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-3 text-sm">Depoimentos</p>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white text-center mb-10 uppercase tracking-tight">Quem já conquistou sua vaga</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
@@ -1540,7 +1540,7 @@ export default function App() {
                     <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>{t.avatar}</div>
                     <div>
                       <p className="font-black text-slate-900 dark:text-white text-sm">{t.name}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">{t.role} · {t.city}</p>
+                      <p className="text-xs text-slate-400 font-medium">{t.role} · {t.city}</p>
                     </div>
                   </div>
                 </div>
@@ -1786,7 +1786,7 @@ export default function App() {
         </Suspense>
       )}
 
-      <nav className="no-print h-20 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-3 md:px-6 z-50 shrink-0">
+      <nav className="no-print h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
           <span className="logo-nav inline-flex">
             <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
@@ -1813,17 +1813,17 @@ export default function App() {
            {/* Indicador de auto-save */}
            <div className="flex items-center gap-1.5 min-w-[90px]">
              {autoSaveStatus === 'saving' && (
-               <span className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-widest animate-pulse">
+               <span className="flex items-center gap-1.5 text-xs text-slate-400 font-bold uppercase tracking-wide animate-pulse">
                  <i className="fas fa-circle-notch fa-spin text-[9px]"></i> Salvando...
                </span>
              )}
              {autoSaveStatus === 'saved' && (
-               <span className="flex items-center gap-1.5 text-[10px] text-green-500 font-bold uppercase tracking-widest animate-in fade-in duration-300">
+               <span className="flex items-center gap-1.5 text-xs text-green-500 font-bold uppercase tracking-wide animate-in fade-in duration-300">
                  <i className="fas fa-check-circle text-[9px]"></i> Salvo
                </span>
              )}
              {autoSaveStatus === 'idle' && (
-               <span className="flex items-center gap-1.5 text-[10px] text-slate-300 dark:text-slate-600 font-bold uppercase tracking-widest">
+               <span className="flex items-center gap-1.5 text-xs text-slate-300 dark:text-slate-600 font-bold uppercase tracking-wide">
                  <i className="fas fa-hdd text-[9px]"></i> Auto-save ativo
                </span>
              )}
@@ -1838,23 +1838,23 @@ export default function App() {
 
            <button
              onClick={() => setIsATSPanelOpen(true)}
-             className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-700/40 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all"
+             className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-700/40 rounded-full font-black text-xs uppercase tracking-wide hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all"
              title="Analisar currículo com IA"
            >
              <i className="fas fa-brain text-xs"></i> Score ATS
            </button>
 
            <div className="flex items-center gap-3">
-              <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-24 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all duration-1000 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-600'}`} style={{ width: `${cvScore}%` }}></div>
               </div>
-              <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{cvScore}%</span>
+              <span className="text-sm font-black text-slate-600 dark:text-slate-300">{cvScore}%</span>
            </div>
 
            {/* Botão salvar na nuvem */}
            <button
              onClick={handleOpenSaveModal}
-             className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/40 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all"
+             className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/40 rounded-full font-black text-xs uppercase tracking-wide hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all"
              title={user ? 'Salvar na nuvem' : 'Login para salvar na nuvem'}
            >
              <i className={`fas ${cloudSaving ? 'fa-circle-notch fa-spin' : currentCloudId ? 'fa-cloud-upload-alt' : 'fa-cloud'} text-xs`}></i>
@@ -1863,7 +1863,7 @@ export default function App() {
 
            <button
              onClick={handlePrint}
-             className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
+             className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold text-sm uppercase tracking-wide hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
            >
              <i className="fas fa-file-pdf"></i> Baixar PDF
            </button>
@@ -1922,17 +1922,17 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        <div className={`no-print w-full md:w-[390px] lg:w-[430px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
            
            <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 shrink-0 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2">
              {STEPS.map((step, idx) => (
                <button
                 key={step.id}
                 onClick={() => setCurrentStep(idx)}
-                className={`flex-1 min-w-[70px] py-4 flex flex-col items-center gap-1.5 transition-all relative px-1 shrink-0 ${currentStep === idx ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm rounded-t-lg mt-1' : 'text-slate-400 grayscale hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
+                className={`flex-1 min-w-[80px] py-4 flex flex-col items-center gap-2 transition-all relative px-2 shrink-0 ${currentStep === idx ? 'text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm rounded-t-lg mt-1' : 'text-slate-400 grayscale hover:bg-white/50 dark:hover:bg-slate-800/50'}`}
                >
-                 <span className={`text-base leading-none transition-transform ${currentStep === idx ? 'scale-125' : 'group-hover:scale-110'}`}>{step.emoji}</span>
-                 <span className="text-[9px] font-black uppercase tracking-[0.1em] whitespace-nowrap">{step.label}</span>
+                 <span className={`text-lg leading-none transition-transform ${currentStep === idx ? 'scale-125' : 'group-hover:scale-110'}`}>{step.emoji}</span>
+                 <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap">{step.label}</span>
                  {currentStep === idx && <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full"></div>}
                </button>
              ))}
@@ -1941,16 +1941,16 @@ export default function App() {
            <div ref={editorScrollRef} className={`flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 transition-colors duration-500 ${highlightedStep ? 'bg-blue-50/20 dark:bg-blue-900/10' : ''}`}>
               {activeTab === 'info' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">🧑 Sobre Você</h2>
-                  <p className="text-xs text-slate-400 mb-6">Essas são as primeiras impressões — capriche! ✨</p>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">🧑 Sobre Você</h2>
+                  <p className="text-sm text-slate-400 mb-6">Essas são as primeiras impressões — capriche! ✨</p>
 
                   <div className="flex items-center gap-6 mb-6">
                     <div className="relative group cursor-pointer" onClick={() => photoInputRef.current?.click()}>
-                      <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden">
+                      <div className="w-28 h-28 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden">
                         {data.personalInfo?.photoUrl ? (
                           <img src={data.personalInfo.photoUrl} alt="Perfil" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-3xl group-hover:scale-125 transition-transform">📸</span>
+                          <span className="text-4xl group-hover:scale-125 transition-transform">📸</span>
                         )}
                       </div>
                       <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1959,8 +1959,8 @@ export default function App() {
                       <input type="file" ref={photoInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
                     </div>
                     <div>
-                       <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">📷 Sua Foto</h3>
-                       <p className="text-xs text-slate-400 max-w-[200px] leading-tight mt-1">Sorria! Uma boa foto aumenta muito as chances de chamarem você. 😊</p>
+                       <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">📷 Sua Foto</h3>
+                       <p className="text-sm text-slate-400 max-w-[220px] leading-snug mt-1">Sorria! Uma boa foto aumenta muito as chances de chamarem você. 😊</p>
                        {data.personalInfo?.photoUrl && (
                            <button onClick={(e) => { e.stopPropagation(); updateData(p => ({...p, personalInfo: {...p.personalInfo, photoUrl: ''}})); }} className="text-[10px] text-red-500 font-bold uppercase mt-2 hover:underline">Remover foto</button>
                        )}
@@ -1986,10 +1986,10 @@ export default function App() {
               {activeTab === 'experience' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">💼 Experiências</h2>
-                    <button onClick={() => addItem('experiences')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">💼 Experiências</h2>
+                    <button onClick={() => addItem('experiences')} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6">Seus maiores feitos vão aqui. Não seja modesto! 💪</p>
+                  <p className="text-sm text-slate-400 mb-6">Seus maiores feitos vão aqui. Não seja modesto! 💪</p>
                   {data.experiences?.map(exp => (
                     <div key={exp.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-blue-400 shadow-sm hover:shadow-md transition-shadow">
                       <button onClick={() => removeItem('experiences', exp.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
@@ -2001,20 +2001,20 @@ export default function App() {
                       </div>
                       <div className="mt-2 relative">
                          <div className="flex justify-between items-center mb-1">
-                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Descrição</label>
-                           <button onClick={() => handleEnhance(exp.description, 'experiência', 'experiences', exp.id)} disabled={!exp.description || isEnhancing === exp.id} className="text-[9px] text-blue-600 dark:text-blue-400 font-black uppercase hover:text-blue-800 transition-colors flex items-center gap-1">
+                           <label className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Descrição</label>
+                           <button onClick={() => handleEnhance(exp.description, 'experiência', 'experiences', exp.id)} disabled={!exp.description || isEnhancing === exp.id} className="text-xs text-blue-600 dark:text-blue-400 font-black uppercase hover:text-blue-800 transition-colors flex items-center gap-1.5">
                             <i className={`fas ${isEnhancing === exp.id ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}`}></i> 🤖 Melhorar com IA
                            </button>
                          </div>
-                         <textarea className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm h-32 outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 resize-none transition-all" value={exp.description} onChange={(e) => updateItem('experiences', exp.id, 'description', e.target.value)} />
+                         <textarea className="w-full p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-base h-36 outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 resize-none transition-all" value={exp.description} onChange={(e) => updateItem('experiences', exp.id, 'description', e.target.value)} />
                       </div>
                     </div>
                   ))}
                   {data.experiences.length === 0 && (
                      <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
                         <div className="text-5xl mb-3">💼</div>
-                        <p className="text-sm font-bold text-slate-400">Nenhuma experiência ainda.</p>
-                        <p className="text-xs text-slate-300 mt-1">Todo mundo começa do zero! Adicione a sua. 😄</p>
+                        <p className="text-base font-bold text-slate-500">Nenhuma experiência ainda.</p>
+                        <p className="text-sm text-slate-400 mt-1">Todo mundo começa do zero! Adicione a sua. 😄</p>
                      </div>
                   )}
                 </div>
@@ -2022,10 +2022,10 @@ export default function App() {
               {activeTab === 'education' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🎓 Educação</h2>
-                    <button onClick={() => addItem('education')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">🎓 Educação</h2>
+                    <button onClick={() => addItem('education')} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6">Onde você aprendeu a ser incrível! 🏫</p>
+                  <p className="text-sm text-slate-400 mb-6">Onde você aprendeu a ser incrível! 🏫</p>
                   {data.education?.map(edu => (
                     <div key={edu.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-indigo-400 shadow-sm hover:shadow-md transition-shadow">
                       <button onClick={() => removeItem('education', edu.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
@@ -2039,10 +2039,10 @@ export default function App() {
               {activeTab === 'languages' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🌍 Idiomas</h2>
-                    <button onClick={() => addItem('languages')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">🌍 Idiomas</h2>
+                    <button onClick={() => addItem('languages')} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6">Fala inglês? Ótimo. Fala mandarim? Melhor ainda. 😏</p>
+                  <p className="text-sm text-slate-400 mb-6">Fala inglês? Ótimo. Fala mandarim? Melhor ainda. 😏</p>
                   {data.languages?.map(lang => (
                     <div key={lang.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-green-400 shadow-sm hover:shadow-md transition-shadow">
                       <button onClick={() => removeItem('languages', lang.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
@@ -2053,7 +2053,7 @@ export default function App() {
                   {(!data.languages || data.languages.length === 0) && (
                     <div className="text-center p-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
                       <div className="text-4xl mb-2">🌍</div>
-                      <p className="text-xs font-bold text-slate-400">Nenhum idioma adicionado ainda.</p>
+                      <p className="text-sm font-bold text-slate-500">Nenhum idioma adicionado ainda.</p>
                       <p className="text-xs text-slate-300 mt-1">Até o "Português nativo" conta! 🇧🇷</p>
                     </div>
                   )}
@@ -2062,10 +2062,10 @@ export default function App() {
               {activeTab === 'certifications' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🏆 Cursos e Certificações</h2>
-                    <button onClick={() => addItem('courses')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">🏆 Cursos e Certificações</h2>
+                    <button onClick={() => addItem('courses')} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6">Cursos, certificações e tudo que você aprendeu além da faculdade. 📚</p>
+                  <p className="text-sm text-slate-400 mb-6">Cursos, certificações e tudo que você aprendeu além da faculdade. 📚</p>
                   {data.courses?.map(cert => (
                     <div key={cert.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-yellow-400 shadow-sm">
                       <button onClick={() => removeItem('courses', cert.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
@@ -2077,8 +2077,8 @@ export default function App() {
                   {(!data.courses || data.courses.length === 0) && (
                     <div className="text-center p-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
                       <div className="text-4xl mb-2">🏆</div>
-                      <p className="text-xs font-bold text-slate-400">Nenhum curso ainda.</p>
-                      <p className="text-xs text-slate-300 mt-1">Até aquele curso de Excel de 2018 pode entrar! 😂</p>
+                      <p className="text-sm font-bold text-slate-500">Nenhum curso ainda.</p>
+                      <p className="text-sm text-slate-400 mt-1">Até aquele curso de Excel de 2018 pode entrar! 😂</p>
                     </div>
                   )}
                 </div>
@@ -2086,10 +2086,10 @@ export default function App() {
               {activeTab === 'projects' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">🚀 Projetos</h2>
-                    <button onClick={() => addItem('projects')} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-[10px] uppercase shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">🚀 Projetos</h2>
+                    <button onClick={() => addItem('projects')} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-blue-700 active:scale-95 transition-all">+ Adicionar</button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6">Mostre o que você construiu! Projetos pessoais, open source, apps, sites... 🔨</p>
+                  <p className="text-sm text-slate-400 mb-6">Mostre o que você construiu! Projetos pessoais, open source, apps, sites... 🔨</p>
                   {(data.projects || []).map(proj => (
                     <div key={proj.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6 relative group border-l-4 border-l-emerald-400 shadow-sm hover:shadow-md transition-shadow">
                       <button onClick={() => removeItem('projects', proj.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><i className="fas fa-trash-alt text-xs"></i></button>
@@ -2097,9 +2097,9 @@ export default function App() {
                       <Input label="Tecnologias" value={proj.technologies} onChange={(v) => updateItem('projects', proj.id, 'technologies', v)} placeholder="Ex: React, Node.js, PostgreSQL" />
                       <Input label="Link (opcional)" value={proj.url} onChange={(v) => updateItem('projects', proj.id, 'url', v)} placeholder="https://github.com/seu-projeto" />
                       <div className="mt-2">
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Descrição</label>
+                        <label className="block text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Descrição</label>
                         <textarea
-                          className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm h-24 outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 resize-none transition-all"
+                          className="w-full p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-base h-28 outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-slate-900 dark:text-white focus:border-blue-500 resize-none transition-all"
                           value={proj.description}
                           onChange={(e) => updateItem('projects', proj.id, 'description', e.target.value)}
                           placeholder="O que o projeto faz e qual problema resolve..."
@@ -2110,8 +2110,8 @@ export default function App() {
                   {(!data.projects || data.projects.length === 0) && (
                     <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
                       <div className="text-5xl mb-3">🚀</div>
-                      <p className="text-sm font-bold text-slate-400">Nenhum projeto ainda.</p>
-                      <p className="text-xs text-slate-300 mt-1">Para devs e designers, projetos valem ouro! ✨</p>
+                      <p className="text-base font-bold text-slate-500">Nenhum projeto ainda.</p>
+                      <p className="text-sm text-slate-400 mt-1">Para devs e designers, projetos valem ouro! ✨</p>
                     </div>
                   )}
                 </div>
@@ -2119,15 +2119,15 @@ export default function App() {
               {activeTab === 'skills' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">⚡ Skills</h2>
-                     <button onClick={handleSuggestSkills} disabled={isEnhancing === 'skills-suggest'} className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">⚡ Skills</h2>
+                     <button onClick={handleSuggestSkills} disabled={isEnhancing === 'skills-suggest'} className="text-sm font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
                       <i className={`fas ${isEnhancing === 'skills-suggest' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic-sparkles'}`}></i> 🤖 Sugerir com IA
                     </button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6">Separe por vírgula. Seja honesto — ninguém quer "expert em tudo". 😅</p>
+                  <p className="text-sm text-slate-400 mb-6">Separe por vírgula. Seja honesto — ninguém quer "expert em tudo". 😅</p>
                   <div className="relative">
                     <textarea
-                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-40 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all"
+                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-base h-44 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all"
                       value={data.skills?.map(s => s.name).join(', ') || ''}
                       onChange={(e) => {
                         const names = e.target.value.split(',');
@@ -2146,15 +2146,15 @@ export default function App() {
               {activeTab === 'summary' && (
                 <div className="animate-in slide-in-from-bottom-2 duration-300">
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">✍️ Resumo Profissional</h2>
-                    <button onClick={handleGenerateSummary} disabled={!data.skills?.length || isEnhancing === 'summary-gen'} className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">✍️ Resumo Profissional</h2>
+                    <button onClick={handleGenerateSummary} disabled={!data.skills?.length || isEnhancing === 'summary-gen'} className="text-sm font-black text-blue-600 dark:text-blue-400 uppercase flex items-center gap-2 hover:text-blue-800 transition-colors">
                       <i className={`fas ${isEnhancing === 'summary-gen' ? 'fa-circle-notch fa-spin' : 'fa-wand-magic'}`}></i> 🤖 Gerar com IA
                     </button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6">Seu pitch de 3 linhas para o recrutador. A IA faz por você! 🚀</p>
+                  <p className="text-sm text-slate-400 mb-6">Seu pitch de 3 linhas para o recrutador. A IA faz por você! 🚀</p>
                   <div className="relative">
                     <textarea
-                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 text-sm h-64 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all"
+                      className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-base h-64 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 dark:text-white resize-none leading-relaxed transition-all"
                       value={data.summary}
                       onChange={(e) => updateData(prev => ({ ...prev, summary: e.target.value }))}
                       placeholder="Clica em '🤖 Gerar com IA' e deixa a mágica acontecer... ou escreva você mesmo!"
@@ -2177,13 +2177,13 @@ export default function App() {
                 <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full transition-all duration-700 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-500'}`} style={{width:`${cvScore}%`}}></div>
                 </div>
-                <span className="text-[9px] font-black text-slate-400 uppercase">{cvScore}% {cvScore > 70 ? '🔥' : '📝'}</span>
+                <span className="text-xs font-black text-slate-500 uppercase">{cvScore}% {cvScore > 70 ? '🔥' : '📝'}</span>
               </div>
               <button onClick={prevStep} className={`hidden md:block flex-1 py-4 font-bold text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors ${currentStep === 0 ? 'invisible' : ''}`}>← Anterior</button>
               <button onClick={prevStep} className={`md:hidden w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-400 transition-colors active:scale-95 ${currentStep === 0 ? 'invisible' : ''}`}>
                 <i className="fas fa-chevron-left text-sm"></i>
               </button>
-              <button onClick={nextStep} className="flex-1 py-3 md:py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
+              <button onClick={nextStep} className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-black text-sm uppercase tracking-wide hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
                 {currentStep === STEPS.length - 1
                   ? <><span>🎉 Baixar PDF!</span></>
                   : <><span className="hidden sm:inline">Próximo →</span><i className="fas fa-chevron-right sm:hidden text-xs"></i></>
@@ -2201,10 +2201,10 @@ export default function App() {
           <div className="no-print h-11 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
             {/* Esquerda: label + template ativo */}
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hidden sm:block whitespace-nowrap">Pré-visualização A4</span>
+              <span className="text-sm font-bold text-slate-500 dark:text-slate-400 hidden sm:block whitespace-nowrap">Pré-visualização A4</span>
               <span className="hidden sm:inline text-slate-200 dark:text-slate-700">·</span>
-              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wide hidden sm:block truncate">{template.replace(/_/g,' ')}</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:hidden">{template.replace(/_/g,' ')}</span>
+              <span className="text-sm font-black text-blue-600 dark:text-blue-400 hidden sm:block truncate">{template.replace(/_/g,' ')}</span>
+              <span className="text-sm font-bold text-slate-400 sm:hidden">{template.replace(/_/g,' ')}</span>
             </div>
 
             {/* Centro: controles de zoom */}
@@ -2212,7 +2212,7 @@ export default function App() {
               <button onClick={() => setPreviewScale(s => Math.max(0.2, s - 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Diminuir zoom">
                 <i className="fas fa-minus text-xs"></i>
               </button>
-              <span className="text-[10px] font-black text-slate-500 w-9 text-center tabular-nums">{Math.round(previewScale * 100)}%</span>
+              <span className="text-sm font-black text-slate-600 dark:text-slate-300 w-12 text-center tabular-nums">{Math.round(previewScale * 100)}%</span>
               <button onClick={() => setPreviewScale(s => Math.min(1, s + 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Aumentar zoom">
                 <i className="fas fa-plus text-xs"></i>
               </button>
@@ -2339,11 +2339,11 @@ export default function App() {
           </button>
         )}
 
-        <div className={`no-print border-l border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 z-40 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden fixed inset-y-0 right-0 lg:static ${isSidebarOpen ? 'w-[300px] translate-x-0' : 'w-0 lg:w-0 translate-x-full lg:translate-x-0'}`}>
-           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 h-14 shrink-0">
-              <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-palette text-blue-600 dark:text-blue-400 text-[10px]"></i>
+        <div className={`no-print border-l border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 z-40 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden fixed inset-y-0 right-0 lg:static ${isSidebarOpen ? 'w-[360px] translate-x-0' : 'w-0 lg:w-0 translate-x-full lg:translate-x-0'}`}>
+           <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 shrink-0">
+              <h2 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-palette text-blue-600 dark:text-blue-400 text-sm"></i>
                 </div>
                 Estilo
               </h2>
@@ -2355,18 +2355,18 @@ export default function App() {
                 <i className="fas fa-times text-xs"></i>
               </button>
            </div>
-           <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+           <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-6 space-y-7">
               <section>
                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tamanho da Fonte</h3>
+                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tamanho da Fonte</h3>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => setFontSize(s => Math.max(8, s - 0.5))} className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-[10px]">−</button>
-                      <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 w-8 text-center tabular-nums">{fontSize}px</span>
-                      <button onClick={() => setFontSize(s => Math.min(16, s + 0.5))} className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-[10px]">+</button>
+                      <button onClick={() => setFontSize(s => Math.max(8, s - 0.5))} className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-base font-bold">−</button>
+                      <span className="text-base font-black text-blue-600 dark:text-blue-400 w-12 text-center tabular-nums">{fontSize}px</span>
+                      <button onClick={() => setFontSize(s => Math.min(16, s + 0.5))} className="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-base font-bold">+</button>
                     </div>
                  </div>
-                 <input type="range" min="8" max="16" step="0.5" value={fontSize} onChange={(e) => setFontSize(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-2" />
-                 <div className="flex justify-between text-[9px] text-slate-300 dark:text-slate-600 font-bold uppercase">
+                 <input type="range" min="8" max="16" step="0.5" value={fontSize} onChange={(e) => setFontSize(parseFloat(e.target.value))} className="w-full h-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-2" />
+                 <div className="flex justify-between text-xs text-slate-400 dark:text-slate-500 font-semibold">
                    <span>Menor</span>
                    <span>Padrão (12)</span>
                    <span>Maior</span>
@@ -2375,17 +2375,17 @@ export default function App() {
 
               <section>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Família da Fonte</h3>
+                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Família da Fonte</h3>
                   <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 truncate max-w-[100px]" style={{ fontFamily }}>
                     {FONTS.find(f => f.family === fontFamily)?.label ?? 'Custom'}
                   </span>
                 </div>
                 {/* Preview ao vivo da fonte */}
                 <div className="mb-3 px-4 py-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
-                  <p className="text-sm text-slate-700 dark:text-slate-200 leading-snug" style={{ fontFamily }}>
+                  <p className="text-base text-slate-700 dark:text-slate-200 leading-snug" style={{ fontFamily }}>
                     Analista Sênior · São Paulo
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily }}>
+                  <p className="text-sm text-slate-400 mt-1" style={{ fontFamily }}>
                     experiência · educação · habilidades
                   </p>
                 </div>
@@ -2394,7 +2394,7 @@ export default function App() {
                     <button 
                       key={f.id}
                       onClick={() => setFontFamily(f.family)}
-                      className={`px-3 py-2.5 rounded-xl text-xs border-2 transition-all truncate text-left ${fontFamily === f.family ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm' : 'border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                      className={`px-3 py-3 rounded-xl text-sm border-2 transition-all truncate text-left ${fontFamily === f.family ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm' : 'border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'}`}
                       style={{ fontFamily: f.family }}
                       title={f.label}
                     >
@@ -2411,11 +2411,11 @@ export default function App() {
                      <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded flex items-center justify-center">
                        <span className="text-[10px]">🆓</span>
                      </div>
-                     <h3 className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Gratuitos</h3>
+                     <h3 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Gratuitos</h3>
                    </div>
                    <button
                      onClick={() => setShowFreeTemplates(v => !v)}
-                     className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wide transition-all ${showFreeTemplates ? 'bg-slate-100 dark:bg-slate-800 text-slate-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${showFreeTemplates ? 'bg-slate-100 dark:bg-slate-800 text-slate-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
                    >
                      <i className={`fas ${showFreeTemplates ? 'fa-eye-slash' : 'fa-eye'} text-[8px]`}></i>
                      {showFreeTemplates ? 'Ocultar' : 'Mostrar'}
@@ -2424,16 +2424,16 @@ export default function App() {
                  {showFreeTemplates && (
                    <div className="space-y-2">
                      {FREE_TEMPLATES.map(t => (
-                       <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
-                          <TemplateThumbnail template={t.id as TemplateId} className="w-12 h-[63px] shrink-0 rounded-sm overflow-hidden" />
+                       <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
+                          <TemplateThumbnail template={t.id as TemplateId} className="w-16 h-[84px] shrink-0 rounded-sm overflow-hidden" />
                           <div className="text-left flex-1 min-w-0">
-                            <p className={`text-[10px] font-black uppercase truncate ${template === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
-                            <p className="text-[8px] text-slate-400 font-bold uppercase truncate mt-0.5">{t.desc}</p>
-                            {t.badge && <span className={`inline-block mt-1 text-[8px] font-black text-white px-1.5 py-0.5 rounded-full ${t.badgeColor}`}>{t.badge}</span>}
+                            <p className={`text-sm font-black uppercase truncate ${template === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">{t.desc}</p>
+                            {t.badge && <span className={`inline-block mt-1 text-[10px] font-bold text-white px-2 py-0.5 rounded-full ${t.badgeColor}`}>{t.badge}</span>}
                           </div>
                           {template === t.id && (
-                            <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
-                              <i className="fas fa-check text-white text-[8px]"></i>
+                            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
+                              <i className="fas fa-check text-white text-xs"></i>
                             </div>
                           )}
                        </button>
@@ -2447,7 +2447,7 @@ export default function App() {
                      <div className="flex-1 h-px bg-gradient-to-r from-amber-300 to-orange-400"></div>
                      <button
                        onClick={() => setShowPremiumTemplates(v => !v)}
-                       className="flex items-center gap-1 text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest hover:opacity-70 transition-opacity"
+                       className="flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wide hover:opacity-70 transition-opacity"
                        title={showPremiumTemplates ? 'Ocultar templates premium' : 'Mostrar templates premium'}
                      >
                        👑 Premium
@@ -2463,9 +2463,9 @@ export default function App() {
                          <button
                            key={t.id}
                            onClick={() => handleTemplateSelect(t.id as TemplateId)}
-                           className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group relative ${isActive && unlocked ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/20 shadow-sm' : 'border-slate-100 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700'}`}
+                           className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 group relative ${isActive && unlocked ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/20 shadow-sm' : 'border-slate-100 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700'}`}
                          >
-                           <div className="relative w-14 h-[74px] shrink-0">
+                           <div className="relative w-16 h-[84px] shrink-0">
                              {/* Thumbnail nítido — visível sempre */}
                              <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
                              {/* Cadeado pequeno no canto superior direito */}
@@ -2476,8 +2476,8 @@ export default function App() {
                              )}
                            </div>
                            <div className="text-left flex-1 min-w-0">
-                             <p className={`text-[10px] font-black uppercase truncate ${isActive && unlocked ? 'text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
-                             <p className="text-[8px] text-slate-400 font-bold uppercase truncate">{unlocked ? t.desc : 'Premium 👑'}</p>
+                             <p className={`text-sm font-black uppercase truncate ${isActive && unlocked ? 'text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
+                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">{unlocked ? t.desc : 'Premium 👑'}</p>
                            </div>
                            {isActive && unlocked && <i className="fas fa-check text-amber-500 text-xs shrink-0"></i>}
                          </button>
@@ -2490,7 +2490,7 @@ export default function App() {
                      <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 rounded-xl px-3 py-2.5 flex items-center justify-between">
                        <div className="flex items-center gap-2">
                          <span className="text-sm">⚡</span>
-                         <span className="text-[10px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-wide">Premium ativo</span>
+                         <span className="text-sm font-black text-blue-700 dark:text-blue-300">Premium ativo</span>
                        </div>
                        <span className={`text-[10px] font-black tabular-nums rounded-full px-2 py-0.5 ${
                          daysLeft <= 1
@@ -2504,7 +2504,7 @@ export default function App() {
                    {isPremium && premiumPlan === 'lifetime' && (
                      <div className="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-3 py-2.5 flex items-center gap-2">
                        <span className="text-sm">👑</span>
-                       <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wide">Acesso Vitalício ativo</span>
+                       <span className="text-sm font-black text-amber-700 dark:text-amber-400">Acesso Vitalício ativo</span>
                      </div>
                    )}
                    {premiumExpired && (
@@ -2524,14 +2524,14 @@ export default function App() {
               </section>
               <section className="pt-4 border-t border-slate-50 dark:border-slate-800">
                   <div className="flex items-center justify-between">
-                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modo Escuro</span>
-                     <button onClick={() => setIsDarkMode(!isDarkMode)} className={`w-12 h-6 rounded-full p-1 transition-colors ${isDarkMode ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                       <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${isDarkMode ? 'translate-x-6' : ''}`}></div>
+                     <span className="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">Modo Escuro</span>
+                     <button onClick={() => setIsDarkMode(!isDarkMode)} className={`w-14 h-7 rounded-full p-1 transition-colors ${isDarkMode ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                       <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${isDarkMode ? 'translate-x-7' : ''}`}></div>
                      </button>
                   </div>
               </section>
               <div className="pt-8 space-y-3">
-                 <button onClick={handleClearData} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/40 transition-all border border-red-100/50 dark:border-red-900/20">Limpar Dados</button>
+                 <button onClick={handleClearData} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold uppercase tracking-wide hover:bg-red-100 dark:hover:bg-red-900/40 transition-all border border-red-100/50 dark:border-red-900/20">Limpar Dados</button>
               </div>
            </div>
         </div>
