@@ -128,7 +128,7 @@ export default function App() {
 
   // ── Auth + Cloud Save ──────────────────────────────────────────────
   const { user, signInWithGoogle, signOut } = useAuth();
-  const { saving: cloudSaving, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
+  const { saving: cloudSaving, loading: cloudLoading, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
 
   // ID do currículo aberto da nuvem (null = não salvo ainda / só local)
   const [currentCloudId, setCurrentCloudId] = useState<string | null>(null);
@@ -302,7 +302,7 @@ export default function App() {
       setIsSaveModalOpen(false);
       showToast(`☁️ "${name}" salvo na nuvem!`, 'success');
     } else {
-      showToast('Erro ao salvar na nuvem. Tente novamente.', 'error');
+      showToast(result.error || 'Erro ao salvar na nuvem. Tente novamente.', 'error');
     }
   };
 
@@ -798,7 +798,7 @@ export default function App() {
           <CloudResumesModal
             user={user}
             resumes={cloudResumes}
-            loading={false}
+            loading={cloudLoading}
             currentResumeId={currentCloudId}
             onLoad={handleLoadCloudResume}
             onDelete={deleteResume}
