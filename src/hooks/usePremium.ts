@@ -19,6 +19,14 @@ export interface PremiumState {
 const WEEKLY_MS = 7 * 24 * 60 * 60 * 1000;
 
 function loadState(): PremiumState {
+  // ── Migração de usuários com plano antigo (v1 = vitalício por R$9,90) ──
+  if (localStorage.getItem('cbr_premium_v1') === 'true') {
+    // Converte para v2 lifetime e remove chave antiga
+    const paymentId = localStorage.getItem('cbr_premium_payment_id') ?? 'migrated_v1';
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ plan: 'lifetime', activatedAt: Date.now(), paymentId }));
+    localStorage.removeItem('cbr_premium_v1');
+  }
+
   if (localStorage.getItem(OWNER_KEY) === 'true') {
     return { isPremium: true, plan: 'lifetime', expiresAt: null, daysLeft: null, isExpired: false };
   }
@@ -73,9 +81,10 @@ export function usePremium() {
     const params = new URLSearchParams(window.location.search);
     const paymentId = params.get('payment_id');
     const status = params.get('status');
-    const plan = (params.get('plan') as PremiumPlan | null) ?? 'weekly';
-    const hasPending = localStorage.getItem(PENDING_KEY);
-    if (!hasPending) return;
+    const pendingValue = localStorage.getItem(PENDING_KEY);
+    if (!pendingValue) return;
+    // pendingValue é o plan ('weekly' | 'lifetime') salvo antes do redirect
+    const plan: PremiumPlan = pendingValue === 'lifetime' ? 'lifetime' : 'weekly';
     localStorage.removeItem(PENDING_KEY);
     if (status === 'approved' && paymentId) verifyAndUnlock(paymentId, plan);
     if (paymentId || status) window.history.replaceState({}, '', window.location.pathname);
