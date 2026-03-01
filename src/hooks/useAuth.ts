@@ -28,11 +28,16 @@ let firebaseAuth: any = null;
 async function getFirebase() {
   if (firebaseAuth) return { auth: firebaseAuth };
 
+  // import.meta.env pode retornar string | boolean | undefined dependendo do Vite/loadEnv.
+  // Firebase só aceita string | undefined — convertemos explicitamente.
+  const asStr = (v: unknown): string | undefined =>
+    typeof v === 'string' ? v : undefined;
+
   const fbConfig = {
-    apiKey:     import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId:  import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    appId:      import.meta.env.VITE_FIREBASE_APP_ID,
+    apiKey:     asStr(import.meta.env.VITE_FIREBASE_API_KEY),
+    authDomain: asStr(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
+    projectId:  asStr(import.meta.env.VITE_FIREBASE_PROJECT_ID),
+    appId:      asStr(import.meta.env.VITE_FIREBASE_APP_ID),
   };
 
   // Carrega SDK dinamicamente (não aumenta o bundle inicial)
