@@ -13,7 +13,9 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
             <i className="fa fa-arrow-left"></i> Voltar
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <span className="font-semibold text-slate-700 dark:text-slate-200">CurriculoBR</span>
+          <span className="logo-nav inline-flex">
+            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+          </span>
         </div>
       </header>
 
@@ -31,7 +33,7 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">1. Uso do Serviço</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              O CurriculoBR é um serviço gratuito para criação de currículos profissionais. Você pode usar o serviço para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.
+              O CurriculoBR é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usar o serviço para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.
             </p>
           </section>
 

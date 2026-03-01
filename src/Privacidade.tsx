@@ -13,7 +13,9 @@ const Privacidade: React.FC<PrivacidadeProps> = ({ onVoltar }) => {
             <i className="fa fa-arrow-left"></i> Voltar
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <span className="font-semibold text-slate-700 dark:text-slate-200">CurriculoBR</span>
+          <span className="logo-nav inline-flex">
+            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+          </span>
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-6 py-12">
