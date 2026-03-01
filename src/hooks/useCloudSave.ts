@@ -28,8 +28,19 @@ let firestoreDb: any = null;
 
 async function getDb() {
   if (firestoreDb) return firestoreDb;
-  const { getApp }   = await import('firebase/app');
+
+  // BUG FIX: importa initializeApp/getApps para garantir que o app
+  // já foi inicializado antes de chamar getFirestore.
+  // getApp() sem argumento lança erro se o app ainda não foi criado —
+  // isso acontecia quando saveResume era chamado logo após o login,
+  // antes de getFirebase() no useAuth terminar de inicializar.
+  const { getApps } = await import('firebase/app');
+  if (getApps().length === 0) {
+    throw new Error('Firebase não inicializado. Faça login novamente.');
+  }
+
   const { getFirestore } = await import('firebase/firestore');
+  const { getApp }       = await import('firebase/app');
   firestoreDb = getFirestore(getApp());
   return firestoreDb;
 }
@@ -43,7 +54,7 @@ export function useCloudSave(user: AuthUser | null) {
   // ── Salvar / atualizar currículo ─────────────────────────────────────
   const saveResume = useCallback(async (
     payload: {
-      resumeId?: string;          // se undefined, cria novo
+      resumeId?: string;
       name: string;
       data: ResumeData;
       template: TemplateId;
@@ -58,8 +69,8 @@ export function useCloudSave(user: AuthUser | null) {
       const db = await getDb();
       const { collection, doc, setDoc, serverTimestamp } = await import('firebase/firestore');
 
-      const col   = collection(db, 'users', user.uid, 'resumes');
-      const ref   = payload.resumeId ? doc(col, payload.resumeId) : doc(col);
+      const col = collection(db, 'users', user.uid, 'resumes');
+      const ref = payload.resumeId ? doc(col, payload.resumeId) : doc(col);
 
       await setDoc(ref, {
         name:       payload.name,
@@ -74,7 +85,20 @@ export function useCloudSave(user: AuthUser | null) {
       return { ok: true, resumeId: ref.id };
     } catch (e: any) {
       console.error('Cloud save failed:', e);
-      return { ok: false, error: e.message ?? 'Erro ao salvar.' };
+
+      // BUG FIX: mensagens de erro mais claras para os erros mais comuns
+      let errorMsg = 'Erro ao salvar na nuvem.';
+      if (e?.code === 'permission-denied') {
+        errorMsg = 'Sem permissão. Verifique as regras do Firestore no Firebase Console.';
+      } else if (e?.code === 'unavailable' || e?.message?.includes('offline')) {
+        errorMsg = 'Sem conexão com a internet. Tente novamente.';
+      } else if (e?.message?.includes('Firebase não inicializado')) {
+        errorMsg = 'Sessão expirada. Saia e entre novamente com Google.';
+      } else if (e?.message) {
+        errorMsg = e.message;
+      }
+
+      return { ok: false, error: errorMsg };
     } finally {
       setSaving(false);
     }
@@ -104,7 +128,7 @@ export function useCloudSave(user: AuthUser | null) {
 
       setResumes(list);
       return list;
-    } catch (e) {
+    } catch (e: any) {
       console.error('List resumes failed:', e);
       return [];
     } finally {
@@ -121,7 +145,8 @@ export function useCloudSave(user: AuthUser | null) {
       await deleteDoc(doc(collection(db, 'users', user.uid, 'resumes'), resumeId));
       setResumes(prev => prev.filter(r => r.id !== resumeId));
       return true;
-    } catch {
+    } catch (e) {
+      console.error('Delete resume failed:', e);
       return false;
     }
   }, [user]);
