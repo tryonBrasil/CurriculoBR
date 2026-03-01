@@ -1,33 +1,24 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const PLANS: Record<string, { price: number; title: string; description: string }> = {
-  weekly: {
-    price:       7.99,
-    title:       'CurriculoBR Premium — 7 Dias de Acesso',
-    description: 'Desbloqueio de todos os templates premium por 7 dias. Sem renovação automática.',
-  },
-  lifetime: {
-    price:       19.99,
-    title:       'CurriculoBR Premium — Acesso Vitalício',
-    description: 'Desbloqueio de todos os templates premium para sempre neste dispositivo.',
-  },
-};
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  // Só aceita POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
-  if (!accessToken) return res.status(500).json({ error: 'MP_ACCESS_TOKEN não configurado' });
+  if (!accessToken) {
+    return res.status(500).json({ error: 'MP_ACCESS_TOKEN não configurado' });
+  }
 
+  // VERCEL_PROJECT_PRODUCTION_URL é o domínio estável (custom domain ou .vercel.app fixo)
+  // VERCEL_URL muda a cada deploy — não usar para back_urls
+  // SITE_URL pode ser configurada manualmente no Vercel para domínio customizado
   const baseUrl =
     process.env.SITE_URL ||
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : 'http://localhost:5173');
-
-  const { plan = 'weekly' } = req.body ?? {};
-  const resolvedPlan = plan === 'lifetime' ? 'lifetime' : 'weekly';
-  const { price, title, description } = PLANS[resolvedPlan];
 
   try {
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
@@ -37,16 +28,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        items: [{
-          id:          `curriculo-br-${resolvedPlan}`,
-          title,
-          description,
-          quantity:    1,
-          currency_id: 'BRL',
-          unit_price:  price,
-        }],
+        items: [
+          {
+            id: 'curriculo-br-premium',
+            title: 'CurriculoBR Premium — Acesso Vitalício',
+            description: 'Desbloqueio de todos os 10 templates premium para sempre neste dispositivo',
+            quantity: 1,
+            currency_id: 'BRL',
+            unit_price: 9.9,
+          },
+        ],
         payment_methods: {
-          installments: 1,  // pagamento único
+          excluded_payment_types: [],
+          installments: 1, // Pagamento único, sem parcelamento
         },
         back_urls: {
           success: `${baseUrl}/premium-success`,
@@ -54,7 +48,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           pending: `${baseUrl}/premium-pending`,
         },
         auto_return: 'approved',
-        metadata: { product: 'curriculo-br-premium', plan: resolvedPlan },
+        // Metadata para rastreamento
+        metadata: {
+          product: 'curriculo-br-premium',
+        },
+        // Expiração de 30 min para não deixar links velhos ativos
         expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       }),
     });
@@ -66,11 +64,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const data = await response.json();
+
+    // Retorna apenas o necessário para o frontend
     return res.status(200).json({
-      id:                 data.id,
-      init_point:         data.init_point,
-      sandbox_init_point: data.sandbox_init_point,
-      plan:               resolvedPlan,
+      id: data.id,
+      init_point: data.init_point,       // URL de checkout (produção)
+      sandbox_init_point: data.sandbox_init_point, // URL sandbox (dev)
     });
   } catch (error) {
     console.error('Preference creation failed:', error);

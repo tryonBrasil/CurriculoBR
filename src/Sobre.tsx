@@ -9,7 +9,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
   const stats = [
     { value: '+15.000', label: 'Currículos Criados', icon: 'fa-file-alt', color: 'from-blue-500 to-indigo-600' },
     { value: '15', label: 'Templates Exclusivos', icon: 'fa-palette', color: 'from-violet-500 to-purple-600' },
-    { value: 'Grátis', label: 'Para começar', icon: 'fa-heart', color: 'from-rose-500 to-pink-600' },
+    { value: '100%', label: 'Grátis, Sempre', icon: 'fa-heart', color: 'from-rose-500 to-pink-600' },
     { value: '4.9★', label: 'Avaliação dos Usuários', icon: 'fa-star', color: 'from-amber-400 to-orange-500' },
   ];
 
@@ -17,21 +17,19 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
     { icon: 'fa-wand-magic-sparkles', title: 'IA do Google Gemini', desc: 'Integração com o modelo mais avançado do Google para gerar, refinar e sugerir conteúdo em tempo real diretamente no seu currículo.', color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' },
     { icon: 'fa-shield-alt', title: 'Privacidade Total', desc: 'Seus dados ficam 100% no seu navegador. Não armazenamos nenhuma informação pessoal em servidores. Seu currículo é seu.', color: 'bg-green-50 dark:bg-green-900/20 text-green-600' },
     { icon: 'fa-file-pdf', title: 'PDF de Alta Qualidade', desc: 'Exporte em PDF com impressão fiel ao design, cores preservadas, fontes perfeitas — pronto para enviar a qualquer recrutador.', color: 'bg-red-50 dark:bg-red-900/20 text-red-600' },
-    { icon: 'fa-bolt', title: 'Zero Fricção', desc: 'Sem cadastro, sem etapas desnecessárias. Abriu o site, já pode começar. Em minutos você tem um currículo profissional. Modelos premium a partir de R$7,99.', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' },
+    { icon: 'fa-bolt', title: 'Zero Fricção', desc: 'Sem cadastro, sem cartão, sem etapas desnecessárias. Abriu o site, já pode começar. Em minutos você tem um currículo profissional.', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600' },
     { icon: 'fa-brain', title: 'Score ATS com IA', desc: 'Análise automática do seu currículo com pontuação ATS, pontos fortes, sugestões de melhoria e palavras-chave detectadas.', color: 'bg-violet-50 dark:bg-violet-900/20 text-violet-600' },
     { icon: 'fa-envelope-open-text', title: 'Carta de Apresentação', desc: 'Gere uma carta de apresentação profissional com IA em segundos. Escolha o tom: formal, dinâmico ou criativo.', color: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' },
   ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col">
-      <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center px-6 md:px-12 sticky top-0 z-50">
+      <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 flex items-center px-6 md:px-12 sticky top-0 z-50">
         <button onClick={onVoltar} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-bold text-sm uppercase tracking-widest">
           <i className="fas fa-arrow-left text-xs"></i> Voltar
         </button>
-        <div className="flex-1 flex justify-center items-center">
-          <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
-          </span>
+        <div className="flex-1 flex justify-center">
+          <span className="font-black text-lg uppercase tracking-tight text-slate-900 dark:text-white italic">Curriculo<span className="text-blue-600">BR</span></span>
         </div>
         <div className="w-16"></div>
       </header>
@@ -91,7 +89,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400">O que oferecemos</span>
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-3 leading-tight">Tudo que você precisa para se destacar.</h2>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-3 leading-tight">Tudo que você precisa, grátis.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {features.map((f, i) => (
@@ -147,7 +145,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
       <section className="py-20 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">Pronto para se destacar?</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8">Crie seu currículo agora mesmo. Sem cadastro, em minutos. Comece grátis.</p>
+          <p className="text-slate-500 dark:text-slate-400 mb-8">Crie seu currículo agora mesmo. Grátis, sem cadastro, em minutos.</p>
           <button onClick={onCriarCurriculo} className="group bg-blue-600 hover:bg-blue-700 text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest transition-all shadow-2xl hover:scale-[1.05] inline-flex items-center gap-3">
             Criar meu Currículo Agora
             <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>

@@ -8,7 +8,7 @@ interface BlogListProps {
   onCriarCurriculo: () => void;
 }
 
-const CATEGORIES = ['Todos', 'Iniciantes', 'Dicas', 'Conteúdo', 'Mercado', 'ATS & Tech', 'Estratégia'];
+const CATEGORIES = ['Todos', 'Iniciantes', 'Dicas', 'Conteúdo', 'Mercado', 'Tecnologia', 'Estratégia'];
 
 const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo }) => {
   const [activeCategory, setActiveCategory] = useState('Todos');
@@ -29,11 +29,9 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
             <button onClick={onVoltar} className="text-slate-400 hover:text-blue-600 transition-colors">
               <i className="fas fa-arrow-left"></i>
             </button>
-            <span className="logo-nav inline-flex">
-              <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
-            </span>
-            <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">
-              / Blog
+            <span className="font-black text-lg uppercase tracking-tight text-slate-800 dark:text-white italic">
+              Curriculo<span className="text-blue-600">BR</span>
+              <span className="ml-3 text-sm font-bold text-slate-400 not-italic">/ Blog</span>
             </span>
           </div>
           <button
@@ -154,7 +152,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
             Pronto para criar seu currículo?
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6">
-            Use o CurriculoBR — comece grátis, online e com IA integrada.
+            Use o CurriculoBR — gratuito, online e com IA integrada.
           </p>
           <button
             onClick={onCriarCurriculo}

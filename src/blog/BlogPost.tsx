@@ -74,11 +74,9 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             <button onClick={onBlog} className="text-slate-400 hover:text-blue-600 transition-colors">
               <i className="fas fa-arrow-left"></i>
             </button>
-            <button onClick={onBlog} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span className="logo-nav inline-flex">
-                <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
-              </span>
-              <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">/ Blog</span>
+            <button onClick={onBlog} className="font-black text-sm uppercase tracking-tight text-slate-800 dark:text-white italic hover:text-blue-600 transition-colors">
+              Curriculo<span className="text-blue-600">BR</span>
+              <span className="ml-2 text-xs font-bold text-slate-400 not-italic">/ Blog</span>
             </button>
           </div>
           <button
@@ -168,13 +166,13 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             Crie seu currículo agora
           </h2>
           <p className="text-blue-100 text-sm mb-6">
-            Use o CurriculoBR — comece grátis, profissional e com IA integrada.
+            Use o CurriculoBR — gratuito, profissional e com IA integrada.
           </p>
           <button
             onClick={onCriarCurriculo}
             className="bg-white text-blue-700 font-black px-8 py-3 rounded-full hover:bg-blue-50 transition-colors text-sm uppercase tracking-widest shadow-xl"
           >
-            <i className="fas fa-magic mr-2"></i> Começar agora — comece grátis
+            <i className="fas fa-magic mr-2"></i> Começar agora — é grátis
           </button>
         </div>
 
