@@ -49,9 +49,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           installments: 1,  // pagamento único
         },
         back_urls: {
-          success: `${baseUrl}/?payment_status=approved&plan=${resolvedPlan}`,
-          failure: `${baseUrl}/?payment_status=failure`,
-          pending: `${baseUrl}/?payment_status=pending`,
+          success: `${baseUrl}/premium-success`,
+          failure: `${baseUrl}/premium-failure`,
+          pending: `${baseUrl}/premium-pending`,
         },
         auto_return: 'approved',
         metadata: { product: 'curriculo-br-premium', plan: resolvedPlan },
