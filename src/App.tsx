@@ -10,6 +10,8 @@ import AdUnit from './components/AdUnit';
 import CookieConsent from './components/CookieConsent';
 import { useResumeHistory } from './hooks/useResumeHistory';
 import { usePremium } from './hooks/usePremium';
+import { useAuth } from './hooks/useAuth';
+import { useCloudSave } from './hooks/useCloudSave';
 import { enhanceTextStream, generateSummaryStream, suggestSkills, parseResumeWithAI, generateCoverLetterStream } from './services/geminiService';
 // pdfService é carregado sob demanda para não incluir pdfjs no bundle inicial
 import {
@@ -20,12 +22,15 @@ import {
 } from './services/validationService';
 
 // Lazy-loaded: só baixam quando o usuário navega para essas páginas
-const PhotoCropModal = lazy(() => import('./components/PhotoCropModal'));
-const ATSPanel      = lazy(() => import('./components/ATSPanel'));
-const Sobre         = lazy(() => import('./Sobre'));
-const Contato       = lazy(() => import('./Contato'));
-const BlogList      = lazy(() => import('./blog/BlogList'));
-const BlogPost      = lazy(() => import('./blog/BlogPost'));
+const PhotoCropModal    = lazy(() => import('./components/PhotoCropModal'));
+const ATSPanel          = lazy(() => import('./components/ATSPanel'));
+const Sobre             = lazy(() => import('./Sobre'));
+const Contato           = lazy(() => import('./Contato'));
+const BlogList          = lazy(() => import('./blog/BlogList'));
+const BlogPost          = lazy(() => import('./blog/BlogPost'));
+const AuthModal         = lazy(() => import('./components/AuthModal'));
+const SaveModal         = lazy(() => import('./components/SaveModal'));
+const CloudResumesModal = lazy(() => import('./components/CloudResumesModal'));
 const PremiumModal  = lazy(() => import('./components/PremiumModal'));
 
 // Fallback leve para Suspense
@@ -117,24 +122,31 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, unlockForTesting, revokePremium, ownerUnlock, unlock: unlockPremium } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, revokePremium, ownerUnlock } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
+
+  // ── Auth + Cloud Save ──────────────────────────────────────────────
+  const { user, signInWithGoogle, signOut } = useAuth();
+  const { saving: cloudSaving, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
+
+  // ID do currículo aberto da nuvem (null = não salvo ainda / só local)
+  const [currentCloudId, setCurrentCloudId] = useState<string | null>(null);
+  const [currentCloudName, setCurrentCloudName] = useState<string>('');
+
+  // Status visual do auto-save local: 'saved' | 'saving' | 'idle'
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  // Modais
+  const [isAuthModalOpen, setIsAuthModalOpen]           = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen]           = useState(false);
+  const [isCloudResumesOpen, setIsCloudResumesOpen]     = useState(false);
 
   // Modal secreto do dono (ativado com Ctrl+Shift+O)
   const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
   const [ownerSecret, setOwnerSecret] = useState('');
   const [ownerLoading, setOwnerLoading] = useState(false);
   const [ownerError, setOwnerError] = useState('');
-
-  // Mostra toast de boas-vindas quando premium é ativado via retorno do MP
-  const prevIsPremium = React.useRef(isPremium);
-  React.useEffect(() => {
-    if (!prevIsPremium.current && isPremium) {
-      showToast('🎉 Premium ativado! Todos os templates desbloqueados!', 'success');
-    }
-    prevIsPremium.current = isPremium;
-  }, [isPremium]);
 
   // Atalho de teclado secreto para o modal do dono: Ctrl+Shift+O
   useEffect(() => {
@@ -235,19 +247,80 @@ export default function App() {
     }
   }, [isDarkMode]);
 
+  // ── Auto-save local robusto ─────────────────────────────────────────
+  // Salva a cada 1.5s após última mudança, com indicador visual
   useEffect(() => {
-    if (view === 'editor') {
-      const handler = setTimeout(() => {
-        const stateToSave = { data, template, fontSize, fontFamily, isDarkMode };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-      }, 2000);
-
-      return () => clearTimeout(handler);
-    }
+    if (view !== 'editor') return;
+    setAutoSaveStatus('saving');
+    const handler = setTimeout(() => {
+      const stateToSave = { data, template, fontSize, fontFamily, isDarkMode };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+      setAutoSaveStatus('saved');
+      // Reset para 'idle' após 2s
+      setTimeout(() => setAutoSaveStatus('idle'), 2000);
+    }, 1500);
+    return () => clearTimeout(handler);
   }, [data, template, fontSize, fontFamily, view, isDarkMode]);
+
+  // Salva IMEDIATAMENTE ao fechar/recarregar a aba — nunca perde dados
+  useEffect(() => {
+    const saveNow = () => {
+      const stateToSave = { data, template, fontSize, fontFamily, isDarkMode };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+    };
+    window.addEventListener('beforeunload', saveNow);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') saveNow();
+    });
+    return () => {
+      window.removeEventListener('beforeunload', saveNow);
+    };
+  }, [data, template, fontSize, fontFamily, isDarkMode]);
 
   const showToast = (message: string, type: 'error' | 'success' = 'success') => {
     setToast({ message, type });
+  };
+
+  // ── Cloud Save handlers ─────────────────────────────────────────────
+  const handleOpenSaveModal = () => {
+    if (!user) { setIsAuthModalOpen(true); return; }
+    setIsSaveModalOpen(true);
+  };
+
+  const handleCloudSave = async (name: string) => {
+    const result = await saveResume({
+      resumeId:   currentCloudId ?? undefined,
+      name,
+      data,
+      template,
+      fontSize,
+      fontFamily,
+    });
+    if (result.ok) {
+      setCurrentCloudId(result.resumeId!);
+      setCurrentCloudName(name);
+      setIsSaveModalOpen(false);
+      showToast(`☁️ "${name}" salvo na nuvem!`, 'success');
+    } else {
+      showToast('Erro ao salvar na nuvem. Tente novamente.', 'error');
+    }
+  };
+
+  const handleOpenCloudResumes = async () => {
+    if (!user) { setIsAuthModalOpen(true); return; }
+    setIsCloudResumesOpen(true);
+    await listResumes();
+  };
+
+  const handleLoadCloudResume = (resume: typeof cloudResumes[0]) => {
+    setHistoryDirect({ past: [], present: { ...INITIAL_RESUME_DATA, ...resume.data, projects: resume.data.projects || [] }, future: [] });
+    setTemplate(resume.template);
+    setFontSize(resume.fontSize);
+    setFontFamily(resume.fontFamily);
+    setCurrentCloudId(resume.id);
+    setCurrentCloudName(resume.name);
+    navigateTo('/', 'editor');
+    showToast(`📂 "${resume.name}" carregado!`, 'success');
   };
 
   const handleOwnerUnlock = async () => {
@@ -691,6 +764,49 @@ export default function App() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <CookieConsent />
       {isATSPanelOpen && <Suspense fallback={null}><ATSPanel data={data} onClose={() => setIsATSPanelOpen(false)} /></Suspense>}
+
+      {/* Modal Login Google */}
+      {isAuthModalOpen && (
+        <Suspense fallback={null}>
+          <AuthModal
+            onClose={() => setIsAuthModalOpen(false)}
+            onSignIn={async () => {
+              const result = await signInWithGoogle();
+              if (result.ok) showToast(`✅ Bem-vindo! Seus dados estão seguros.`, 'success');
+              return result;
+            }}
+          />
+        </Suspense>
+      )}
+
+      {/* Modal Salvar na nuvem */}
+      {isSaveModalOpen && (
+        <Suspense fallback={null}>
+          <SaveModal
+            defaultName={currentCloudName || (data.personalInfo?.fullName ? `Currículo de ${data.personalInfo.fullName.split(' ')[0]}` : 'Meu Currículo')}
+            saving={cloudSaving}
+            isUpdate={!!currentCloudId}
+            onSave={handleCloudSave}
+            onClose={() => setIsSaveModalOpen(false)}
+          />
+        </Suspense>
+      )}
+
+      {/* Modal Meus Currículos na Nuvem */}
+      {isCloudResumesOpen && user && (
+        <Suspense fallback={null}>
+          <CloudResumesModal
+            user={user}
+            resumes={cloudResumes}
+            loading={false}
+            currentResumeId={currentCloudId}
+            onLoad={handleLoadCloudResume}
+            onDelete={deleteResume}
+            onSignOut={async () => { await signOut(); setIsCloudResumesOpen(false); showToast('Você saiu da conta.', 'success'); }}
+            onClose={() => setIsCloudResumesOpen(false)}
+          />
+        </Suspense>
+      )}
 
       {/* Modal secreto do dono (Ctrl+Shift+O) */}
       {isOwnerModalOpen && (
@@ -1222,11 +1338,35 @@ export default function App() {
           <div className="logo-hero-wrapper">
             <img src="/logo.png" alt="CurriculoBR" className="logo-hero h-24 w-auto object-contain" />
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-3 items-center">
              <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
              </button>
             <button onClick={() => { updateData(MOCK_RESUME_DATA); navigateTo('/', 'editor'); }} className="hidden md:block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">Ver Exemplo</button>
+
+            {/* Login / avatar na home */}
+            {user ? (
+              <button
+                onClick={handleOpenCloudResumes}
+                className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-800 transition-all shadow-sm"
+                title="Meus currículos"
+              >
+                {user.photoURL
+                  ? <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full" />
+                  : <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black">{(user.displayName || user.email || 'U')[0].toUpperCase()}</div>
+                }
+                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 hidden sm:inline">Meus Currículos</span>
+                <i className="fas fa-cloud text-[9px] text-emerald-500"></i>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-800 font-black text-[10px] text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 uppercase tracking-widest transition-all shadow-sm"
+              >
+                <i className="fas fa-cloud text-emerald-500 text-sm"></i>
+                Salvar na Nuvem
+              </button>
+            )}
           </div>
         </header>
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-24 text-center">
@@ -1552,36 +1692,35 @@ export default function App() {
                 {PREMIUM_TEMPLATES_LIST.map((t) => {
                   const unlocked = isPremium;
                   return (
-                    <div key={t.id} className={`rounded-3xl overflow-hidden shadow-lg transition-all duration-300 group border-2 flex flex-col ${unlocked ? 'bg-white dark:bg-slate-800 hover:shadow-2xl hover:-translate-y-2' : 'bg-slate-50 dark:bg-slate-800/60'} ${template === t.id ? 'border-amber-500 ring-4 ring-amber-100 dark:ring-amber-900/30' : unlocked ? 'border-transparent hover:border-amber-300 dark:hover:border-amber-700' : 'border-slate-200 dark:border-slate-700'}`}>
+                    <div key={t.id} className={`rounded-3xl overflow-hidden shadow-lg transition-all duration-300 group border-2 flex flex-col bg-white dark:bg-slate-800 hover:shadow-2xl hover:-translate-y-2 ${template === t.id ? 'border-amber-500 ring-4 ring-amber-100 dark:ring-amber-900/30' : unlocked ? 'border-transparent hover:border-amber-300 dark:hover:border-amber-700' : 'border-slate-200 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-700'}`}>
                       <div className="relative aspect-[210/297] bg-slate-100 dark:bg-slate-900 overflow-hidden">
-                        <TemplateThumbnail template={t.id as TemplateId} className={`w-full h-full ${!unlocked ? 'opacity-50 blur-[1px]' : ''}`} />
+                        {/* Thumbnail sempre nítido — o usuário vê o modelo completo */}
+                        <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
                         {t.badge && <div className={`absolute top-3 left-3 ${t.badgeColor} text-white text-[9px] font-black px-2 py-1 rounded-full`}>{t.badge}</div>}
                         {template === t.id && unlocked && <div className="absolute top-3 right-3 bg-amber-500 text-white text-[9px] font-black px-2 py-1 rounded-full">✓ Ativo</div>}
 
-                        {/* Overlay de cadeado para não-premium */}
+                        {/* Cadeado pequeno no canto — só indica que é premium, sem esconder */}
                         {!unlocked && (
-                          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 group-hover:bg-slate-900/50 transition-colors">
-                            <div className="w-14 h-14 bg-white/90 dark:bg-slate-900/90 rounded-2xl flex items-center justify-center shadow-xl">
-                              <span className="text-2xl">{premiumExpired ? '⏰' : '🔒'}</span>
-                            </div>
-                            <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className={`text-white px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl scale-90 group-hover:scale-100 transition-transform ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
-                              {premiumExpired ? '⏰ Reativar' : '👑 Desbloquear — R$ 7,99'}
-                            </button>
+                          <div className="absolute top-3 right-3 w-7 h-7 bg-white/95 dark:bg-slate-900/95 rounded-lg flex items-center justify-center shadow-md border border-slate-200/60 dark:border-slate-700/60">
+                            <span className="text-sm">{premiumExpired ? '⏰' : '🔒'}</span>
                           </div>
                         )}
 
-                        {/* Overlay hover para usuário premium */}
-                        {unlocked && (
-                          <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform">🎯 Usar este</button>
-                          </div>
-                        )}
+                        {/* Overlay hover — aparece ao passar o mouse */}
+                        <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          {unlocked
+                            ? <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className="bg-white text-blue-600 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-transform">🎯 Usar este</button>
+                            : <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className={`text-white px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl scale-90 group-hover:scale-100 transition-transform ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
+                                {premiumExpired ? '⏰ Reativar' : '👑 Desbloquear'}
+                              </button>
+                          }
+                        </div>
                       </div>
 
                       <div className="p-5 flex flex-col gap-1.5">
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
-                          {!unlocked && <span className="text-[9px]">{premiumExpired ? '⏰' : '🔒'}</span>}
+                          {!unlocked && <span className="text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-black">PREMIUM</span>}
                         </div>
                         <p className="text-xs text-slate-400">{t.desc}</p>
                         {unlocked
@@ -1670,11 +1809,33 @@ export default function App() {
            </button>
         </div>
 
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-4">
+           {/* Indicador de auto-save */}
+           <div className="flex items-center gap-1.5 min-w-[90px]">
+             {autoSaveStatus === 'saving' && (
+               <span className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-widest animate-pulse">
+                 <i className="fas fa-circle-notch fa-spin text-[9px]"></i> Salvando...
+               </span>
+             )}
+             {autoSaveStatus === 'saved' && (
+               <span className="flex items-center gap-1.5 text-[10px] text-green-500 font-bold uppercase tracking-widest animate-in fade-in duration-300">
+                 <i className="fas fa-check-circle text-[9px]"></i> Salvo
+               </span>
+             )}
+             {autoSaveStatus === 'idle' && (
+               <span className="flex items-center gap-1.5 text-[10px] text-slate-300 dark:text-slate-600 font-bold uppercase tracking-widest">
+                 <i className="fas fa-hdd text-[9px]"></i> Auto-save ativo
+               </span>
+             )}
+           </div>
+
+           <div className="w-px h-5 bg-slate-200 dark:bg-slate-700"></div>
+
            <div className="flex items-center gap-2">
               <button onClick={undo} disabled={!canUndo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canUndo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Desfazer"><i className="fas fa-undo text-xs"></i></button>
               <button onClick={redo} disabled={!canRedo} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${canRedo ? 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`} title="Refazer"><i className="fas fa-redo text-xs"></i></button>
            </div>
+
            <button
              onClick={() => setIsATSPanelOpen(true)}
              className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 border border-violet-200 dark:border-violet-700/40 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-all"
@@ -1682,22 +1843,74 @@ export default function App() {
            >
              <i className="fas fa-brain text-xs"></i> Score ATS
            </button>
+
            <div className="flex items-center gap-3">
-              <div className="w-28 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all duration-1000 ${cvScore > 70 ? 'bg-green-500' : 'bg-blue-600'}`} style={{ width: `${cvScore}%` }}></div>
               </div>
               <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{cvScore}%</span>
            </div>
-           <button 
+
+           {/* Botão salvar na nuvem */}
+           <button
+             onClick={handleOpenSaveModal}
+             className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/40 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all"
+             title={user ? 'Salvar na nuvem' : 'Login para salvar na nuvem'}
+           >
+             <i className={`fas ${cloudSaving ? 'fa-circle-notch fa-spin' : currentCloudId ? 'fa-cloud-upload-alt' : 'fa-cloud'} text-xs`}></i>
+             <span className="hidden xl:inline">{user ? (currentCloudId ? 'Atualizar' : 'Salvar') : 'Nuvem'}</span>
+           </button>
+
+           <button
              onClick={handlePrint}
-             className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
+             className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
            >
              <i className="fas fa-file-pdf"></i> Baixar PDF
            </button>
+
+           {/* Avatar / botão de login */}
+           {user ? (
+             <button
+               onClick={handleOpenCloudResumes}
+               className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all group"
+               title="Meus currículos na nuvem"
+             >
+               {user.photoURL
+                 ? <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full" />
+                 : <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-black">{(user.displayName || user.email || 'U')[0].toUpperCase()}</div>
+               }
+               <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors hidden xl:inline">
+                 {(user.displayName || user.email || '').split(' ')[0]}
+               </span>
+               <i className="fas fa-chevron-down text-[8px] text-slate-400 hidden xl:inline"></i>
+             </button>
+           ) : (
+             <button
+               onClick={() => setIsAuthModalOpen(true)}
+               className="flex items-center gap-2 px-4 py-2 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 rounded-full font-black text-[10px] text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 uppercase tracking-widest transition-all"
+               title="Entrar para salvar na nuvem"
+             >
+               <i className="fas fa-user-circle text-sm"></i>
+               <span className="hidden xl:inline">Entrar</span>
+             </button>
+           )}
         </div>
-        
+
         {/* Mobile right buttons */}
-        <div className="flex md:hidden items-center gap-1">
+        <div className="flex md:hidden items-center gap-1.5">
+          {/* Indicador de auto-save mobile */}
+          {autoSaveStatus === 'saving' && <i className="fas fa-circle-notch fa-spin text-slate-400 text-xs"></i>}
+          {autoSaveStatus === 'saved' && <i className="fas fa-check-circle text-green-500 text-xs"></i>}
+
+          {/* Cloud mobile */}
+          <button
+            onClick={handleOpenSaveModal}
+            className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all"
+            title="Salvar na nuvem"
+          >
+            <i className="fas fa-cloud text-xs"></i>
+          </button>
+
           <button onClick={handlePrint} className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wide flex items-center gap-1">
             <i className="fas fa-file-pdf text-[9px]"></i> PDF
           </button>
@@ -2112,13 +2325,15 @@ export default function App() {
                          <button
                            key={t.id}
                            onClick={() => handleTemplateSelect(t.id as TemplateId)}
-                           className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group relative ${isActive && unlocked ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/20 shadow-sm' : unlocked ? 'border-slate-50 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700' : 'border-slate-100 dark:border-slate-800 opacity-80 hover:opacity-100'}`}
+                           className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group relative ${isActive && unlocked ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/20 shadow-sm' : 'border-slate-100 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700'}`}
                          >
                            <div className="relative w-14 h-[74px] shrink-0">
-                             <TemplateThumbnail template={t.id as TemplateId} className={`w-full h-full ${!unlocked ? 'opacity-40 blur-[1px]' : ''}`} />
+                             {/* Thumbnail nítido — visível sempre */}
+                             <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
+                             {/* Cadeado pequeno no canto superior direito */}
                              {!unlocked && (
-                               <div className="absolute inset-0 flex items-center justify-center">
-                                 <span className="text-lg">🔒</span>
+                               <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-white/95 dark:bg-slate-900/95 rounded flex items-center justify-center shadow-sm">
+                                 <span className="text-[9px]">🔒</span>
                                </div>
                              )}
                            </div>
