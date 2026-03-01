@@ -134,7 +134,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({
       const data = await res.json();
       const url  = data.init_point || data.sandbox_init_point;
       if (!url) throw new Error('Link de pagamento não retornado.');
-      localStorage.setItem('cbr_pending_payment', '1');
+      localStorage.setItem('cbr_pending_payment', selectedPlan);
       window.location.href = url;
     } catch (e: any) {
       setError(e.message || 'Erro inesperado.');
