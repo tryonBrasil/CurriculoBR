@@ -52,7 +52,7 @@ const FREE_TEMPLATES = [
   { id: 'corporate_gray',   label: 'Corporate Gray', desc: 'Minimalista Pro',         badge: '',              badgeColor: ''              },
 ];
 
-// 12 templates premium — desbloqueados após pagamento de R$9,90
+// 12 templates premium — 7 dias por R$7,99 ou vitalício por R$19,99
 const PREMIUM_TEMPLATES_LIST = [
   { id: 'modern_blue',        label: 'Modern Blue',        desc: 'Profissional e Limpo',    badge: '🔥 Mais usado',  badgeColor: 'bg-orange-500' },
   { id: 'modern_vitae',       label: 'Modern Vitae',       desc: 'Elegante e Espaçoso',     badge: '⭐ Popular',     badgeColor: 'bg-blue-600'   },
@@ -117,7 +117,7 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, isVerifying, unlockForTesting, revokePremium, ownerUnlock } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, unlockForTesting, revokePremium, ownerUnlock, unlock: unlockPremium } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
@@ -761,9 +761,14 @@ export default function App() {
           <PremiumModal
             templateLabel={premiumModalTemplate}
             onClose={() => setIsPremiumModalOpen(false)}
-            onUnlocked={() => {
+            isExpired={premiumExpired}
+            daysLeft={daysLeft}
+            onUnlocked={(plan) => {
               setIsPremiumModalOpen(false);
-              showToast('🎉 Pix confirmado! Todos os templates desbloqueados!', 'success');
+              const msg = plan === 'lifetime'
+                ? '👑 Premium Vitalício ativado! Todos os templates desbloqueados para sempre!'
+                : '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!';
+              showToast(msg, 'success');
               window.dispatchEvent(new Event('storage'));
             }}
           />
@@ -1528,17 +1533,17 @@ export default function App() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Premium</h2>
-                      {isPremium
-                        ? <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">✓ Ativado</span>
-                        : <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">R$ 9,90 único</span>
-                      }
+                      {isPremium && premiumPlan === 'lifetime' && <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">♾️ Vitalício</span>}
+                      {isPremium && premiumPlan === 'weekly' && <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${daysLeft && daysLeft <= 1 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 animate-pulse' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>⚡ {daysLeft}d restantes</span>}
+                      {premiumExpired && <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase animate-pulse">⏰ Expirou</span>}
+                      {!isPremium && !premiumExpired && <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">a partir de R$ 7,99</span>}
                     </div>
                     <p className="text-[10px] text-slate-400 font-bold">{PREMIUM_TEMPLATES_LIST.length} designs exclusivos</p>
                   </div>
                 </div>
                 {!isPremium && (
-                  <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black uppercase tracking-wide hover:opacity-90 transition-all shadow-md active:scale-95">
-                    🔓 Desbloquear tudo
+                  <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-white text-[10px] font-black uppercase tracking-wide hover:opacity-90 transition-all shadow-md active:scale-95 ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
+                    {premiumExpired ? '⏰ Reativar' : '🔓 Desbloquear tudo'}
                   </button>
                 )}
               </div>
@@ -1557,10 +1562,10 @@ export default function App() {
                         {!unlocked && (
                           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-3 group-hover:bg-slate-900/50 transition-colors">
                             <div className="w-14 h-14 bg-white/90 dark:bg-slate-900/90 rounded-2xl flex items-center justify-center shadow-xl">
-                              <span className="text-2xl">🔒</span>
+                              <span className="text-2xl">{premiumExpired ? '⏰' : '🔒'}</span>
                             </div>
-                            <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl scale-90 group-hover:scale-100 transition-transform">
-                              👑 Desbloquear — R$ 9,90
+                            <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className={`text-white px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-xl scale-90 group-hover:scale-100 transition-transform ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
+                              {premiumExpired ? '⏰ Reativar' : '👑 Desbloquear — R$ 7,99'}
                             </button>
                           </div>
                         )}
@@ -1576,15 +1581,15 @@ export default function App() {
                       <div className="p-5 flex flex-col gap-1.5">
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">{t.label}</h3>
-                          {!unlocked && <span className="text-[9px]">🔒</span>}
+                          {!unlocked && <span className="text-[9px]">{premiumExpired ? '⏰' : '🔒'}</span>}
                         </div>
                         <p className="text-xs text-slate-400">{t.desc}</p>
                         {unlocked
                           ? <button onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 ${template === t.id ? 'bg-amber-500 text-white shadow-lg' : 'border-2 border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-amber-500 hover:text-white hover:border-amber-500 hover:shadow-md'}`}>
                               {template === t.id ? '✓ Selecionado' : 'Selecionar este'}
                             </button>
-                          : <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className="mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:opacity-90 active:scale-95 transition-all shadow-md">
-                              👑 Desbloquear — R$ 9,90
+                          : <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest text-white hover:opacity-90 active:scale-95 transition-all shadow-md ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
+                              {premiumExpired ? '⏰ Reativar acesso' : '👑 Desbloquear — R$ 7,99'}
                             </button>
                         }
                       </div>
@@ -1595,14 +1600,24 @@ export default function App() {
 
               {/* Banner CTA se não for premium */}
               {!isPremium && (
-                <div className="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-3xl border border-amber-200 dark:border-amber-700/40 flex flex-col md:flex-row items-center gap-5">
-                  <div className="text-5xl">👑</div>
+                <div className={`mt-8 p-6 rounded-3xl border flex flex-col md:flex-row items-center gap-5 ${
+                  premiumExpired
+                    ? 'bg-gradient-to-r from-rose-50 to-orange-50 dark:from-rose-900/20 dark:to-orange-900/20 border-rose-200 dark:border-rose-700/40'
+                    : 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-200 dark:border-amber-700/40'
+                }`}>
+                  <div className="text-5xl">{premiumExpired ? '⏰' : '👑'}</div>
                   <div className="flex-1 text-center md:text-left">
-                    <h3 className="font-black text-slate-900 dark:text-white text-lg">Desbloqueie todos os 12 templates</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Pagamento único de <strong>R$ 9,90</strong> — acesso vitalício, sem assinatura, sem reencher nada. ✌️</p>
+                    <h3 className="font-black text-slate-900 dark:text-white text-lg">
+                      {premiumExpired ? 'Seu acesso de 7 dias expirou' : 'Desbloqueie todos os 12 templates'}
+                    </h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                      {premiumExpired
+                        ? 'Reative por R$ 7,99 (7 dias) ou garanta o vitalício por R$ 19,99. Sem renovação automática. ✌️'
+                        : '7 dias por R$ 7,99 ou vitalício por R$ 19,99 — sem assinatura, sem cadastro. ✌️'}
+                    </p>
                   </div>
-                  <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="shrink-0 px-8 py-4 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all">
-                    🔓 Quero o Premium
+                  <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className={`shrink-0 px-8 py-4 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
+                    {premiumExpired ? '⏰ Reativar agora' : '🔓 Quero o Premium'}
                   </button>
                 </div>
               )}
@@ -2117,9 +2132,39 @@ export default function App() {
                      })}
                    </div>
 
-                   {!isPremium && (
+                   {/* Badge de status premium na sidebar */}
+                   {isPremium && premiumPlan === 'weekly' && daysLeft !== null && (
+                     <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 rounded-xl px-3 py-2.5 flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                         <span className="text-sm">⚡</span>
+                         <span className="text-[10px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-wide">Premium ativo</span>
+                       </div>
+                       <span className={`text-[10px] font-black tabular-nums rounded-full px-2 py-0.5 ${
+                         daysLeft <= 1
+                           ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
+                           : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                       }`}>
+                         {daysLeft === 0 ? 'Expira hoje!' : `${daysLeft}d restantes`}
+                       </span>
+                     </div>
+                   )}
+                   {isPremium && premiumPlan === 'lifetime' && (
+                     <div className="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-3 py-2.5 flex items-center gap-2">
+                       <span className="text-sm">👑</span>
+                       <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wide">Acesso Vitalício ativo</span>
+                     </div>
+                   )}
+                   {premiumExpired && (
+                     <button
+                       onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }}
+                       className="mt-4 w-full py-3 bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 animate-pulse"
+                     >
+                       ⏰ Acesso expirou — Reativar
+                     </button>
+                   )}
+                   {!isPremium && !premiumExpired && (
                      <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="mt-4 w-full py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2">
-                       🔓 Desbloquear — R$ 9,90
+                       🔓 Desbloquear — a partir de R$ 7,99
                      </button>
                    )}
                  </div>
