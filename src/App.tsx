@@ -2199,83 +2199,202 @@ export default function App() {
         >
           {/* Toolbar da preview */}
           <div className="no-print h-11 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hidden sm:block">Pré-visualização A4</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:hidden">{template.replace('_',' ')}</span>
+            {/* Esquerda: label + template ativo */}
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hidden sm:block whitespace-nowrap">Pré-visualização A4</span>
+              <span className="hidden sm:inline text-slate-200 dark:text-slate-700">·</span>
+              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wide hidden sm:block truncate">{template.replace(/_/g,' ')}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 sm:hidden">{template.replace(/_/g,' ')}</span>
+            </div>
+
+            {/* Centro: controles de zoom */}
             <div className="flex items-center gap-1">
-              <button onClick={() => setPreviewScale(s => Math.max(0.2, s - 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <button onClick={() => setPreviewScale(s => Math.max(0.2, s - 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Diminuir zoom">
                 <i className="fas fa-minus text-xs"></i>
               </button>
-              <span className="text-[10px] font-black text-slate-500 w-9 text-center">{Math.round(previewScale * 100)}%</span>
-              <button onClick={() => setPreviewScale(s => Math.min(1, s + 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <span className="text-[10px] font-black text-slate-500 w-9 text-center tabular-nums">{Math.round(previewScale * 100)}%</span>
+              <button onClick={() => setPreviewScale(s => Math.min(1, s + 0.05))} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Aumentar zoom">
                 <i className="fas fa-plus text-xs"></i>
               </button>
               <button onClick={fitToScreen} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-1" title="Ajustar à tela">
                 <i className="fas fa-expand text-xs"></i>
               </button>
             </div>
-            <button onClick={() => { setMobileView('editor'); }} className="md:hidden text-[9px] font-black text-blue-600 uppercase tracking-wide flex items-center gap-1">
-              <i className="fas fa-pencil-alt text-[9px]"></i> Editar
-            </button>
+
+            {/* Direita: botão toggle de Estilo (desktop) + Editar (mobile) */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setMobileView('editor')}
+                className="md:hidden text-[9px] font-black text-blue-600 uppercase tracking-wide flex items-center gap-1"
+              >
+                <i className="fas fa-pencil-alt text-[9px]"></i> Editar
+              </button>
+              <button
+                onClick={() => setIsSidebarOpen(v => !v)}
+                className={`hidden md:flex items-center gap-1.5 px-3 h-7 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all ${isSidebarOpen ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                title={isSidebarOpen ? 'Ocultar painel de estilos' : 'Exibir painel de estilos'}
+              >
+                <i className={`fas fa-palette text-[9px] ${isSidebarOpen ? 'text-blue-600 dark:text-blue-400' : ''}`}></i>
+                <span className="hidden lg:inline">{isSidebarOpen ? 'Ocultar Estilos' : 'Estilos'}</span>
+                <i className={`fas fa-chevron-${isSidebarOpen ? 'right' : 'left'} text-[8px] opacity-60`}></i>
+              </button>
+            </div>
           </div>
 
           {/* Área de scroll com o currículo escalado */}
-          <div className="flex-1 overflow-auto flex justify-center items-start py-8 px-4 custom-scrollbar">
-            <div
-              className="print-area shadow-2xl"
-              style={{
-                width: `${794 * previewScale}px`,
-                height: `${1123 * previewScale}px`,
-                minWidth: `${794 * previewScale}px`,
-                minHeight: `${1123 * previewScale}px`,
-                position: 'relative',
-              }}
-            >
+          <div
+            className="flex-1 overflow-auto flex justify-center items-start custom-scrollbar"
+            style={{
+              background: isDarkMode
+                ? 'radial-gradient(ellipse at 60% 40%, #1e293b 0%, #0f172a 100%)'
+                : 'radial-gradient(ellipse at 60% 40%, #e2e8f0 0%, #cbd5e1 100%)',
+              padding: '32px 24px 48px',
+            }}
+          >
+            {/* Wrapper que dá a ilusão do papel na mesa */}
+            <div className="flex flex-col items-center gap-3">
+              {/* Badge do template ativo — fica acima do papel */}
+              <div className="flex items-center gap-2 opacity-70">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                  {FREE_TEMPLATES.find(t => t.id === template)?.label || PREMIUM_TEMPLATES_LIST.find(t => t.id === template)?.label || template}
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-60"></span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                  {Math.round(794 * previewScale)}×{Math.round(1123 * previewScale)}px
+                </span>
+              </div>
+
+              {/* O papel em si */}
               <div
+                className="print-area relative"
                 style={{
-                  transform: `scale(${previewScale})`,
-                  transformOrigin: 'top left',
-                  width: '794px',
-                  height: '1123px',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  fontFamily,
+                  width: `${794 * previewScale}px`,
+                  height: `${1123 * previewScale}px`,
+                  minWidth: `${794 * previewScale}px`,
+                  minHeight: `${1123 * previewScale}px`,
+                  boxShadow: isDarkMode
+                    ? '0 25px 60px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.04)'
+                    : '0 25px 60px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(0,0,0,0.04)',
+                  borderRadius: '2px',
                 }}
               >
-                <ResumePreview
-                  data={data}
-                  template={template}
-                  fontSize={fontSize}
-                  onSectionClick={handleSectionClick}
-                  onReorder={(newOrder) => updateData(prev => ({ ...prev, sectionOrder: newOrder }))}
+                {/* Dobra de canto superior direito estilo papel */}
+                <div
+                  className="absolute top-0 right-0 z-10 pointer-events-none"
+                  style={{
+                    width: `${Math.max(8, 20 * previewScale)}px`,
+                    height: `${Math.max(8, 20 * previewScale)}px`,
+                    background: isDarkMode
+                      ? 'linear-gradient(225deg, #1e293b 50%, rgba(255,255,255,0.05) 50%)'
+                      : 'linear-gradient(225deg, #cbd5e1 50%, rgba(0,0,0,0.06) 50%)',
+                  }}
                 />
+                <div
+                  style={{
+                    transform: `scale(${previewScale})`,
+                    transformOrigin: 'top left',
+                    width: '794px',
+                    height: '1123px',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    fontFamily,
+                  }}
+                >
+                  <ResumePreview
+                    data={data}
+                    template={template}
+                    fontSize={fontSize}
+                    onSectionClick={handleSectionClick}
+                    onReorder={(newOrder) => updateData(prev => ({ ...prev, sectionOrder: newOrder }))}
+                  />
+                </div>
               </div>
+
+              {/* Sombra "mesa" abaixo do papel */}
+              <div
+                className="opacity-40"
+                style={{
+                  width: `${794 * previewScale * 0.85}px`,
+                  height: '8px',
+                  background: 'radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%)',
+                  filter: 'blur(4px)',
+                  marginTop: '-4px',
+                }}
+              />
             </div>
           </div>
         </div>
 
+        {/* Aba flutuante para reabrir o painel de estilos no desktop quando fechado */}
+        {!isSidebarOpen && (
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="hidden lg:flex no-print absolute right-0 top-1/2 -translate-y-1/2 z-50 flex-col items-center justify-center gap-1 w-7 py-4 bg-white dark:bg-slate-900 border border-r-0 border-slate-200 dark:border-slate-700 rounded-l-xl shadow-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+            title="Exibir painel de estilos"
+          >
+            <i className="fas fa-palette text-[10px]"></i>
+            <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }} className="text-[8px] font-black uppercase tracking-widest leading-none">Estilos</span>
+            <i className="fas fa-chevron-left text-[8px] opacity-50"></i>
+          </button>
+        )}
+
         <div className={`no-print border-l border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 z-40 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden fixed inset-y-0 right-0 lg:static ${isSidebarOpen ? 'w-[300px] translate-x-0' : 'w-0 lg:w-0 translate-x-full lg:translate-x-0'}`}>
-           <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-800/30 h-16">
-              <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2"><i className="fas fa-palette text-blue-600"></i> Estilo</h2>
-              <button onClick={() => setIsSidebarOpen(false)} className="text-slate-300 hover:text-slate-600 dark:hover:text-slate-100 transition-colors"><i className="fas fa-times text-xs"></i></button>
+           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 h-14 shrink-0">
+              <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-palette text-blue-600 dark:text-blue-400 text-[10px]"></i>
+                </div>
+                Estilo
+              </h2>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                title="Ocultar painel"
+              >
+                <i className="fas fa-times text-xs"></i>
+              </button>
            </div>
            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
               <section>
-                 <div className="flex justify-between items-center mb-4">
+                 <div className="flex justify-between items-center mb-3">
                     <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tamanho da Fonte</h3>
-                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400">{fontSize}px</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setFontSize(s => Math.max(8, s - 0.5))} className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-[10px]">−</button>
+                      <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 w-8 text-center tabular-nums">{fontSize}px</span>
+                      <button onClick={() => setFontSize(s => Math.min(16, s + 0.5))} className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-[10px]">+</button>
+                    </div>
                  </div>
-                 <input type="range" min="8" max="16" step="0.5" value={fontSize} onChange={(e) => setFontSize(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                 <input type="range" min="8" max="16" step="0.5" value={fontSize} onChange={(e) => setFontSize(parseFloat(e.target.value))} className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-2" />
+                 <div className="flex justify-between text-[9px] text-slate-300 dark:text-slate-600 font-bold uppercase">
+                   <span>Menor</span>
+                   <span>Padrão (12)</span>
+                   <span>Maior</span>
+                 </div>
               </section>
 
               <section>
-                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Família da Fonte</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Família da Fonte</h3>
+                  <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 truncate max-w-[100px]" style={{ fontFamily }}>
+                    {FONTS.find(f => f.family === fontFamily)?.label ?? 'Custom'}
+                  </span>
+                </div>
+                {/* Preview ao vivo da fonte */}
+                <div className="mb-3 px-4 py-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+                  <p className="text-sm text-slate-700 dark:text-slate-200 leading-snug" style={{ fontFamily }}>
+                    Analista Sênior · São Paulo
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5" style={{ fontFamily }}>
+                    experiência · educação · habilidades
+                  </p>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   {FONTS.map(f => (
                     <button 
                       key={f.id}
                       onClick={() => setFontFamily(f.family)}
-                      className={`px-3 py-2 rounded-lg text-xs border transition-all truncate ${fontFamily === f.family ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-blue-400'}`}
+                      className={`px-3 py-2.5 rounded-xl text-xs border-2 transition-all truncate text-left ${fontFamily === f.family ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm' : 'border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'}`}
                       style={{ fontFamily: f.family }}
                       title={f.label}
                     >
@@ -2286,23 +2405,37 @@ export default function App() {
               </section>
 
               <section>
-                 <div className="flex justify-between items-center mb-4">
-                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Templates</h3>
-                   <button onClick={() => setShowFreeTemplates(v => !v)} className="text-[9px] text-slate-400 hover:text-blue-600 font-black uppercase transition-colors flex items-center gap-1">
-                     <i className={`fas ${showFreeTemplates ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                 {/* Header "Templates gratuitos" com toggle */}
+                 <div className="flex items-center justify-between mb-3">
+                   <div className="flex items-center gap-2">
+                     <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900/30 rounded flex items-center justify-center">
+                       <span className="text-[10px]">🆓</span>
+                     </div>
+                     <h3 className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Gratuitos</h3>
+                   </div>
+                   <button
+                     onClick={() => setShowFreeTemplates(v => !v)}
+                     className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wide transition-all ${showFreeTemplates ? 'bg-slate-100 dark:bg-slate-800 text-slate-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'}`}
+                   >
+                     <i className={`fas ${showFreeTemplates ? 'fa-eye-slash' : 'fa-eye'} text-[8px]`}></i>
                      {showFreeTemplates ? 'Ocultar' : 'Mostrar'}
                    </button>
                  </div>
                  {showFreeTemplates && (
-                   <div className="space-y-3">
+                   <div className="space-y-2">
                      {FREE_TEMPLATES.map(t => (
-                       <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-50 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-600'}`}>
-                          <TemplateThumbnail template={t.id as TemplateId} className="w-14 h-[74px] shrink-0" />
+                       <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
+                          <TemplateThumbnail template={t.id as TemplateId} className="w-12 h-[63px] shrink-0 rounded-sm overflow-hidden" />
                           <div className="text-left flex-1 min-w-0">
                             <p className={`text-[10px] font-black uppercase truncate ${template === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
-                            <p className="text-[8px] text-slate-400 font-bold uppercase truncate">{t.desc}</p>
+                            <p className="text-[8px] text-slate-400 font-bold uppercase truncate mt-0.5">{t.desc}</p>
+                            {t.badge && <span className={`inline-block mt-1 text-[8px] font-black text-white px-1.5 py-0.5 rounded-full ${t.badgeColor}`}>{t.badge}</span>}
                           </div>
-                          {template === t.id && <i className="fas fa-check text-blue-600 text-xs shrink-0"></i>}
+                          {template === t.id && (
+                            <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
+                              <i className="fas fa-check text-white text-[8px]"></i>
+                            </div>
+                          )}
                        </button>
                      ))}
                    </div>
@@ -2312,12 +2445,17 @@ export default function App() {
                  <div className="pt-4 mt-2">
                    <div className="flex items-center gap-2 mb-3">
                      <div className="flex-1 h-px bg-gradient-to-r from-amber-300 to-orange-400"></div>
-                     <span className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1">
+                     <button
+                       onClick={() => setShowPremiumTemplates(v => !v)}
+                       className="flex items-center gap-1 text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest hover:opacity-70 transition-opacity"
+                       title={showPremiumTemplates ? 'Ocultar templates premium' : 'Mostrar templates premium'}
+                     >
                        👑 Premium
-                     </span>
+                       <i className={`fas fa-chevron-${showPremiumTemplates ? 'up' : 'down'} text-[7px] ml-0.5`}></i>
+                     </button>
                      <div className="flex-1 h-px bg-gradient-to-l from-amber-300 to-orange-400"></div>
                    </div>
-                   <div className="space-y-3">
+                   {showPremiumTemplates && <div className="space-y-3">
                      {PREMIUM_TEMPLATES_LIST.map(t => {
                        const unlocked = isPremium;
                        const isActive = template === t.id;
@@ -2345,7 +2483,7 @@ export default function App() {
                          </button>
                        );
                      })}
-                   </div>
+                   </div>}
 
                    {/* Badge de status premium na sidebar */}
                    {isPremium && premiumPlan === 'weekly' && daysLeft !== null && (
