@@ -29,8 +29,9 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
           <i className="fas fa-arrow-left text-xs"></i> Voltar
         </button>
         <div className="flex-1 flex justify-center items-center">
-          <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
+          <span className="logo-nav inline-flex items-center gap-2">
+            <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.1rem] tracking-tight hidden sm:inline" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
           </span>
         </div>
         <div className="w-16"></div>
@@ -47,7 +48,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
             Criado para quem<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 italic">merece se destacar.</span>
           </h1>
           <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            O CurrículoNexT nasceu da crença de que um currículo profissional de qualidade não deve ser privilégio de poucos. Construímos a ferramenta que queríamos ter quando buscávamos emprego.
+            O CurriculoGO nasceu da crença de que um currículo profissional de qualidade não deve ser privilégio de poucos. Construímos a ferramenta que queríamos ter quando buscávamos emprego.
           </p>
         </div>
       </section>
@@ -72,7 +73,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
             <div>
               <span className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 dark:text-blue-400">Nossa Missão</span>
               <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-3 mb-5 leading-tight">Democratizar o acesso a ferramentas profissionais.</h2>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">Plataformas pagas cobram mensalidades absurdas por algo simples: um currículo bem feito. O CurrículoNexT prova que dá pra fazer isso gratuitamente, com mais qualidade, mais privacidade e mais inteligência.</p>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">Plataformas pagas cobram mensalidades absurdas por algo simples: um currículo bem feito. O CurriculoGO prova que dá pra fazer isso gratuitamente, com mais qualidade, mais privacidade e mais inteligência.</p>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">Integramos o Google Gemini, um dos modelos de IA mais avançados do mundo, diretamente no fluxo de criação — sem cobrar nada por isso.</p>
             </div>
             <div className="relative">
@@ -80,7 +81,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 <i className="fas fa-quote-left text-3xl text-blue-300 mb-4 block"></i>
                 <p className="text-lg font-medium leading-relaxed italic">"Todo brasileiro que busca emprego merece ter um currículo bonito, profissional e moderno — independente de quanto tem na carteira."</p>
-                <p className="mt-4 text-blue-200 text-sm font-bold uppercase tracking-widest">— Equipe CurrículoNexT</p>
+                <p className="mt-4 text-blue-200 text-sm font-bold uppercase tracking-widest">— Equipe CurriculoGO</p>
               </div>
             </div>
           </div>
@@ -116,7 +117,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
             <div>
               <h3 className="text-xl font-black text-slate-900 dark:text-white mb-3">Privacidade por design</h3>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-3">Nenhum dado seu trafega para os nossos servidores. Tudo fica salvo no <code className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded text-xs font-bold">localStorage</code> do seu próprio navegador.</p>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">Quando você usa os recursos de IA, os trechos do currículo são enviados diretamente para a API do Google Gemini — sem passar pelo CurrículoNexT. Seu currículo é realmente seu.</p>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">Quando você usa os recursos de IA, os trechos do currículo são enviados diretamente para a API do Google Gemini — sem passar pelo CurriculoGO. Seu currículo é realmente seu.</p>
             </div>
           </div>
         </div>
@@ -156,7 +157,7 @@ const Sobre: React.FC<SobreProps> = ({ onVoltar, onCriarCurriculo }) => {
       </section>
 
       <footer className="border-t border-slate-200 dark:border-slate-800 py-8 text-center text-xs text-slate-400 dark:text-slate-600">
-        © {new Date().getFullYear()} CurrículoNexT — Todos os direitos reservados.
+        © {new Date().getFullYear()} CurriculoGO — Todos os direitos reservados.
       </footer>
     </div>
   );

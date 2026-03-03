@@ -11,9 +11,9 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Abre o cliente de e-mail padrão como fallback
-    const subject = encodeURIComponent(`Contato CurrículoNexT - ${form.nome}`);
+    const subject = encodeURIComponent(`Contato CurriculoGO - ${form.nome}`);
     const body = encodeURIComponent(`Nome: ${form.nome}\nE-mail: ${form.email}\n\n${form.mensagem}`);
-    window.open(`mailto:contato@curriculonext.com.br?subject=${subject}&body=${body}`);
+    window.open(`mailto:contato@curriculogo.com.br?subject=${subject}&body=${body}`);
     setEnviado(true);
   };
 
@@ -25,8 +25,9 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
             <i className="fa fa-arrow-left"></i> Voltar
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
+          <span className="logo-nav inline-flex items-center gap-2">
+            <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.1rem] tracking-tight hidden sm:inline" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
           </span>
         </div>
       </header>
@@ -94,7 +95,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
           <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-100 dark:border-slate-700 text-center">
             <i className="fa fa-envelope text-2xl text-blue-600 mb-2 block"></i>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">E-mail</p>
-            <a href="mailto:contato@curriculonext.com.br" className="text-blue-600 hover:underline text-sm">contato@curriculonext.com.br</a>
+            <a href="mailto:contato@curriculogo.com.br" className="text-blue-600 hover:underline text-sm">contato@curriculogo.com.br</a>
           </div>
           <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-100 dark:border-slate-700 text-center">
             <i className="fa fa-clock text-2xl text-blue-600 mb-2 block"></i>
@@ -105,7 +106,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-700 mt-16 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} CurrículoNexT. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurriculoGO. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

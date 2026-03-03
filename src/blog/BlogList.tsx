@@ -29,8 +29,9 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
             <button onClick={onVoltar} className="text-slate-400 hover:text-blue-600 transition-colors">
               <i className="fas fa-arrow-left"></i>
             </button>
-            <span className="logo-nav inline-flex">
-              <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
+            <span className="logo-nav inline-flex items-center gap-2">
+              <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.1rem] tracking-tight hidden sm:inline" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
             </span>
             <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">
               / Blog
@@ -53,7 +54,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
             Dicas e Guias
           </span>
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
-            Blog do <span className="text-blue-600">CurrículoNexT</span>
+            Blog do <span className="text-blue-600">CurriculoGO</span>
           </h1>
           <p className="text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
             Guias práticos para criar um currículo que abre portas e conquistar a vaga dos seus sonhos.
@@ -154,7 +155,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
             Pronto para criar seu currículo?
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mb-6">
-            Use o CurrículoNexT — comece grátis, online e com IA integrada.
+            Use o CurriculoGO — comece grátis, online e com IA integrada.
           </p>
           <button
             onClick={onCriarCurriculo}
@@ -167,7 +168,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-800 mt-16 py-8 text-center text-xs text-slate-400 dark:text-slate-600">
-        <p>© {new Date().getFullYear()} CurrículoNexT. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurriculoGO. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

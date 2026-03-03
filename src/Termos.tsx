@@ -13,8 +13,9 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
             <i className="fa fa-arrow-left"></i> Voltar
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
+          <span className="logo-nav inline-flex items-center gap-2">
+            <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.1rem] tracking-tight hidden sm:inline" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
           </span>
         </div>
       </header>
@@ -26,28 +27,28 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
         <div className="space-y-8">
           <section>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Ao utilizar o <strong>CurrículoNexT</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de usar nossos serviços.
+              Ao utilizar o <strong>CurriculoGO</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de usar nossos serviços.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">1. Uso do Serviço</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              O CurrículoNexT é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usar o serviço para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.
+              O CurriculoGO é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usar o serviço para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">2. Responsabilidade pelo Conteúdo</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Você é o único responsável pelo conteúdo inserido no seu currículo. O CurrículoNexT não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações inseridas são verdadeiras e de sua autoria.
+              Você é o único responsável pelo conteúdo inserido no seu currículo. O CurriculoGO não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações inseridas são verdadeiras e de sua autoria.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">3. Propriedade Intelectual</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Os templates, designs e código-fonte do CurrículoNexT são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Você não pode copiar, redistribuir ou usar os templates do CurrículoNexT em outros produtos ou serviços sem autorização expressa.
+              Os templates, designs e código-fonte do CurriculoGO são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Você não pode copiar, redistribuir ou usar os templates do CurriculoGO em outros produtos ou serviços sem autorização expressa.
             </p>
           </section>
 
@@ -61,14 +62,14 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">5. Isenção de Garantias</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              O CurrículoNexT é fornecido "como está", sem garantias de qualquer tipo. Não garantimos que o serviço atenderá às suas necessidades específicas ou que os currículos gerados serão aceitos por empregadores. O uso do serviço é de sua inteira responsabilidade.
+              O CurriculoGO é fornecido "como está", sem garantias de qualquer tipo. Não garantimos que o serviço atenderá às suas necessidades específicas ou que os currículos gerados serão aceitos por empregadores. O uso do serviço é de sua inteira responsabilidade.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">6. Publicidade</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              O CurrículoNexT exibe anúncios do Google AdSense para se manter gratuito. Esses anúncios são gerenciados pelo Google e estão sujeitos às políticas do Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.
+              O CurriculoGO exibe anúncios do Google AdSense para se manter gratuito. Esses anúncios são gerenciados pelo Google e estão sujeitos às políticas do Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.
             </p>
           </section>
 
@@ -90,14 +91,14 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">9. Contato</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
               Dúvidas sobre estes Termos:{' '}
-              <a href="mailto:contato@curriculonext.com.br" className="text-blue-600 hover:underline">contato@curriculonext.com.br</a>
+              <a href="mailto:contato@curriculogo.com.br" className="text-blue-600 hover:underline">contato@curriculogo.com.br</a>
             </p>
           </section>
         </div>
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-700 mt-16 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} CurrículoNexT. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurriculoGO. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

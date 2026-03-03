@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://curriculo-next.vercel.app/sitemap.xml
+Sitemap: https://curriculogo.vercel.app/sitemap.xml

@@ -575,6 +575,23 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                     </div>
                   </div>
                 )}
+                {projects.length > 0 && (
+                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                    <DragHandle id="projects" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-4" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Projetos</h2>
+                    <div className="space-y-4">
+                      {projects.map(proj => (
+                        <div key={proj.id} className="relative pl-5" style={{ borderLeft: '2px solid rgba(124,58,237,0.5)' }}>
+                          <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full" style={{ background: '#7c3aed', boxShadow: '0 0 8px rgba(124,58,237,0.8)' }}></div>
+                          <h3 className="font-bold text-[0.9em]" style={{ color: '#f1f5f9' }}>{proj.name}</h3>
+                          {proj.technologies && <p className="text-[0.8em] font-bold" style={{ color: '#a78bfa' }}>{proj.technologies}</p>}
+                          {proj.description && <p className="text-[0.78em] mt-1 leading-relaxed" style={{ color: '#94a3b8' }}>{proj.description}</p>}
+                          {proj.url && <p className="text-[0.75em] mt-0.5" style={{ color: '#60a5fa' }}>{proj.url.replace(/^https?:\/\//, '')}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -642,6 +659,22 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                           <h4 className="font-black text-[0.9em] text-slate-900">{edu.institution}</h4>
                           <p className="text-[0.82em] font-bold" style={{ color: '#8b5cf6' }}>{edu.degree}</p>
                           <p className="text-[0.78em] text-slate-500 font-semibold">{edu.endDate}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {projects.length > 0 && (
+                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                    <DragHandle id="projects" />
+                    <div className="flex items-center gap-2 mb-3"><div className="w-4 h-4 rounded" style={{ background: 'linear-gradient(135deg, #8b5cf6, #f59e0b)' }}></div><h2 className="font-black uppercase tracking-widest text-[0.82em] text-slate-800">Projetos</h2></div>
+                    <div className="space-y-4">
+                      {projects.map(proj => (
+                        <div key={proj.id} style={{ borderLeft: '3px solid #f59e0b', paddingLeft: '14px' }}>
+                          <h3 className="font-black text-[0.9em] text-slate-900">{proj.name}</h3>
+                          {proj.technologies && <p className="text-[0.82em] font-bold" style={{ color: '#8b5cf6' }}>{proj.technologies}</p>}
+                          {proj.description && <p className="text-[0.8em] text-slate-600 mt-1 leading-relaxed">{proj.description}</p>}
+                          {proj.url && <p className="text-[0.75em] text-slate-400 mt-0.5">{proj.url.replace(/^https?:\/\//, '')}</p>}
                         </div>
                       ))}
                     </div>
@@ -780,6 +813,22 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                     </>}
                   </div>
                 )}
+                {projects.length > 0 && (
+                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                    <DragHandle id="projects" />
+                    <h2 className="text-[0.75em] font-black uppercase tracking-[0.25em] text-slate-400 mb-3">Projetos</h2>
+                    <div className="space-y-3">
+                      {projects.map(proj => (
+                        <div key={proj.id}>
+                          <p className="text-[0.82em] font-semibold text-slate-900 leading-tight">{proj.name}</p>
+                          {proj.technologies && <p className="text-[0.75em] text-slate-500">{proj.technologies}</p>}
+                          {proj.description && <p className="text-[0.75em] text-slate-600 mt-0.5 leading-relaxed">{proj.description}</p>}
+                          {proj.url && <p className="text-[0.72em] text-slate-400 mt-0.5">{proj.url.replace(/^https?:\/\//, '')}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -874,6 +923,22 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                         {courses.map(c => <div key={c.id} className="text-[0.75em]"><p className="font-bold text-slate-900 leading-tight">{c.name}</p><p className="text-slate-500">{c.institution}</p></div>)}
                       </div>
                     </>}
+                  </div>
+                )}
+                {projects.length > 0 && (
+                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                    <DragHandle id="projects" />
+                    <h2 className="font-black uppercase tracking-[0.2em] mb-4 text-[0.88em] text-slate-900">Projetos</h2>
+                    <div className="space-y-4">
+                      {projects.map(proj => (
+                        <div key={proj.id}>
+                          <h3 className="font-black text-[0.95em] text-slate-900">{proj.name}</h3>
+                          {proj.technologies && <p className="text-[0.82em] font-bold text-slate-600 mt-0.5">{proj.technologies}</p>}
+                          {proj.description && <p className="text-[0.82em] text-slate-600 mt-1 leading-relaxed">{proj.description}</p>}
+                          {proj.url && <p className="text-[0.75em] text-blue-600 mt-0.5">{proj.url.replace(/^https?:\/\//, '')}</p>}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -976,6 +1041,22 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                           <h4 className="font-black text-[0.88em]" style={{ color: '#831843' }}>{edu.institution}</h4>
                           <p className="text-[0.8em] font-semibold" style={{ color: '#db2777' }}>{edu.degree}</p>
                           <p className="text-[0.76em]" style={{ color: '#9d174d' }}>{edu.endDate}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {projects.length > 0 && (
+                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                    <DragHandle id="projects" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.78em] mb-3" style={{ color: '#d63384' }}>Projetos</h2>
+                    <div className="space-y-3">
+                      {projects.map(proj => (
+                        <div key={proj.id}>
+                          <h3 className="font-bold text-[0.9em] text-slate-900">{proj.name}</h3>
+                          {proj.technologies && <p className="text-[0.82em] font-bold mt-0.5" style={{ color: '#d63384' }}>{proj.technologies}</p>}
+                          {proj.description && <p className="text-[0.82em] leading-relaxed mt-1 text-slate-600">{proj.description}</p>}
+                          {proj.url && <p className="text-[0.75em] text-slate-400 mt-0.5">{proj.url.replace(/^https?:\/\//, '')}</p>}
                         </div>
                       ))}
                     </div>
@@ -1089,6 +1170,23 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                         {courses.map(c => <div key={c.id} className="text-[0.72em]"><p className="font-bold" style={{ color: '#c9d1d9' }}>{c.name}</p><p style={{ color: '#6e7681' }}>{c.institution} • {c.year}</p></div>)}
                       </div>
                     </>}
+                  </div>
+                )}
+                {projects.length > 0 && (
+                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                    <DragHandle id="projects" />
+                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#58a6ff', borderBottom: '1px solid #30363d', paddingBottom: '6px' }}>Projetos</h2>
+                    <div className="space-y-4">
+                      {projects.map(proj => (
+                        <div key={proj.id} className="relative pl-4" style={{ borderLeft: '2px solid #30363d' }}>
+                          <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full" style={{ background: '#58a6ff' }}></div>
+                          <h3 className="font-bold text-[0.88em]" style={{ color: '#e6edf3' }}>{proj.name}</h3>
+                          {proj.technologies && <p className="text-[0.78em] font-bold mt-0.5" style={{ color: '#58a6ff' }}>{proj.technologies}</p>}
+                          {proj.description && <p className="text-[0.78em] leading-relaxed mt-1" style={{ color: '#8b949e' }}>{proj.description}</p>}
+                          {proj.url && <p className="text-[0.72em] mt-0.5" style={{ color: '#3fb950' }}>{proj.url.replace(/^https?:\/\//, '')}</p>}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

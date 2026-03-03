@@ -222,7 +222,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({
 
               {/* Aviso dos concorrentes (diferencial honesto) */}
               <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 mb-5">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Por que o CurrículoNexT é diferente?</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Por que o CurriculoGO é diferente?</p>
                 <div className="space-y-1.5">
                   {[
                     ['❌', 'Zety cobra R$130/mês após trial — sem avisar'],

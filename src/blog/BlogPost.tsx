@@ -33,15 +33,15 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
       "description": post.description,
       "datePublished": post.date,
       "dateModified": post.date,
-      "author": { "@type": "Organization", "name": "CurrículoNexT" },
+      "author": { "@type": "Organization", "name": "CurriculoGO" },
       "publisher": {
         "@type": "Organization",
-        "name": "CurrículoNexT",
-        "url": "https://curriculo-next.vercel.app/",
-        "logo": { "@type": "ImageObject", "url": "https://curriculo-next.vercel.app/og-image.png" }
+        "name": "CurriculoGO",
+        "url": "https://curriculogo.vercel.app/",
+        "logo": { "@type": "ImageObject", "url": "https://curriculogo.vercel.app/og-image.png" }
       },
-      "mainEntityOfPage": { "@type": "WebPage", "@id": `https://curriculo-next.vercel.app/blog/${post.slug}` },
-      "image": "https://curriculo-next.vercel.app/og-image.png"
+      "mainEntityOfPage": { "@type": "WebPage", "@id": `https://curriculogo.vercel.app/blog/${post.slug}` },
+      "image": "https://curriculogo.vercel.app/og-image.png"
     });
     document.head.appendChild(script);
 
@@ -61,8 +61,8 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
 
   const postIndex = BLOG_POSTS.findIndex(p => p.slug === slug);
   const related = BLOG_POSTS.filter((_, i) => i !== postIndex).slice(0, 3);
-  const shareUrl = `https://curriculo-next.vercel.app/blog/${post.slug}`;
-  const shareText = encodeURIComponent(`${post.title} — CurrículoNexT`);
+  const shareUrl = `https://curriculogo.vercel.app/blog/${post.slug}`;
+  const shareText = encodeURIComponent(`${post.title} — CurriculoGO`);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
@@ -75,8 +75,9 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
               <i className="fas fa-arrow-left"></i>
             </button>
             <button onClick={onBlog} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span className="logo-nav inline-flex">
-                <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
+              <span className="logo-nav inline-flex items-center gap-2">
+                <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.1rem] tracking-tight hidden sm:inline" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
               </span>
               <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">/ Blog</span>
             </button>
@@ -168,7 +169,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             Crie seu currículo agora
           </h2>
           <p className="text-blue-100 text-sm mb-6">
-            Use o CurrículoNexT — comece grátis, profissional e com IA integrada.
+            Use o CurriculoGO — comece grátis, profissional e com IA integrada.
           </p>
           <button
             onClick={onCriarCurriculo}
@@ -213,7 +214,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
           <button onClick={onVoltar} className="hover:text-blue-600 transition-colors">Início</button>
           <button onClick={onBlog} className="hover:text-blue-600 transition-colors">Blog</button>
         </div>
-        <p>© {new Date().getFullYear()} CurrículoNexT. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurriculoGO. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

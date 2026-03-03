@@ -325,3 +325,9 @@ body {
   display: block;
   filter: drop-shadow(0 1px 2px rgba(30,58,138,0.08));
 }
+
+/* CurriculoGO brand styles */
+.logo-nav img { filter: drop-shadow(0 1px 3px rgba(13, 27, 110, 0.2)); }
+.logo-hero img { filter: drop-shadow(0 4px 12px rgba(13, 27, 110, 0.25)); }
+.brand-gradient { background: var(--brand-gradient); }
+.brand-text { background: var(--brand-gradient-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }

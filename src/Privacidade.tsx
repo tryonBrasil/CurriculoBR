@@ -13,8 +13,9 @@ const Privacidade: React.FC<PrivacidadeProps> = ({ onVoltar }) => {
             <i className="fa fa-arrow-left"></i> Voltar
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
+          <span className="logo-nav inline-flex items-center gap-2">
+            <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.1rem] tracking-tight hidden sm:inline" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
           </span>
         </div>
       </header>
@@ -24,13 +25,13 @@ const Privacidade: React.FC<PrivacidadeProps> = ({ onVoltar }) => {
         <div className="space-y-8">
           <section>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              A sua privacidade é importante para nós. Esta Política descreve como o <strong>CurrículoNexT</strong> coleta, usa e protege informações, em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>.
+              A sua privacidade é importante para nós. Esta Política descreve como o <strong>CurriculoGO</strong> coleta, usa e protege informações, em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>.
             </p>
           </section>
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">1. Dados que Você Fornece</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Os dados inseridos nos formulários (nome, e-mail, experiências, etc.) são processados <strong>exclusivamente no seu navegador</strong> e salvos no <code>localStorage</code> do seu dispositivo. Não são transmitidos nem armazenados em servidores do CurrículoNexT.
+              Os dados inseridos nos formulários (nome, e-mail, experiências, etc.) são processados <strong>exclusivamente no seu navegador</strong> e salvos no <code>localStorage</code> do seu dispositivo. Não são transmitidos nem armazenados em servidores do CurriculoGO.
             </p>
           </section>
           <section>
@@ -73,14 +74,14 @@ const Privacidade: React.FC<PrivacidadeProps> = ({ onVoltar }) => {
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">7. Contato</h2>
             <div className="p-4 bg-blue-50 dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700">
-              <p className="font-semibold text-slate-800 dark:text-white">CurrículoNexT</p>
-              <p className="text-slate-600 dark:text-slate-300 text-sm mt-1">E-mail: <a href="mailto:contato@curriculonext.com.br" className="text-blue-600 hover:underline">contato@curriculonext.com.br</a></p>
+              <p className="font-semibold text-slate-800 dark:text-white">CurriculoGO</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm mt-1">E-mail: <a href="mailto:contato@curriculogo.com.br" className="text-blue-600 hover:underline">contato@curriculogo.com.br</a></p>
             </div>
           </section>
         </div>
       </main>
       <footer className="border-t border-slate-200 dark:border-slate-700 mt-16 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} CurrículoNexT. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurriculoGO. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

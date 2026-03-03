@@ -3,12 +3,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 const PLANS: Record<string, { price: number; title: string; description: string }> = {
   weekly: {
     price:       7.99,
-    title:       'CurrículoNexT Premium — 7 Dias de Acesso',
+    title:       'CurriculoGO Premium — 7 Dias de Acesso',
     description: 'Desbloqueio de todos os templates premium por 7 dias. Sem renovação automática.',
   },
   lifetime: {
     price:       19.99,
-    title:       'CurrículoNexT Premium — Acesso Vitalício',
+    title:       'CurriculoGO Premium — Acesso Vitalício',
     description: 'Desbloqueio de todos os templates premium para sempre neste dispositivo.',
   },
 };
@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify({
         items: [{
-          id:          `curriculo-next-${resolvedPlan}`,
+          id:          `curriculogo-${resolvedPlan}`,
           title,
           description,
           quantity:    1,
@@ -54,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           pending: `${baseUrl}/premium-pending`,
         },
         auto_return: 'approved',
-        metadata: { product: 'curriculo-next-premium', plan: resolvedPlan },
+        metadata: { product: 'curriculogo-premium', plan: resolvedPlan },
         expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       }),
     });
