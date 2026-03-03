@@ -1154,7 +1154,7 @@ export default function App() {
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
             <span className="logo-nav inline-flex items-center gap-2">
               <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
             </span>
           </div>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
@@ -1366,7 +1366,7 @@ export default function App() {
           <div className="logo-hero-wrapper">
             <span className="inline-flex items-center gap-3">
               <img src="/logo.png" alt="CurriculoGO" className="logo-hero h-20 w-auto object-contain drop-shadow-lg" />
-              <span className="font-black text-[2rem] md:text-[2.6rem] tracking-tight leading-none" style={{ background: 'linear-gradient(135deg, #0d1b6e 0%, #2563eb 50%, #0d9488 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+              <span className="font-black text-[2rem] md:text-[2.6rem] tracking-tight leading-none" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
             </span>
           </div>
           <div className="flex gap-3 items-center">
@@ -1409,7 +1409,7 @@ export default function App() {
               </span>
               <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                 Seu currículo novo,<br className="hidden md:block"/>
-                <span style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb 50%, #0d9488)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', fontStyle: 'italic' }}>em minutos.</span> <span>🚀</span>
+                <span style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', fontStyle: 'italic' }}>em minutos.</span> <span>🚀</span>
               </h2>
               <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
                 Design profissional + IA do Google Gemini. Chega de currículo no Word que parece de 2008. 😅
@@ -1643,7 +1643,7 @@ export default function App() {
           <div className="text-center flex flex-col items-center">
             <span className="logo-nav inline-flex items-center gap-2">
               <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
             </span>
             <p className="text-[10px] text-slate-400 font-medium hidden sm:block mt-0.5">Escolha seu estilo ✨</p>
           </div>
@@ -1706,7 +1706,7 @@ export default function App() {
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">Premium</h2>
                       {isPremium && premiumPlan === 'lifetime' && <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">♾️ Vitalício</span>}
-                      {isPremium && premiumPlan === 'weekly' && <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${daysLeft && daysLeft <= 1 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 animate-pulse' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>⚡ {daysLeft}d restantes</span>}
+                      {isPremium && premiumPlan !== 'lifetime' && daysLeft !== null && <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${daysLeft && daysLeft <= 1 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 animate-pulse' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>⚡ {daysLeft}d restantes</span>}
                       {premiumExpired && <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase animate-pulse">⏰ Expirou</span>}
                       {!isPremium && !premiumExpired && <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">a partir de R$ 7,99</span>}
                     </div>
@@ -1822,7 +1822,7 @@ export default function App() {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
           <span className="logo-nav inline-flex items-center gap-2">
             <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-            <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+            <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
           </span>
         </div>
         
@@ -2519,7 +2519,7 @@ export default function App() {
                    </div>}
 
                    {/* Badge de status premium na sidebar */}
-                   {isPremium && premiumPlan === 'weekly' && daysLeft !== null && (
+                   {isPremium && premiumPlan !== 'lifetime' && daysLeft !== null && (
                      <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 rounded-xl px-3 py-2.5 flex items-center justify-between">
                        <div className="flex items-center gap-2">
                          <span className="text-sm">⚡</span>

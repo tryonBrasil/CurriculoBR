@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // ── Chaves de storage ──────────────────────────────────────────────────
-const STORAGE_KEY  = 'cbr_premium_v2';   // { plan, activatedAt, paymentId }
+const STORAGE_KEY  = 'cbr_premium_v2';
 const OWNER_KEY    = 'cbr_owner_v1';
 const PENDING_KEY  = 'cbr_pending_payment';
 
 // ── Tipos públicos ─────────────────────────────────────────────────────
-export type PremiumPlan = 'weekly' | 'lifetime';
+export type PremiumPlan = 'avulso' | 'monthly' | 'yearly' | 'lifetime';
 
 export interface PremiumState {
   isPremium: boolean;
@@ -16,16 +16,35 @@ export interface PremiumState {
   isExpired: boolean;
 }
 
-const WEEKLY_MS = 7 * 24 * 60 * 60 * 1000;
+const AVULSO_MS  = 7  * 24 * 60 * 60 * 1000;   // 7 dias
+const MONTHLY_MS = 30 * 24 * 60 * 60 * 1000;   // 30 dias
+const YEARLY_MS  = 365 * 24 * 60 * 60 * 1000;  // 365 dias
+
+function getDurationMs(plan: PremiumPlan): number | null {
+  if (plan === 'avulso')  return AVULSO_MS;
+  if (plan === 'monthly') return MONTHLY_MS;
+  if (plan === 'yearly')  return YEARLY_MS;
+  return null; // lifetime = sem expiração
+}
 
 function loadState(): PremiumState {
-  // ── Migração de usuários com plano antigo (v1 = vitalício por R$9,90) ──
+  // ── Migração de usuários com plano antigo ──
   if (localStorage.getItem('cbr_premium_v1') === 'true') {
-    // Converte para v2 lifetime e remove chave antiga
     const paymentId = localStorage.getItem('cbr_premium_payment_id') ?? 'migrated_v1';
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ plan: 'lifetime', activatedAt: Date.now(), paymentId }));
     localStorage.removeItem('cbr_premium_v1');
   }
+  // Migra 'weekly' antigo para 'avulso'
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved.plan === 'weekly') {
+        saved.plan = 'avulso';
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+      }
+    }
+  } catch { /* ignora */ }
 
   if (localStorage.getItem(OWNER_KEY) === 'true') {
     return { isPremium: true, plan: 'lifetime', expiresAt: null, daysLeft: null, isExpired: false };
@@ -41,14 +60,15 @@ function loadState(): PremiumState {
       return { isPremium: true, plan: 'lifetime', expiresAt: null, daysLeft: null, isExpired: false };
     }
 
-    if (saved.plan === 'weekly') {
-      const expiresAt = new Date(saved.activatedAt + WEEKLY_MS);
+    const durationMs = getDurationMs(saved.plan);
+    if (durationMs) {
+      const expiresAt = new Date(saved.activatedAt + durationMs);
       const remaining = expiresAt.getTime() - Date.now();
       if (remaining <= 0) {
-        return { isPremium: false, plan: 'weekly', expiresAt, daysLeft: 0, isExpired: true };
+        return { isPremium: false, plan: saved.plan, expiresAt, daysLeft: 0, isExpired: true };
       }
       const daysLeft = Math.ceil(remaining / (24 * 60 * 60 * 1000));
-      return { isPremium: true, plan: 'weekly', expiresAt, daysLeft, isExpired: false };
+      return { isPremium: true, plan: saved.plan, expiresAt, daysLeft, isExpired: false };
     }
   } catch { /* JSON corrompido */ }
 
@@ -63,28 +83,25 @@ export function usePremium() {
   const [state, setState] = useState<PremiumState>(loadState);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // Reavalia a cada minuto
   useEffect(() => {
     const id = setInterval(() => setState(loadState()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  // Sync entre abas
   useEffect(() => {
     const onStorage = () => setState(loadState());
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // Retorno do Mercado Pago via cartão
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paymentId = params.get('payment_id');
     const status = params.get('status');
     const pendingValue = localStorage.getItem(PENDING_KEY);
     if (!pendingValue) return;
-    // pendingValue é o plan ('weekly' | 'lifetime') salvo antes do redirect
-    const plan: PremiumPlan = pendingValue === 'lifetime' ? 'lifetime' : 'weekly';
+    const plan: PremiumPlan = (['avulso','monthly','yearly','lifetime'].includes(pendingValue)
+      ? pendingValue : 'avulso') as PremiumPlan;
     localStorage.removeItem(PENDING_KEY);
     if (status === 'approved' && paymentId) verifyAndUnlock(paymentId, plan);
     if (paymentId || status) window.history.replaceState({}, '', window.location.pathname);
@@ -95,14 +112,15 @@ export function usePremium() {
     setState(loadState());
   }, []);
 
-  const verifyAndUnlock = useCallback(async (paymentId: string, plan: PremiumPlan = 'weekly') => {
+  const verifyAndUnlock = useCallback(async (paymentId: string, plan: PremiumPlan = 'avulso') => {
     setIsVerifying(true);
     try {
       const res = await fetch(`/api/verify-payment?payment_id=${paymentId}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       if (data.approved) {
-        const resolvedPlan: PremiumPlan = data.plan === 'lifetime' ? 'lifetime' : plan;
+        const resolvedPlan: PremiumPlan = (['avulso','monthly','yearly','lifetime'].includes(data.plan)
+          ? data.plan : plan) as PremiumPlan;
         unlock(resolvedPlan, paymentId);
       }
     } catch { console.error('Falha ao verificar pagamento'); }

@@ -1,15 +1,31 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const PLANS: Record<string, { price: number; title: string; description: string }> = {
-  weekly: {
-    price:       7.99,
+  avulso: {
+    price:       9.90,
     title:       'CurriculoGO Premium — 7 Dias de Acesso',
     description: 'Desbloqueio de todos os templates premium por 7 dias. Sem renovação automática.',
   },
+  monthly: {
+    price:       14.90,
+    title:       'CurriculoGO Premium — Mensal',
+    description: 'Desbloqueio de todos os templates premium por 30 dias.',
+  },
+  yearly: {
+    price:       59.90,
+    title:       'CurriculoGO Premium — Anual',
+    description: 'Desbloqueio de todos os templates premium por 1 ano. Equivale a R$4,99/mês.',
+  },
   lifetime: {
-    price:       19.99,
+    price:       29.90,
     title:       'CurriculoGO Premium — Acesso Vitalício',
     description: 'Desbloqueio de todos os templates premium para sempre neste dispositivo.',
+  },
+  // Compatibilidade com plano antigo
+  weekly: {
+    price:       9.90,
+    title:       'CurriculoGO Premium — 7 Dias de Acesso',
+    description: 'Desbloqueio de todos os templates premium por 7 dias.',
   },
 };
 
@@ -25,8 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : 'http://localhost:5173');
 
-  const { plan = 'weekly' } = req.body ?? {};
-  const resolvedPlan = plan === 'lifetime' ? 'lifetime' : 'weekly';
+  const { plan = 'avulso' } = req.body ?? {};
+  const resolvedPlan = (['avulso','monthly','yearly','lifetime','weekly'].includes(plan) ? plan : 'avulso') as string;
   const { price, title, description } = PLANS[resolvedPlan];
 
   try {
@@ -54,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           pending: `${baseUrl}/premium-pending`,
         },
         auto_return: 'approved',
-        metadata: { product: 'curriculogo-premium', plan: resolvedPlan },
+        metadata: { product: 'curriculogo-premium', plan: resolvedPlan, version: '2' },
         expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       }),
     });

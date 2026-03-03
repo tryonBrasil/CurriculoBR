@@ -1,7 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const PRICES: Record<string, number> = {
-  weekly:   7.99,
+  avulso:   9.90,
+  monthly:  14.90,
+  yearly:   59.90,
+  lifetime: 29.90,
+  weekly:   9.90,
   lifetime: 19.99,
 };
 
