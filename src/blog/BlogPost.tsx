@@ -37,11 +37,11 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
       "publisher": {
         "@type": "Organization",
         "name": "CurriculoGO",
-        "url": "https://curriculogo.vercel.app/",
-        "logo": { "@type": "ImageObject", "url": "https://curriculogo.vercel.app/og-image.png" }
+        "url": "https://curriculo-go.vercel.app/",
+        "logo": { "@type": "ImageObject", "url": "https://curriculo-go.vercel.app/og-image.png" }
       },
-      "mainEntityOfPage": { "@type": "WebPage", "@id": `https://curriculogo.vercel.app/blog/${post.slug}` },
-      "image": "https://curriculogo.vercel.app/og-image.png"
+      "mainEntityOfPage": { "@type": "WebPage", "@id": `https://curriculo-go.vercel.app/blog/${post.slug}` },
+      "image": "https://curriculo-go.vercel.app/og-image.png"
     });
     document.head.appendChild(script);
 
@@ -61,7 +61,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
 
   const postIndex = BLOG_POSTS.findIndex(p => p.slug === slug);
   const related = BLOG_POSTS.filter((_, i) => i !== postIndex).slice(0, 3);
-  const shareUrl = `https://curriculogo.vercel.app/blog/${post.slug}`;
+  const shareUrl = `https://curriculo-go.vercel.app/blog/${post.slug}`;
   const shareText = encodeURIComponent(`${post.title} — CurriculoGO`);
 
   return (
