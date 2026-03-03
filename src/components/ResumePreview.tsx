@@ -11,7 +11,7 @@ interface Props {
 }
 
 const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReorder, fontSize = 12 }) => {
-  const { personalInfo, summary, experiences, education, skills, languages, courses, sectionOrder } = data;
+  const { personalInfo, summary, experiences, education, skills, languages, courses, projects = [], sectionOrder } = data;
   const [draggedSection, setDraggedSection] = useState<SectionId | null>(null);
   const [dragOverSection, setDragOverSection] = useState<SectionId | null>(null);
 
@@ -200,6 +200,33 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
             </div>
           </div>
         );
+      case 'projects': {
+        if (projects.length === 0) return null;
+        return (
+          <div key={id} className={sectionWrapperStyle(id)} onDragOver={(e) => handleDragOver(e, id)} onDrop={(e) => handleDrop(e, id)} onClick={() => onSectionClick?.('projects')}>
+            <DragHandle id={id} />
+            <h2 className={`font-bold uppercase tracking-widest mb-4 ${isModernBlue ? 'text-blue-900 border-b-2 border-blue-100' : isExecutiveRed ? 'text-[#800000] border-b border-red-100 pb-1' : 'text-slate-900'} text-[1em]`}>Projetos</h2>
+            <div className="space-y-5">
+              {projects.map(proj => (
+                <div key={proj.id}>
+                  <div className="flex justify-between items-baseline">
+                    <h3 className="font-bold text-slate-950 text-[0.95em]">{proj.name}</h3>
+                    {proj.url && (
+                      <span className={`text-[0.8em] font-semibold ${isExecutiveRed ? 'text-[#800000]' : 'text-blue-600'} truncate ml-4 max-w-[40%]`}>{proj.url.replace(/^https?:\/\//, '')}</span>
+                    )}
+                  </div>
+                  {proj.technologies && (
+                    <p className={`text-[0.85em] font-bold mb-1 ${isExecutiveRed ? 'text-[#800000]' : 'text-blue-700'}`}>{proj.technologies}</p>
+                  )}
+                  {proj.description && (
+                    <p className="text-[0.9em] text-slate-700 leading-relaxed font-medium">{proj.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
       default: return null;
     }
   };

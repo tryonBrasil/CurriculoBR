@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4f46e5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#818cf8;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Icon: Stylized document with spark -->
+  <!-- Document base -->
+  <rect x="4" y="8" width="44" height="56" rx="6" fill="url(#grad1)" />
+  <!-- Paper fold corner -->
+  <path d="M37 8 L48 19 L37 19 Z" fill="#1d4ed8" opacity="0.7"/>
+  <rect x="37" y="8" width="11" height="11" rx="0" fill="#1e40af"/>
+  <path d="M37 8 L48 19 L37 19 Z" fill="#3b82f6" opacity="0.5"/>
+
+  <!-- Lines on document -->
+  <rect x="11" y="26" width="24" height="2.5" rx="1.25" fill="white" opacity="0.9"/>
+  <rect x="11" y="33" width="20" height="2" rx="1" fill="white" opacity="0.6"/>
+  <rect x="11" y="39" width="22" height="2" rx="1" fill="white" opacity="0.6"/>
+  <rect x="11" y="45" width="16" height="2" rx="1" fill="white" opacity="0.5"/>
+
+  <!-- Spark / checkmark badge -->
+  <circle cx="42" cy="52" r="10" fill="white"/>
+  <circle cx="42" cy="52" r="8.5" fill="url(#grad2)"/>
+  <!-- Lightning bolt inside -->
+  <path d="M44 44.5 L40.5 52 L43 52 L40 59.5 L45.5 51 L43 51 Z" fill="white" filter="url(#glow)"/>
+
+  <!-- Wordmark: Currículo -->
+  <text x="60" y="38" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="800" font-size="22" fill="#0f172a" letter-spacing="-0.5">Currículo</text>
+
+  <!-- Wordmark: NexT with stylized N and T -->
+  <text x="60" y="62" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="900" font-size="22" fill="url(#grad1)" letter-spacing="1">NexT</text>
+
+  <!-- Accent line under NexT -->
+  <rect x="60" y="66" width="58" height="2.5" rx="1.25" fill="url(#grad1)" opacity="0.4"/>
+</svg>

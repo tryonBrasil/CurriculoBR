@@ -95,7 +95,7 @@ export default function App() {
   const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
   const [template, setTemplate] = useState<TemplateId>('modern_blue');
   const [currentStep, setCurrentStep] = useState(0);
-  const [previewScale, setPreviewScale] = useState(0.55);
+  const [previewScale, setPreviewScale] = useState(0.72);
   const [fontSize, setFontSize] = useState(12);
   const [fontFamily, setFontFamily] = useState<string>("'Inter', sans-serif");
   const [isEnhancing, setIsEnhancing] = useState<string | null>(null);
@@ -661,8 +661,11 @@ export default function App() {
   const fitToScreen = useCallback(() => {
     if (!previewContainerRef.current) return;
     const containerHeight = previewContainerRef.current.clientHeight;
-    const scale = (containerHeight - 60) / 1123; 
-    setPreviewScale(Math.min(0.9, Math.max(0.3, scale)));
+    const containerWidth = previewContainerRef.current.clientWidth;
+    const scaleByHeight = (containerHeight - 80) / 1123;
+    const scaleByWidth = (containerWidth - 48) / 794;
+    const scale = Math.min(scaleByHeight, scaleByWidth);
+    setPreviewScale(Math.min(0.95, Math.max(0.35, scale)));
   }, []);
 
   useEffect(() => {
