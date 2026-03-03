@@ -1386,7 +1386,7 @@ export default function App() {
                   ? <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full" />
                   : <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black">{(user.displayName || user.email || 'U')[0].toUpperCase()}</div>
                 }
-                <span className="text-sm font-black text-slate-500 dark:text-slate-400 hidden sm:inline">Meus Currículos</span>
+                <span className="text-sm font-black text-slate-500 dark:text-slate-400 ">Meus Currículos</span>
                 <i className="fas fa-cloud text-[9px] text-emerald-500"></i>
               </button>
             ) : (
@@ -1820,8 +1820,9 @@ export default function App() {
 
       <nav className="no-print h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
-          <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoGO" className="h-12 w-auto object-contain" />
+          <span className="logo-nav inline-flex items-center gap-2">
+            <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
+            <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
           </span>
         </div>
         
@@ -2218,7 +2219,7 @@ export default function App() {
               <button onClick={nextStep} className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-black text-sm uppercase tracking-wide hover:bg-blue-700 shadow-lg active:scale-95 transition-all">
                 {currentStep === STEPS.length - 1
                   ? <><span>🎉 Baixar PDF!</span></>
-                  : <><span className="hidden sm:inline">Próximo →</span><i className="fas fa-chevron-right sm:hidden text-xs"></i></>
+                  : <><span className="">Próximo →</span><i className="fas fa-chevron-right sm:hidden text-xs"></i></>
                 }
               </button>
            </div>
@@ -2234,7 +2235,7 @@ export default function App() {
             {/* Esquerda: label + template ativo */}
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-sm font-bold text-slate-500 dark:text-slate-400 hidden sm:block whitespace-nowrap">Pré-visualização A4</span>
-              <span className="hidden sm:inline text-slate-200 dark:text-slate-700">·</span>
+              <span className=" text-slate-200 dark:text-slate-700">·</span>
               <span className="text-sm font-black text-blue-600 dark:text-blue-400 hidden sm:block truncate">{template.replace(/_/g,' ')}</span>
               <span className="text-sm font-bold text-slate-400 sm:hidden">{template.replace(/_/g,' ')}</span>
             </div>

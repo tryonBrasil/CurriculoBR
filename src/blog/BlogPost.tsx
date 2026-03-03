@@ -77,7 +77,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             <button onClick={onBlog} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <span className="logo-nav inline-flex items-center gap-2">
                 <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-              <span className="font-black text-[1.1rem] tracking-tight hidden sm:inline" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+              <span className="font-black text-[1.1rem] tracking-tight " style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
               </span>
               <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">/ Blog</span>
             </button>
