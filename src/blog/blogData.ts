@@ -71,7 +71,7 @@ export const BLOG_POSTS: BlogPost[] = [
       </ul>
 
       <h2>Conclusão</h2>
-      <p>Um currículo sem experiência formal pode — e deve — ser competitivo. O segredo está em valorizar o que você tem, ser honesto sobre o que ainda não tem, e mostrar disposição para aprender. Use ferramentas como o <strong>CurriculoBR</strong> para criar um currículo visualmente profissional que vai destacar exatamente esses pontos.</p>
+      <p>Um currículo sem experiência formal pode — e deve — ser competitivo. O segredo está em valorizar o que você tem, ser honesto sobre o que ainda não tem, e mostrar disposição para aprender. Use ferramentas como o <strong>CurrículoNexT</strong> para criar um currículo visualmente profissional que vai destacar exatamente esses pontos.</p>
     `,
   },
   {
@@ -134,7 +134,7 @@ export const BLOG_POSTS: BlogPost[] = [
       <p>Enviar o mesmo currículo para 50 vagas diferentes é um dos erros mais custosos. Cada vaga tem requisitos específicos, e um currículo genérico raramente passa pela triagem inicial. Dedique 10 minutos para ajustar o objetivo e reorganizar as habilidades para cada candidatura importante.</p>
 
       <h2>Conclusão</h2>
-      <p>Evitar esses erros não garante o emprego, mas garante que seu currículo chegue onde deveria: nas mãos de quem toma a decisão. Use o <strong>CurriculoBR</strong> para criar um currículo profissional que já evita esses problemas por design.</p>
+      <p>Evitar esses erros não garante o emprego, mas garante que seu currículo chegue onde deveria: nas mãos de quem toma a decisão. Use o <strong>CurrículoNexT</strong> para criar um currículo profissional que já evita esses problemas por design.</p>
     `,
   },
   {
@@ -198,7 +198,7 @@ export const BLOG_POSTS: BlogPost[] = [
       <p>Não inclua informações sobre demissões, conflitos ou resultados negativos no currículo. Foque sempre no que foi positivo e aprendido. A entrevista é o momento para contextualizar situações difíceis, se necessário.</p>
 
       <h2>Conclusão</h2>
-      <p>Descrever experiências profissionais é uma habilidade que se aprende e aprimora. Com a fórmula certa e atenção aos detalhes, sua experiência — mesmo que modesta — pode ser apresentada de forma muito mais impactante. O <strong>CurriculoBR</strong> tem recursos de IA que podem te ajudar a refinar essas descrições automaticamente.</p>
+      <p>Descrever experiências profissionais é uma habilidade que se aprende e aprimora. Com a fórmula certa e atenção aos detalhes, sua experiência — mesmo que modesta — pode ser apresentada de forma muito mais impactante. O <strong>CurrículoNexT</strong> tem recursos de IA que podem te ajudar a refinar essas descrições automaticamente.</p>
     `,
   },
   {
@@ -403,7 +403,7 @@ export const BLOG_POSTS: BlogPost[] = [
       </ul>
 
       <h2>Conclusão</h2>
-      <p>Em tecnologia, a prática fala mais alto que o diploma. Um currículo de TI forte é aquele que comprova o que afirma — com links, projetos e números reais. Use o <strong>CurriculoBR</strong> para montar sua estrutura e deixe seu GitHub e portfólio fazerem o resto.</p>
+      <p>Em tecnologia, a prática fala mais alto que o diploma. Um currículo de TI forte é aquele que comprova o que afirma — com links, projetos e números reais. Use o <strong>CurrículoNexT</strong> para montar sua estrutura e deixe seu GitHub e portfólio fazerem o resto.</p>
     `,
   },
   {
@@ -459,7 +459,7 @@ export const BLOG_POSTS: BlogPost[] = [
       <p>Personalizar não significa inventar. Nunca adicione habilidades ou experiências que você não tem. Além de antiético, você vai se complicar na entrevista. A personalização é sobre destacar o que você realmente tem de forma mais relevante para cada contexto.</p>
 
       <h2>Como Fazer Isso de Forma Eficiente</h2>
-      <p>Mantenha um "currículo master" com todas as suas experiências e habilidades. Para cada candidatura importante, crie uma versão adaptada a partir dele. O <strong>CurriculoBR</strong> facilita esse processo — você pode ajustar o conteúdo rapidamente e baixar uma nova versão em PDF a qualquer momento.</p>
+      <p>Mantenha um "currículo master" com todas as suas experiências e habilidades. Para cada candidatura importante, crie uma versão adaptada a partir dele. O <strong>CurrículoNexT</strong> facilita esse processo — você pode ajustar o conteúdo rapidamente e baixar uma nova versão em PDF a qualquer momento.</p>
 
       <h2>Conclusão</h2>
       <p>Personalizar o currículo exige um pouco mais de tempo, mas aumenta dramaticamente as chances de passar pela triagem. Vale o investimento, especialmente para vagas que você realmente quer muito.</p>
@@ -582,7 +582,7 @@ export const BLOG_POSTS: BlogPost[] = [
       </ul>
 
       <h2>Use IA para Aprimorar</h2>
-      <p>O <strong>CurriculoBR</strong> tem um recurso de geração de resumo profissional com Inteligência Artificial. Com base nas suas informações, ele gera uma sugestão que você pode ajustar. É um ótimo ponto de partida se você tiver dificuldade de escrever sobre si mesmo — algo muito comum e completamente normal.</p>
+      <p>O <strong>CurrículoNexT</strong> tem um recurso de geração de resumo profissional com Inteligência Artificial. Com base nas suas informações, ele gera uma sugestão que você pode ajustar. É um ótimo ponto de partida se você tiver dificuldade de escrever sobre si mesmo — algo muito comum e completamente normal.</p>
 
       <h2>Conclusão</h2>
       <p>O resumo profissional merece mais atenção do que a maioria das pessoas dá. Dedique tempo para escrevê-lo bem, peça feedback para alguém de confiança e ajuste conforme a vaga. Esse investimento de 30 minutos pode mudar completamente seus resultados nas candidaturas.</p>
@@ -631,7 +631,7 @@ export const BLOG_POSTS: BlogPost[] = [
       <p>Fontes muito decorativas, emojis espalhados pelo currículo e caracteres especiais (como ★ ou ✦ para listas) frequentemente não são lidos corretamente e viram símbolos estranhos no banco de dados.</p>
 
       <h3>6. Arquivos no Formato Errado</h3>
-      <p>Sempre envie o currículo em <strong>.PDF</strong> gerado por um editor de texto (como o CurriculoBR) ou em <strong>.DOCX</strong>. PDFs escaneados de documentos físicos são essencialmente imagens — o ATS não consegue ler o texto.</p>
+      <p>Sempre envie o currículo em <strong>.PDF</strong> gerado por um editor de texto (como o CurrículoNexT) ou em <strong>.DOCX</strong>. PDFs escaneados de documentos físicos são essencialmente imagens — o ATS não consegue ler o texto.</p>
 
       <h2>Como Otimizar seu Currículo para ATS</h2>
 
@@ -643,7 +643,7 @@ export const BLOG_POSTS: BlogPost[] = [
       <p>Prefira sempre: "Experiência Profissional", "Formação Acadêmica", "Habilidades", "Idiomas", "Cursos e Certificações". Esses títulos são reconhecidos por praticamente todos os sistemas ATS.</p>
 
       <h3>3. Mantenha Formatação Simples e Linear</h3>
-      <p>Um layout de coluna única é o mais seguro para ATS. Se usar duas colunas (como nos templates do CurriculoBR), prefira designs que exportam o PDF com texto linear e sem caixas flutuantes. O CurriculoBR gera PDFs compatíveis com ATS exatamente por isso.</p>
+      <p>Um layout de coluna única é o mais seguro para ATS. Se usar duas colunas (como nos templates do CurrículoNexT), prefira designs que exportam o PDF com texto linear e sem caixas flutuantes. O CurrículoNexT gera PDFs compatíveis com ATS exatamente por isso.</p>
 
       <h3>4. Use Datas Consistentes</h3>
       <p>Escolha um formato de data e use-o em todo o currículo: "Jan 2020 – Dez 2022" ou "01/2020 – 12/2022". Consistência facilita a extração de dados pelo ATS.</p>
@@ -654,8 +654,8 @@ export const BLOG_POSTS: BlogPost[] = [
       <h3>6. Não Tente "Enganar" o ATS</h3>
       <p>Técnicas como colocar palavras-chave em branco (texto branco sobre fundo branco) ou inserir listas de habilidades irrelevantes são detectadas pelos sistemas modernos e podem resultar em bloqueio permanente na plataforma.</p>
 
-      <h2>Score ATS do CurriculoBR</h2>
-      <p>O CurriculoBR possui uma ferramenta exclusiva de <strong>Score ATS com Inteligência Artificial</strong>. Ela analisa seu currículo e retorna:</p>
+      <h2>Score ATS do CurrículoNexT</h2>
+      <p>O CurrículoNexT possui uma ferramenta exclusiva de <strong>Score ATS com Inteligência Artificial</strong>. Ela analisa seu currículo e retorna:</p>
       <ul>
         <li><strong>Pontuação de 0 a 100:</strong> indicando o nível geral de compatibilidade com sistemas ATS</li>
         <li><strong>Palavras-chave detectadas:</strong> os termos relevantes encontrados no seu currículo</li>
@@ -663,14 +663,14 @@ export const BLOG_POSTS: BlogPost[] = [
         <li><strong>Melhorias prioritárias:</strong> ações concretas e específicas para aumentar seu score</li>
         <li><strong>Veredicto geral:</strong> avaliação sintetizada da compatibilidade ATS do documento</li>
       </ul>
-      <p>Para acessar, crie ou edite seu currículo no CurriculoBR e clique no botão <strong>"Score ATS"</strong> no menu superior. A análise é feita pelo Google Gemini e leva apenas alguns segundos.</p>
+      <p>Para acessar, crie ou edite seu currículo no CurrículoNexT e clique no botão <strong>"Score ATS"</strong> no menu superior. A análise é feita pelo Google Gemini e leva apenas alguns segundos.</p>
 
       <h2>ATS é o Único Critério?</h2>
       <p>Não. O ATS é a primeira barreira, mas não a única. Após passar pela triagem automática, o currículo ainda precisa convencer um recrutador humano — que vai avaliar clareza, relevância, formatação visual e coerência das informações. Por isso, a otimização para ATS não pode comprometer a legibilidade humana do documento.</p>
       <p>O objetivo é ter um currículo que passe na triagem automática <em>e</em> impressione o recrutador. Esses dois objetivos são completamente compatíveis quando o currículo é bem escrito, bem formatado e relevante para a vaga.</p>
 
       <h2>Conclusão</h2>
-      <p>Ignorar o ATS em 2026 é desperdiçar candidaturas. A boa notícia é que otimizar para esses sistemas não exige nada de extraordinário — exige <strong>clareza, consistência e uso inteligente de palavras-chave</strong>. Com as práticas certas e ferramentas como o Score ATS do CurriculoBR, você já sai na frente da grande maioria dos candidatos.</p>
+      <p>Ignorar o ATS em 2026 é desperdiçar candidaturas. A boa notícia é que otimizar para esses sistemas não exige nada de extraordinário — exige <strong>clareza, consistência e uso inteligente de palavras-chave</strong>. Com as práticas certas e ferramentas como o Score ATS do CurrículoNexT, você já sai na frente da grande maioria dos candidatos.</p>
     `,
   },
   {
