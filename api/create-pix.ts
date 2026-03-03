@@ -6,8 +6,8 @@ const PRICES: Record<string, number> = {
 };
 
 const DESCRIPTIONS: Record<string, string> = {
-  weekly:   'CurriculoBR Premium — 7 Dias de Acesso',
-  lifetime: 'CurriculoBR Premium — Acesso Vitalício',
+  weekly:   'CurrículoNexT Premium — 7 Dias de Acesso',
+  lifetime: 'CurrículoNexT Premium — Acesso Vitalício',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -23,7 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const payerEmail = (typeof email === 'string' && email.includes('@'))
     ? email
-    : 'comprador@curriculobr.com.br';
+    : 'comprador@curriculonext.com.br';
 
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         payment_method_id: 'pix',
         date_of_expiration: expiresAt,
         payer: { email: payerEmail },
-        metadata: { product: 'curriculo-br-premium', plan: resolvedPlan },
+        metadata: { product: 'curriculo-next-premium', plan: resolvedPlan },
       }),
     });
 
