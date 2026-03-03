@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://curriculogo.vercel.app/sitemap.xml
+Sitemap: https://curriculo-go.vercel.app/sitemap.xml
