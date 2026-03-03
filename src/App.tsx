@@ -87,7 +87,7 @@ const FONTS = [
   { id: 'merriweather', label: 'Merriweather', family: "'Merriweather', serif" },
 ];
 
-const STORAGE_KEY = 'curriculobr_data_v2';
+const STORAGE_KEY = 'curriculonext_data_v2';
 
 export default function App() {
   const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms' | 'cover-letter-page' | 'sobre' | 'contato' | 'blog' | 'blog-post'>('home');
@@ -365,7 +365,7 @@ export default function App() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Currículo — ${data.personalInfo.fullName || 'CurriculoBR'}</title>
+  <title>Currículo — ${data.personalInfo.fullName || 'CurrículoNexT'}</title>
   ${styles}
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -821,7 +821,7 @@ export default function App() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-white uppercase tracking-widest">Acesso do Dono</h3>
-                <p className="text-[10px] text-slate-500">CurriculoBR · Admin</p>
+                <p className="text-[10px] text-slate-500">CurrículoNexT · Admin</p>
               </div>
               <button onClick={() => setIsOwnerModalOpen(false)} className="ml-auto text-slate-600 hover:text-slate-300 transition-colors">
                 <i className="fas fa-times text-xs"></i>
@@ -943,10 +943,10 @@ export default function App() {
         {globalOverlays}
         <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300">
             <p className="text-xs text-slate-400">Última atualização: 25 de fevereiro de 2026</p>
-            <p>A sua privacidade é importante para nós. Esta Política descreve como o <strong>CurriculoBR</strong> coleta, usa e protege suas informações, em conformidade com a <strong>Lei Geral de Proteção de Dados — LGPD (Lei nº 13.709/2018)</strong>.</p>
+            <p>A sua privacidade é importante para nós. Esta Política descreve como o <strong>CurrículoNexT</strong> coleta, usa e protege suas informações, em conformidade com a <strong>Lei Geral de Proteção de Dados — LGPD (Lei nº 13.709/2018)</strong>.</p>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Dados que Você Fornece</h3>
-                <p>Os dados pessoais inseridos nos formulários (nome, e-mail, telefone, histórico profissional, etc.) são processados <strong>exclusivamente no seu navegador</strong>. São salvos no <code>localStorage</code> do seu dispositivo e <strong>não são transmitidos nem armazenados em servidores</strong> do CurriculoBR.</p>
+                <p>Os dados pessoais inseridos nos formulários (nome, e-mail, telefone, histórico profissional, etc.) são processados <strong>exclusivamente no seu navegador</strong>. São salvos no <code>localStorage</code> do seu dispositivo e <strong>não são transmitidos nem armazenados em servidores</strong> do CurrículoNexT.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">2. Inteligência Artificial (Google Gemini)</h3>
@@ -954,7 +954,7 @@ export default function App() {
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">3. Cookies e Publicidade (Google AdSense)</h3>
-                <p>O CurriculoBR utiliza o <strong>Google AdSense</strong> para exibir anúncios, mantendo o serviço gratuito. O Google usa cookies (incluindo o cookie <strong>DART</strong>) para veicular anúncios personalizados com base nas suas visitas a este e outros sites. Você pode gerenciar suas preferências de anúncios em <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">google.com/settings/ads</a>.</p>
+                <p>O CurrículoNexT utiliza o <strong>Google AdSense</strong> para exibir anúncios, mantendo o serviço gratuito. O Google usa cookies (incluindo o cookie <strong>DART</strong>) para veicular anúncios personalizados com base nas suas visitas a este e outros sites. Você pode gerenciar suas preferências de anúncios em <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">google.com/settings/ads</a>.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">4. Dados de Navegação</h3>
@@ -977,7 +977,7 @@ export default function App() {
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">7. Contato</h3>
-                <p>Dúvidas? Entre em contato: <a href="mailto:contato@curriculobr.com.br" className="text-blue-600 hover:underline">contato@curriculobr.com.br</a></p>
+                <p>Dúvidas? Entre em contato: <a href="mailto:contato@curriculonext.com.br" className="text-blue-600 hover:underline">contato@curriculonext.com.br</a></p>
             </section>
         </div>
       </LegalPageLayout>
@@ -990,18 +990,18 @@ export default function App() {
         {globalOverlays}
         <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300">
             <p className="text-xs text-slate-400">Última atualização: 25 de fevereiro de 2026</p>
-            <p>Ao acessar e usar o <strong>CurriculoBR</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de utilizar nossos serviços.</p>
+            <p>Ao acessar e usar o <strong>CurrículoNexT</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de utilizar nossos serviços.</p>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Uso do Serviço</h3>
-                <p>O CurriculoBR é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usá-lo para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.</p>
+                <p>O CurrículoNexT é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usá-lo para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">2. Responsabilidade pelo Conteúdo</h3>
-                <p>Você é o único responsável pelo conteúdo inserido no seu currículo. O CurriculoBR não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações são verdadeiras e de sua autoria.</p>
+                <p>Você é o único responsável pelo conteúdo inserido no seu currículo. O CurrículoNexT não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações são verdadeiras e de sua autoria.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">3. Propriedade Intelectual</h3>
-                <p>Os templates, designs e código-fonte do CurriculoBR são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Não é permitido copiar ou redistribuir os templates em outros produtos sem autorização expressa.</p>
+                <p>Os templates, designs e código-fonte do CurrículoNexT são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Não é permitido copiar ou redistribuir os templates em outros produtos sem autorização expressa.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">4. Inteligência Artificial</h3>
@@ -1009,7 +1009,7 @@ export default function App() {
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">5. Publicidade</h3>
-                <p>O CurriculoBR exibe anúncios do Google AdSense para se manter gratuito. Os anúncios são gerenciados pelo Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.</p>
+                <p>O CurrículoNexT exibe anúncios do Google AdSense para se manter gratuito. Os anúncios são gerenciados pelo Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">6. Disponibilidade e Isenção de Garantias</h3>
@@ -1021,7 +1021,7 @@ export default function App() {
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">8. Contato</h3>
-                <p>Dúvidas? <a href="mailto:contato@curriculobr.com.br" className="text-blue-600 hover:underline">contato@curriculobr.com.br</a></p>
+                <p>Dúvidas? <a href="mailto:contato@curriculonext.com.br" className="text-blue-600 hover:underline">contato@curriculonext.com.br</a></p>
             </section>
         </div>
       </LegalPageLayout>
@@ -1126,7 +1126,7 @@ export default function App() {
         <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
             <span className="logo-nav inline-flex">
-              <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+              <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
             </span>
           </div>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
@@ -1336,7 +1336,7 @@ export default function App() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square bg-indigo-50 dark:bg-indigo-900/20 rounded-full blur-[120px] opacity-60"></div>
         <header className="relative z-10 h-32 flex items-center justify-between px-8 md:px-20">
           <div className="logo-hero-wrapper">
-            <img src="/logo.png" alt="CurriculoBR" className="logo-hero h-24 w-auto object-contain" />
+            <img src="/logo.png" alt="CurrículoNexT" className="logo-hero h-24 w-auto object-contain" />
           </div>
           <div className="flex gap-3 items-center">
              <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -1419,7 +1419,7 @@ export default function App() {
         {/* ── Features / Benefícios ── */}
         <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
-            <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12 text-sm">Por que o CurriculoBR? 🤔</p>
+            <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12 text-sm">Por que o CurrículoNexT? 🤔</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
                 { emoji: '🎨', icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos para cada perfil — do conservador ao criativo' },
@@ -1594,7 +1594,7 @@ export default function App() {
              <button onClick={() => navigateTo('/privacidade', 'privacy')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Política de Privacidade</button>
              <button onClick={() => navigateTo('/termos', 'terms')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Termos e Condições</button>
           </div>
-          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2026 CurriculoBR. Todos os direitos reservados.</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2026 CurrículoNexT. Todos os direitos reservados.</p>
         </footer>
       </div>
     );
@@ -1611,7 +1611,7 @@ export default function App() {
           </div>
           <div className="text-center flex flex-col items-center">
             <span className="logo-nav inline-flex">
-              <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+              <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
             </span>
             <p className="text-[10px] text-slate-400 font-medium hidden sm:block mt-0.5">Escolha seu estilo ✨</p>
           </div>
@@ -1789,7 +1789,7 @@ export default function App() {
       <nav className="no-print h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
           <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+            <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
           </span>
         </div>
         

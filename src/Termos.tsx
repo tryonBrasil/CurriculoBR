@@ -14,7 +14,7 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+            <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
           </span>
         </div>
       </header>
@@ -26,28 +26,28 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
         <div className="space-y-8">
           <section>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Ao utilizar o <strong>CurriculoBR</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de usar nossos serviços.
+              Ao utilizar o <strong>CurrículoNexT</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de usar nossos serviços.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">1. Uso do Serviço</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              O CurriculoBR é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usar o serviço para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.
+              O CurrículoNexT é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usar o serviço para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">2. Responsabilidade pelo Conteúdo</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Você é o único responsável pelo conteúdo inserido no seu currículo. O CurriculoBR não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações inseridas são verdadeiras e de sua autoria.
+              Você é o único responsável pelo conteúdo inserido no seu currículo. O CurrículoNexT não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações inseridas são verdadeiras e de sua autoria.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">3. Propriedade Intelectual</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              Os templates, designs e código-fonte do CurriculoBR são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Você não pode copiar, redistribuir ou usar os templates do CurriculoBR em outros produtos ou serviços sem autorização expressa.
+              Os templates, designs e código-fonte do CurrículoNexT são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Você não pode copiar, redistribuir ou usar os templates do CurrículoNexT em outros produtos ou serviços sem autorização expressa.
             </p>
           </section>
 
@@ -61,14 +61,14 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">5. Isenção de Garantias</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              O CurriculoBR é fornecido "como está", sem garantias de qualquer tipo. Não garantimos que o serviço atenderá às suas necessidades específicas ou que os currículos gerados serão aceitos por empregadores. O uso do serviço é de sua inteira responsabilidade.
+              O CurrículoNexT é fornecido "como está", sem garantias de qualquer tipo. Não garantimos que o serviço atenderá às suas necessidades específicas ou que os currículos gerados serão aceitos por empregadores. O uso do serviço é de sua inteira responsabilidade.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">6. Publicidade</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              O CurriculoBR exibe anúncios do Google AdSense para se manter gratuito. Esses anúncios são gerenciados pelo Google e estão sujeitos às políticas do Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.
+              O CurrículoNexT exibe anúncios do Google AdSense para se manter gratuito. Esses anúncios são gerenciados pelo Google e estão sujeitos às políticas do Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.
             </p>
           </section>
 
@@ -90,14 +90,14 @@ const Termos: React.FC<TermosProps> = ({ onVoltar }) => {
             <h2 className="text-xl font-bold mb-3 text-slate-800 dark:text-white">9. Contato</h2>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
               Dúvidas sobre estes Termos:{' '}
-              <a href="mailto:contato@curriculobr.com.br" className="text-blue-600 hover:underline">contato@curriculobr.com.br</a>
+              <a href="mailto:contato@curriculonext.com.br" className="text-blue-600 hover:underline">contato@curriculonext.com.br</a>
             </p>
           </section>
         </div>
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-700 mt-16 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} CurriculoBR. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurrículoNexT. Todos os direitos reservados.</p>
       </footer>
     </div>
   );

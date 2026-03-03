@@ -11,9 +11,9 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Abre o cliente de e-mail padrão como fallback
-    const subject = encodeURIComponent(`Contato CurriculoBR - ${form.nome}`);
+    const subject = encodeURIComponent(`Contato CurrículoNexT - ${form.nome}`);
     const body = encodeURIComponent(`Nome: ${form.nome}\nE-mail: ${form.email}\n\n${form.mensagem}`);
-    window.open(`mailto:contato@curriculobr.com.br?subject=${subject}&body=${body}`);
+    window.open(`mailto:contato@curriculonext.com.br?subject=${subject}&body=${body}`);
     setEnviado(true);
   };
 
@@ -26,7 +26,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <span className="logo-nav inline-flex">
-            <img src="/logo.png" alt="CurriculoBR" className="h-12 w-auto object-contain" />
+            <img src="/logo.png" alt="CurrículoNexT" className="h-12 w-auto object-contain" />
           </span>
         </div>
       </header>
@@ -94,7 +94,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
           <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-100 dark:border-slate-700 text-center">
             <i className="fa fa-envelope text-2xl text-blue-600 mb-2 block"></i>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">E-mail</p>
-            <a href="mailto:contato@curriculobr.com.br" className="text-blue-600 hover:underline text-sm">contato@curriculobr.com.br</a>
+            <a href="mailto:contato@curriculonext.com.br" className="text-blue-600 hover:underline text-sm">contato@curriculonext.com.br</a>
           </div>
           <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-100 dark:border-slate-700 text-center">
             <i className="fa fa-clock text-2xl text-blue-600 mb-2 block"></i>
@@ -105,7 +105,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-700 mt-16 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} CurriculoBR. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurrículoNexT. Todos os direitos reservados.</p>
       </footer>
     </div>
   );
