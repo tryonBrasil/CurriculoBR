@@ -1409,7 +1409,7 @@ export default function App() {
               </span>
               <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                 Seu currículo novo,<br className="hidden md:block"/>
-                <span className="text-transparent bg-clip-text italic" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb 50%, #0d9488)' }}>em minutos.</span> <span>🚀</span>
+                <span style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb 50%, #0d9488)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', fontStyle: 'italic' }}>em minutos.</span> <span>🚀</span>
               </h2>
               <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
                 Design profissional + IA do Google Gemini. Chega de currículo no Word que parece de 2008. 😅
