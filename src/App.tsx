@@ -1826,21 +1826,10 @@ export default function App() {
           </span>
         </div>
         
-        {/* Mobile toggle Editar/Visualizar */}
-        <div className="flex md:hidden bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-           <button 
-             onClick={() => setMobileView('editor')} 
-             className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all flex items-center gap-1.5 ${mobileView === 'editor' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
-           >
-             <i className="fas fa-pencil-alt text-[9px]"></i> Editar
-           </button>
-           <button 
-             onClick={() => setMobileView('preview')} 
-             className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all flex items-center gap-1.5 ${mobileView === 'preview' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
-           >
-             <i className="fas fa-eye text-[9px]"></i> Ver
-           </button>
-        </div>
+        {/* Título central mobile (limpo) */}
+        <span className="flex md:hidden font-black text-sm text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+          {mobileView === 'editor' ? '✏️ Editar' : '👁️ Preview'}
+        </span>
 
         <div className="hidden lg:flex items-center gap-4">
            {/* Indicador de auto-save */}
@@ -1929,35 +1918,71 @@ export default function App() {
            )}
         </div>
 
-        {/* Mobile right buttons */}
-        <div className="flex md:hidden items-center gap-1.5">
-          {/* Indicador de auto-save mobile */}
+        {/* Mobile right buttons — apenas save indicator + nuvem */}
+        <div className="flex md:hidden items-center gap-2">
           {autoSaveStatus === 'saving' && <i className="fas fa-circle-notch fa-spin text-slate-400 text-xs"></i>}
           {autoSaveStatus === 'saved' && <i className="fas fa-check-circle text-green-500 text-xs"></i>}
-
-          {/* Cloud mobile */}
           <button
             onClick={handleOpenSaveModal}
-            className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all"
+            className="w-9 h-9 flex items-center justify-center rounded-full border-2 border-slate-200 dark:border-slate-700 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all"
             title="Salvar na nuvem"
           >
-            <i className="fas fa-cloud text-xs"></i>
-          </button>
-
-          <button onClick={handlePrint} className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wide flex items-center gap-1">
-            <i className="fas fa-file-pdf text-[9px]"></i> PDF
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center text-slate-500 dark:text-slate-300" onClick={() => setIsSidebarOpen(true)}>
-            <i className="fas fa-palette text-sm"></i>
+            <i className={`fas ${cloudSaving ? 'fa-circle-notch fa-spin' : currentCloudId ? 'fa-cloud-upload-alt' : 'fa-cloud'} text-sm`}></i>
           </button>
         </div>
       </nav>
 
+      {/* ===== BOTTOM NAVIGATION BAR — mobile only ===== */}
+      <div className="md:hidden no-print fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-around px-2 h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {/* Editar */}
+        <button
+          onClick={() => setMobileView('editor')}
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${mobileView === 'editor' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-slate-400 dark:text-slate-500'}`}
+        >
+          <i className="fas fa-pencil-alt text-base"></i>
+          <span className="text-[9px] font-black uppercase tracking-wide">Editar</span>
+        </button>
+        {/* Preview */}
+        <button
+          onClick={() => setMobileView('preview')}
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${mobileView === 'preview' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-slate-400 dark:text-slate-500'}`}
+        >
+          <i className="fas fa-eye text-base"></i>
+          <span className="text-[9px] font-black uppercase tracking-wide">Preview</span>
+        </button>
+        {/* PDF — destaque central */}
+        <button
+          onClick={handlePrint}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-5 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wide transition-all shadow-lg shadow-blue-500/30"
+        >
+          <i className="fas fa-file-pdf"></i>
+          <span>PDF</span>
+        </button>
+        {/* Templates / Estilos */}
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${isSidebarOpen ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/20' : 'text-slate-400 dark:text-slate-500'}`}
+        >
+          <i className="fas fa-palette text-base"></i>
+          <span className="text-[9px] font-black uppercase tracking-wide">Estilos</span>
+        </button>
+        {/* ATS Score */}
+        <button
+          onClick={() => setIsATSPanelOpen(true)}
+          className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-slate-400 dark:text-slate-500 transition-all"
+        >
+          <i className="fas fa-brain text-base"></i>
+          <span className="text-[9px] font-black uppercase tracking-wide">Score</span>
+        </button>
+      </div>
+
       <div className="flex-1 flex overflow-hidden relative">
         
-        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto pb-16 md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
            
-           <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 shrink-0 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2">
+           <div className="relative shrink-0">
+           <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2 tabs-scroll-container">
+             <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 dark:from-slate-900 to-transparent z-10 md:hidden"></div>
              {STEPS.map((step, idx) => (
                <button
                 key={step.id}
@@ -1969,6 +1994,7 @@ export default function App() {
                  {currentStep === idx && <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full"></div>}
                </button>
              ))}
+           </div>
            </div>
 
            <div ref={editorScrollRef} className={`flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 transition-colors duration-500 ${highlightedStep ? 'bg-blue-50/20 dark:bg-blue-900/10' : ''}`}>
@@ -2372,7 +2398,25 @@ export default function App() {
           </button>
         )}
 
-        <div className={`no-print border-l border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 z-40 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden fixed inset-y-0 right-0 lg:static ${isSidebarOpen ? 'w-[360px] translate-x-0' : 'w-0 lg:w-0 translate-x-full lg:translate-x-0'}`}>
+        {/* Overlay para fechar o bottom sheet no mobile */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-[55] md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+        {/* SIDEBAR: drawer lateral no desktop, bottom sheet no mobile */}
+        <div className={`no-print bg-white dark:bg-slate-900 flex flex-col shrink-0 z-[56] transition-all duration-300 ease-in-out shadow-2xl overflow-hidden
+          md:border-l md:border-slate-100 md:dark:border-slate-800 md:fixed md:inset-y-0 md:right-0 md:static
+          fixed bottom-0 left-0 right-0 rounded-t-3xl md:rounded-none
+          ${isSidebarOpen
+            ? 'md:w-[360px] md:translate-x-0 translate-y-0 max-h-[88vh]'
+            : 'md:w-0 md:translate-x-full translate-y-full max-h-0 md:max-h-none'
+          }`}>
+          {/* Handle bar — só aparece no mobile */}
+          <div className="md:hidden flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+          </div>
            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 shrink-0">
               <h2 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -2388,7 +2432,7 @@ export default function App() {
                 <i className="fas fa-times text-xs"></i>
               </button>
            </div>
-           <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-6 space-y-7">
+           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-7 pb-8">
               <section>
                  <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tamanho da Fonte</h3>
@@ -2455,7 +2499,9 @@ export default function App() {
                    </button>
                  </div>
                  {showFreeTemplates && (
-                   <div className="space-y-2">
+                   <>
+                   {/* Desktop: lista linear | Mobile: grid 2 colunas */}
+                   <div className="hidden md:block space-y-2">
                      {FREE_TEMPLATES.map(t => (
                        <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 group ${template === t.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 shadow-sm' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
                           <TemplateThumbnail template={t.id as TemplateId} className="w-16 h-[84px] shrink-0 rounded-sm overflow-hidden" />
@@ -2472,6 +2518,19 @@ export default function App() {
                        </button>
                      ))}
                    </div>
+                   {/* Mobile: grid 2 colunas com thumbnails maiores */}
+                   <div className="md:hidden grid grid-cols-2 gap-3">
+                     {FREE_TEMPLATES.map(t => (
+                       <button key={t.id} onClick={() => handleTemplateSelect(t.id as TemplateId)} className={`flex flex-col rounded-2xl border-2 overflow-hidden transition-all active:scale-95 ${template === t.id ? 'border-blue-600 ring-2 ring-blue-200 dark:ring-blue-800' : 'border-slate-100 dark:border-slate-800'}`}>
+                          <TemplateThumbnail template={t.id as TemplateId} className="w-full h-[110px] overflow-hidden" />
+                          <div className="p-2 text-left">
+                            <p className={`text-[10px] font-black uppercase truncate ${template === t.id ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
+                            {template === t.id && <span className="text-[9px] text-blue-600 font-bold">✓ Ativo</span>}
+                          </div>
+                       </button>
+                     ))}
+                   </div>
+                   </>
                  )}
 
                  {/* Separador Premium na sidebar */}
@@ -2488,7 +2547,7 @@ export default function App() {
                      </button>
                      <div className="flex-1 h-px bg-gradient-to-l from-amber-300 to-orange-400"></div>
                    </div>
-                   {showPremiumTemplates && <div className="space-y-3">
+                   {showPremiumTemplates && <><div className="hidden md:block space-y-3">
                      {PREMIUM_TEMPLATES_LIST.map(t => {
                        const unlocked = isPremium;
                        const isActive = template === t.id;
@@ -2516,7 +2575,35 @@ export default function App() {
                          </button>
                        );
                      })}
-                   </div>}
+                   </div>
+                   {/* Mobile: grid 2 colunas premium */}
+                   <div className="md:hidden grid grid-cols-2 gap-3">
+                     {PREMIUM_TEMPLATES_LIST.map(t => {
+                       const unlocked = isPremium;
+                       const isActive = template === t.id;
+                       return (
+                         <button
+                           key={t.id}
+                           onClick={() => handleTemplateSelect(t.id as TemplateId)}
+                           className={`flex flex-col rounded-2xl border-2 overflow-hidden transition-all active:scale-95 relative ${isActive && unlocked ? 'border-amber-500 ring-2 ring-amber-200 dark:ring-amber-800' : 'border-slate-100 dark:border-slate-800'}`}
+                         >
+                           <div className="relative w-full h-[110px]">
+                             <TemplateThumbnail template={t.id as TemplateId} className="w-full h-full" />
+                             {!unlocked && (
+                               <div className="absolute inset-0 bg-black/20 flex items-start justify-end p-1">
+                                 <span className="text-[9px] bg-black/60 text-amber-300 px-1.5 py-0.5 rounded font-bold">🔒</span>
+                               </div>
+                             )}
+                           </div>
+                           <div className="p-2 text-left">
+                             <p className={`text-[10px] font-black uppercase truncate ${isActive && unlocked ? 'text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}`}>{t.label}</p>
+                             <p className="text-[9px] text-slate-400">{unlocked ? '✓ Desbloqueado' : 'Premium 👑'}</p>
+                           </div>
+                         </button>
+                       );
+                     })}
+                   </div>
+                   </>}
 
                    {/* Badge de status premium na sidebar */}
                    {isPremium && premiumPlan !== 'lifetime' && daysLeft !== null && (
@@ -2564,7 +2651,9 @@ export default function App() {
                   </div>
               </section>
               <div className="pt-8 space-y-3">
-                 <button onClick={handleClearData} className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold uppercase tracking-wide hover:bg-red-100 dark:hover:bg-red-900/40 transition-all border border-red-100/50 dark:border-red-900/20">Limpar Dados</button>
+                 <button onClick={handleClearData} className="w-full py-4 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl text-sm font-black uppercase tracking-wide hover:bg-red-200 dark:hover:bg-red-900/50 transition-all border-2 border-red-200 dark:border-red-800/50 flex items-center justify-center gap-2">
+                   <i className="fas fa-trash-alt text-sm"></i> Apagar tudo e recomeçar
+                 </button>
               </div>
            </div>
         </div>
