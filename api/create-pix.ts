@@ -5,15 +5,13 @@ const PRICES: Record<string, number> = {
   monthly:  14.90,
   yearly:   59.90,
   lifetime: 29.90,
-  weekly:   9.90,  // compatibilidade com plano antigo
+  weekly:   9.90,
+  lifetime: 19.99,
 };
 
 const DESCRIPTIONS: Record<string, string> = {
-  avulso:   'CurriculoGO Premium — 7 Dias de Acesso',
-  monthly:  'CurriculoGO Premium — Mensal',
-  yearly:   'CurriculoGO Premium — Anual',
-  lifetime: 'CurriculoGO Premium — Acesso Vitalício',
   weekly:   'CurriculoGO Premium — 7 Dias de Acesso',
+  lifetime: 'CurriculoGO Premium — Acesso Vitalício',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -22,10 +20,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const accessToken = process.env.MP_ACCESS_TOKEN;
   if (!accessToken) return res.status(500).json({ error: 'MP_ACCESS_TOKEN não configurado' });
 
-  const { email, plan = 'avulso' } = req.body ?? {};
-  const resolvedPlan = (['avulso','monthly','yearly','lifetime','weekly'].includes(plan) ? plan : 'avulso') as string;
-  const price        = PRICES[resolvedPlan];
-  const description  = DESCRIPTIONS[resolvedPlan];
+  const { email, plan = 'weekly' } = req.body ?? {};
+  const resolvedPlan = plan === 'lifetime' ? 'lifetime' : 'weekly';
+  const price       = PRICES[resolvedPlan];
+  const description = DESCRIPTIONS[resolvedPlan];
 
   const payerEmail = (typeof email === 'string' && email.includes('@'))
     ? email
@@ -57,20 +55,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(502).json({ error: 'Erro ao criar pagamento Pix no Mercado Pago' });
     }
 
-    const payment  = await response.json();
-    const qrCode   = payment.point_of_interaction?.transaction_data?.qr_code;
-    const qrBase64 = payment.point_of_interaction?.transaction_data?.qr_code_base64;
+    const payment   = await response.json();
+    const qrCode    = payment.point_of_interaction?.transaction_data?.qr_code;
+    const qrBase64  = payment.point_of_interaction?.transaction_data?.qr_code_base64;
 
     if (!qrCode) {
       return res.status(502).json({ error: 'QR Code Pix não gerado. Verifique se sua conta MP tem Pix habilitado.' });
     }
 
     return res.status(200).json({
-      payment_id:     String(payment.id),
-      qr_code:        qrCode,
-      qr_code_base64: qrBase64 ?? null,
-      expires_at:     expiresAt,
-      plan:           resolvedPlan,
+      payment_id:      String(payment.id),
+      qr_code:         qrCode,
+      qr_code_base64:  qrBase64 ?? null,
+      expires_at:      expiresAt,
+      plan:            resolvedPlan,
     });
   } catch (error) {
     console.error('Pix creation failed:', error);
