@@ -71,6 +71,7 @@ const PREMIUM_TEMPLATES_LIST = [
   { id: 'bold_impact',        label: 'Bold Impact',        desc: 'Tipografia Forte',        badge: '💥 Ousado',      badgeColor: 'bg-violet-600' },
   { id: 'soft_pastel',        label: 'Soft Pastel',        desc: 'Elegante e Feminino',     badge: '🌸 Delicado',    badgeColor: 'bg-pink-500'   },
   { id: 'tech_dark',          label: 'Tech Dark',          desc: 'Para Área de TI',         badge: '💻 TI & Dev',    badgeColor: 'bg-green-600'  },
+  { id: 'english_pro',        label: 'English Pro',        desc: 'Currículo em Inglês',     badge: '🌍 Internacional', badgeColor: 'bg-teal-600'   },
 ];
 
 // Alias mantém compatibilidade
