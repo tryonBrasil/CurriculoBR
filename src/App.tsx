@@ -57,7 +57,7 @@ const FREE_TEMPLATES = [
   { id: 'corporate_gray',   label: 'Corporate Gray', desc: 'Minimalista Pro',         badge: '',              badgeColor: ''              },
 ];
 
-// 12 templates premium — 7 dias por R$7,99 ou vitalício por R$19,99
+// 12 templates premium — avulso R$9,90 · mensal R$14,90 · vitalício R$29,90
 const PREMIUM_TEMPLATES_LIST = [
   { id: 'modern_blue',        label: 'Modern Blue',        desc: 'Profissional e Limpo',    badge: '🔥 Mais usado',  badgeColor: 'bg-orange-500' },
   { id: 'modern_vitae',       label: 'Modern Vitae',       desc: 'Elegante e Espaçoso',     badge: '⭐ Popular',     badgeColor: 'bg-blue-600'   },
@@ -1450,7 +1450,7 @@ export default function App() {
         {/* ── Features / Benefícios ── */}
         <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
-            <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12 text-sm">Por que o CurriculoGO? 🚀</p>
+            <p className="text-center text-sm font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoGO? 🚀</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
                 { emoji: '🎨', icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos para cada perfil — do conservador ao criativo' },
@@ -1708,7 +1708,7 @@ export default function App() {
                       {isPremium && premiumPlan === 'lifetime' && <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">♾️ Vitalício</span>}
                       {isPremium && premiumPlan !== 'lifetime' && daysLeft !== null && <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${daysLeft && daysLeft <= 1 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 animate-pulse' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>⚡ {daysLeft}d restantes</span>}
                       {premiumExpired && <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase animate-pulse">⏰ Expirou</span>}
-                      {!isPremium && !premiumExpired && <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">a partir de R$ 7,99</span>}
+                      {!isPremium && !premiumExpired && <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">a partir de R$ 9,90</span>}
                     </div>
                     <p className="text-[10px] text-slate-400 font-bold">{PREMIUM_TEMPLATES_LIST.length} designs exclusivos</p>
                   </div>
@@ -1760,7 +1760,7 @@ export default function App() {
                               {template === t.id ? '✓ Selecionado' : 'Selecionar este'}
                             </button>
                           : <button onClick={() => { setPremiumModalTemplate(t.label); setIsPremiumModalOpen(true); }} className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest text-white hover:opacity-90 active:scale-95 transition-all shadow-md ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
-                              {premiumExpired ? '⏰ Reativar acesso' : '👑 Desbloquear — R$ 7,99'}
+                              {premiumExpired ? '⏰ Reativar acesso' : '👑 Desbloquear — R$ 9,90'}
                             </button>
                         }
                       </div>
@@ -1783,8 +1783,8 @@ export default function App() {
                     </h3>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                       {premiumExpired
-                        ? 'Reative por R$ 7,99 (7 dias) ou garanta o vitalício por R$ 19,99. Sem renovação automática. ✌️'
-                        : '7 dias por R$ 7,99 ou vitalício por R$ 19,99 — sem assinatura, sem cadastro. ✌️'}
+                        ? 'Reative por R$ 9,90 (7 dias) ou garanta o vitalício por R$ 29,90. Sem renovação automática. ✌️'
+                        : '7 dias por R$ 9,90 ou vitalício por R$ 29,90 — sem assinatura, sem cadastro. ✌️'}
                     </p>
                   </div>
                   <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className={`shrink-0 px-8 py-4 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
@@ -2637,7 +2637,7 @@ export default function App() {
                    )}
                    {!isPremium && !premiumExpired && (
                      <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className="mt-4 w-full py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2">
-                       🔓 Desbloquear — a partir de R$ 7,99
+                       🔓 Desbloquear — a partir de R$ 9,90
                      </button>
                    )}
                  </div>
