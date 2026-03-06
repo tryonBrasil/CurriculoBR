@@ -2407,11 +2407,11 @@ export default function App() {
         )}
         {/* SIDEBAR: drawer lateral no desktop, bottom sheet no mobile */}
         <div className={`no-print bg-white dark:bg-slate-900 flex flex-col shrink-0 z-[56] transition-all duration-300 ease-in-out shadow-2xl overflow-hidden
-          md:border-l md:border-slate-100 md:dark:border-slate-800 md:fixed md:inset-y-0 md:right-0 md:static
-          fixed bottom-0 left-0 right-0 rounded-t-3xl md:rounded-none
+          md:border-l md:border-slate-100 md:dark:border-slate-800
+          fixed bottom-0 left-0 right-0 rounded-t-3xl md:rounded-none md:relative md:bottom-auto md:left-auto md:right-auto
           ${isSidebarOpen
-            ? 'md:w-[360px] md:translate-x-0 translate-y-0 max-h-[88vh]'
-            : 'md:w-0 md:translate-x-full translate-y-full max-h-0 md:max-h-none'
+            ? 'md:w-[360px] translate-y-0 max-h-[88vh] md:max-h-none'
+            : 'md:w-0 translate-y-full md:translate-y-0 max-h-0 md:max-h-none'
           }`}>
           {/* Handle bar — só aparece no mobile */}
           <div className="md:hidden flex justify-center pt-3 pb-1 shrink-0">
