@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const COOKIE_KEY = 'curriculonext_cookie_consent';
+const COOKIE_KEY = 'curriculogo_cookie_consent';
 
 const CookieConsent: React.FC = () => {
   const [visible, setVisible] = useState(false);

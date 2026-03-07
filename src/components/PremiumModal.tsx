@@ -113,7 +113,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
   const handlePixCheckout = async () => {
     setError(''); setScreen('pix-loading');
     try {
-      const res = await fetch('/api/create-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan, amount: PLANS[selectedPlan].price }) });
+      const res = await fetch('/api/create-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan }) });
       if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error((err as any).error || 'Erro ao gerar Pix.'); }
       const data = await res.json();
       setPixPaymentId(data.payment_id); setPixQrCode(data.qr_code); setPixQrBase64(data.qr_code_base64 ?? ''); setPixExpiresAt(new Date(data.expires_at));

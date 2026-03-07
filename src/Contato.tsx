@@ -11,8 +11,8 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Abre o cliente de e-mail padrão como fallback
-    const subject = encodeURIComponent(`Contato CurriculoGO - ${form.nome}`);
-    const body = encodeURIComponent(`Nome: ${form.nome}\nE-mail: ${form.email}\n\n${form.mensagem}`);
+    const subject = encodeURIComponent(`Contato CurriculoGO - ${form.nome.trim().slice(0, 80)}`);
+    const body = encodeURIComponent(`Nome: ${form.nome.trim()}\nE-mail: ${form.email.trim()}\n\n${form.mensagem.trim()}`);
     window.open(`mailto:contato@curriculogo.com.br?subject=${subject}&body=${body}`);
     setEnviado(true);
   };
@@ -55,6 +55,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
                 required
                 value={form.nome}
                 onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                maxLength={100}
                 placeholder="Seu nome completo"
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -74,6 +75,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mensagem</label>
               <textarea
                 required
+                maxLength={2000}
                 rows={5}
                 value={form.mensagem}
                 onChange={e => setForm(f => ({ ...f, mensagem: e.target.value }))}

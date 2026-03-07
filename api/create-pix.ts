@@ -23,7 +23,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!accessToken) return res.status(500).json({ error: 'MP_ACCESS_TOKEN não configurado' });
 
   const { email, plan = 'avulso' } = req.body ?? {};
-  const resolvedPlan = (['avulso','monthly','yearly','lifetime','weekly'].includes(plan) ? plan : 'avulso') as string;
+  const VALID_PLANS = ['avulso', 'monthly', 'yearly', 'lifetime', 'weekly'];
+  const resolvedPlan = (VALID_PLANS.includes(plan) ? plan : 'avulso') as string;
+  // Ignora qualquer amount enviado pelo cliente — o preço vem SEMPRE do servidor
+  // (evita manipulação de preço no body)
   const price        = PRICES[resolvedPlan];
   const description  = DESCRIPTIONS[resolvedPlan];
 

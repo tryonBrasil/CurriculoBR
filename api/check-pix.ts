@@ -18,6 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!payment_id || typeof payment_id !== 'string') {
     return res.status(400).json({ error: 'payment_id é obrigatório' });
   }
+  // Valida formato: apenas dígitos (IDs do Mercado Pago são numéricos)
+  if (!/^\d{1,20}$/.test(payment_id)) {
+    return res.status(400).json({ error: 'payment_id inválido' });
+  }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
   if (!accessToken) {

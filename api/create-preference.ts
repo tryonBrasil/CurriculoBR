@@ -41,6 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : 'http://localhost:5173');
 
+  // Ignora qualquer price/amount enviado pelo cliente — preço definido exclusivamente no servidor
   const { plan = 'avulso' } = req.body ?? {};
   const resolvedPlan = (['avulso','monthly','yearly','lifetime','weekly'].includes(plan) ? plan : 'avulso') as string;
   const { price, title, description } = PLANS[resolvedPlan];

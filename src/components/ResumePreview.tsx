@@ -1210,9 +1210,11 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
   );
 };
 
-// Optimization: Only re-render if data actually changed
+// Optimization: Only re-render if data, template, fontSize or callbacks actually changed
 export default React.memo(ResumePreview, (prev, next) => {
   return prev.template === next.template && 
          prev.fontSize === next.fontSize &&
+         prev.onReorder === next.onReorder &&
+         prev.onSectionClick === next.onSectionClick &&
          JSON.stringify(prev.data) === JSON.stringify(next.data);
 });

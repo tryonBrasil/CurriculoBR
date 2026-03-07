@@ -8,7 +8,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
+      // ATENÇÃO: VITE_GEMINI_API_KEY é exposta no bundle do frontend (necessário para o SDK no browser).
+    // Proteja a chave restringindo-a ao domínio curriculo-go.vercel.app no Google AI Studio:
+    // https://aistudio.google.com/app/apikey → Edit key → Restrict to HTTP referrers
+    'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
     },
     build: {
       outDir: 'dist',

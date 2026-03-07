@@ -73,9 +73,7 @@ const PREMIUM_TEMPLATES_LIST = [
   { id: 'tech_dark',          label: 'Tech Dark',          desc: 'Para Área de TI',         badge: '💻 TI & Dev',    badgeColor: 'bg-green-600'  },
 ];
 
-// Alias mantém compatibilidade
-const TEMPLATES = FREE_TEMPLATES;
-const PREMIUM_TEMPLATES: { id: string; label: string; desc: string; badge: string }[] = [];
+// FREE_TEMPLATES é a única lista de templates gratuitos usada diretamente
 
 const FONTS = [
   { id: 'inter', label: 'Inter', family: "'Inter', sans-serif" },
@@ -268,12 +266,14 @@ export default function App() {
       const stateToSave = { data, template, fontSize, fontFamily, isDarkMode };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
     };
-    window.addEventListener('beforeunload', saveNow);
-    window.addEventListener('visibilitychange', () => {
+    const onVisibility = () => {
       if (document.visibilityState === 'hidden') saveNow();
-    });
+    };
+    window.addEventListener('beforeunload', saveNow);
+    window.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.removeEventListener('beforeunload', saveNow);
+      window.removeEventListener('visibilitychange', onVisibility);
     };
   }, [data, template, fontSize, fontFamily, isDarkMode]);
 
@@ -380,7 +380,7 @@ export default function App() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Currículo — ${data.personalInfo.fullName || 'CurriculoGO'}</title>
+  <title>Currículo — ${(data.personalInfo.fullName || 'CurriculoGO').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</title>
   ${styles}
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -692,19 +692,19 @@ export default function App() {
     setPreviewScale(Math.min(0.95, Math.max(0.35, scale)));
   }, []);
 
+  // Recalcula o fit quando muda de view ou a sidebar abre/fecha (com delay p/ aguardar o CSS transition)
   useEffect(() => {
-    if (view === 'editor') {
-      const timer = setTimeout(() => {
-        fitToScreen();
-      }, 300);
-      
-      window.addEventListener('resize', fitToScreen);
-      return () => {
-        window.removeEventListener('resize', fitToScreen);
-        clearTimeout(timer);
-      };
-    }
+    if (view !== 'editor') return;
+    const timer = setTimeout(fitToScreen, 350);
+    return () => clearTimeout(timer);
   }, [view, isSidebarOpen, fitToScreen]);
+
+  // Ouve resize da janela — separado do sidebar para não perder eventos durante transições
+  useEffect(() => {
+    if (view !== 'editor') return;
+    window.addEventListener('resize', fitToScreen);
+    return () => window.removeEventListener('resize', fitToScreen);
+  }, [view, fitToScreen]);
 
   const handleTemplateSelect = (selectedTemplate: TemplateId) => {
     // Verifica se é template premium e usuário não tem acesso
@@ -1114,12 +1114,16 @@ export default function App() {
       showToast('Carta copiada para a área de transferência!');
     };
 
+    const escapeHtml = (str: string) =>
+      str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
     const handlePrintLetter = () => {
       const w = window.open('', '_blank');
       if (!w) return;
       w.document.write(`
         <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-        <title>Carta de Apresentação — ${clJobTitle}</title>
+        <title>Carta de Apresentação — ${escapeHtml(clJobTitle)}</title>
         <style>
           body { font-family: 'Georgia', serif; max-width: 680px; margin: 60px auto; padding: 0 40px; color: #1e293b; line-height: 1.8; font-size: 15px; }
           p { margin-bottom: 1.2em; text-align: justify; }
@@ -1129,8 +1133,8 @@ export default function App() {
           .date { text-align: right; margin-bottom: 32px; color: #64748b; font-size: 13px; }
         </style></head><body>
         <div class="header">
-          <div class="name">${data.personalInfo?.fullName || 'Candidato'}</div>
-          <div class="meta">${data.personalInfo?.email || ''} · ${data.personalInfo?.phone || ''}</div>
+          <div class="name">${escapeHtml(data.personalInfo?.fullName || 'Candidato')}</div>
+          <div class="meta">${escapeHtml(data.personalInfo?.email || '')} · ${escapeHtml(data.personalInfo?.phone || '')}</div>
         </div>
         <div class="date">${new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
         ${clResult.split('\n\n').map(p => `<p>${p.replace(/\n/g,' ')}</p>`).join('')}
