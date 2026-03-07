@@ -17,12 +17,12 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
   const buildResumeText = () => {
     const { personalInfo, summary, experiences, education, skills, languages, courses } = data;
     let text = '';
-    if (personalInfo.fullName) text += `Nome: ${personalInfo.fullName}\n`;
-    if (personalInfo.jobTitle) text += `Cargo: ${personalInfo.jobTitle}\n`;
-    if (personalInfo.email) text += `Email: ${personalInfo.email}\n`;
-    if (personalInfo.phone) text += `Telefone: ${personalInfo.phone}\n`;
-    if (personalInfo.location) text += `Localização: ${personalInfo.location}\n`;
-    if (personalInfo.linkedin) text += `LinkedIn: ${personalInfo.linkedin}\n`;
+    if (personalInfo.fullName)      text += `Nome: ${personalInfo.fullName}\n`;
+    if (personalInfo.jobTitle)      text += `Cargo: ${personalInfo.jobTitle}\n`;
+    if (personalInfo.email)         text += `Email: ${personalInfo.email}\n`;
+    if (personalInfo.phone)         text += `Telefone: ${personalInfo.phone}\n`;
+    if (personalInfo.location)      text += `Localização: ${personalInfo.location}\n`;
+    if (personalInfo.linkedin)      text += `LinkedIn: ${personalInfo.linkedin}\n`;
     if (personalInfo.drivingLicense) text += `CNH: ${personalInfo.drivingLicense}\n`;
     if (summary) text += `\nResumo:\n${summary}\n`;
     if (experiences.length > 0) {
@@ -36,7 +36,7 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
       text += '\nEducação:\n';
       education.forEach(e => { text += `- ${e.degree} em ${e.institution} (${e.endDate})\n`; });
     }
-    if (skills.length > 0) text += `\nHabilidades: ${skills.map(s => s.name).join(', ')}\n`;
+    if (skills.length > 0)    text += `\nHabilidades: ${skills.map(s => s.name).join(', ')}\n`;
     if (languages.length > 0) text += `\nIdiomas: ${languages.map(l => `${l.name} (${l.level})`).join(', ')}\n`;
     if (courses.length > 0) {
       text += '\nCursos:\n';
@@ -45,19 +45,60 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
     return text;
   };
 
+  // FIX: resolve a mensagem de erro de forma legível ao invés de sempre mostrar "Verifique sua chave de API"
+  const parseErrorMessage = (e: unknown): string => {
+    if (!e) return 'Erro desconhecido.';
+    const msg = (e as any)?.message ?? String(e);
+
+    // Chave inválida ou ausente
+    if (msg.includes('API_KEY') || msg.includes('API key') || msg.includes('401') || msg.includes('403')) {
+      return 'Chave de API inválida ou não configurada. Verifique VITE_GEMINI_API_KEY.';
+    }
+    // Quota excedida
+    if (msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate limit')) {
+      return 'Limite de requisições atingido. Aguarde alguns segundos e tente novamente.';
+    }
+    // Modelo não suporta o parâmetro (thinkingConfig no gemini-2.0-flash)
+    if (msg.includes('400') || msg.toLowerCase().includes('bad request') || msg.toLowerCase().includes('invalid')) {
+      return 'Parâmetros inválidos na chamada à API. Certifique-se de usar o geminiService.ts corrigido.';
+    }
+    // Sem internet
+    if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed to fetch')) {
+      return 'Sem conexão com a internet. Verifique sua rede e tente novamente.';
+    }
+    // JSON inválido na resposta
+    if (msg.includes('JSON') || msg.includes('SyntaxError')) {
+      return 'A IA retornou uma resposta inesperada. Tente novamente.';
+    }
+    return `Erro: ${msg.slice(0, 120)}`;
+  };
+
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     setError(null);
+    setAnalysis(null);
     try {
       const text = buildResumeText();
       if (text.trim().length < 50) {
-        setError('Preencha mais informações no currículo antes de analisar.');
+        setError('Preencha mais informações no currículo antes de analisar (nome, cargo, experiências...).');
+        setIsAnalyzing(false); // FIX: setIsAnalyzing deve ser chamado antes do return
         return;
       }
       const result = await analyzeResumeATS(text);
+
+      // FIX: valida se o resultado tem a estrutura esperada antes de usar
+      if (
+        typeof result?.score !== 'number' ||
+        !Array.isArray(result?.strengths) ||
+        !Array.isArray(result?.improvements)
+      ) {
+        throw new Error('A IA retornou um resultado em formato inesperado. Tente novamente.');
+      }
+
       setAnalysis(result);
     } catch (e) {
-      setError('Erro ao analisar com IA. Verifique sua chave de API.');
+      console.error('ATSPanel error:', e);
+      setError(parseErrorMessage(e));
     } finally {
       setIsAnalyzing(false);
     }
@@ -72,17 +113,17 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
       const result = await generateInterviewQuestions(position, skills);
       setQuestions(result);
     } catch {
-      // silencia
+      // silencia — feature secundária
     } finally {
       setIsLoadingQuestions(false);
     }
   };
 
   const verdictConfig = {
-    fraco:     { color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-900/20',    border: 'border-red-200 dark:border-red-700/40',    icon: 'fa-times-circle',    label: 'Fraco' },
-    regular:   { color: 'text-amber-600',  bg: 'bg-amber-50 dark:bg-amber-900/20',border: 'border-amber-200 dark:border-amber-700/40',icon: 'fa-exclamation-circle',label: 'Regular' },
-    bom:       { color: 'text-blue-600',   bg: 'bg-blue-50 dark:bg-blue-900/20',  border: 'border-blue-200 dark:border-blue-700/40',  icon: 'fa-check-circle',    label: 'Bom' },
-    excelente: { color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-900/20',border: 'border-green-200 dark:border-green-700/40',icon: 'fa-star',            label: 'Excelente' },
+    fraco:     { color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-900/20',    border: 'border-red-200 dark:border-red-700/40',    icon: 'fa-times-circle',      label: 'Fraco' },
+    regular:   { color: 'text-amber-600',  bg: 'bg-amber-50 dark:bg-amber-900/20',border: 'border-amber-200 dark:border-amber-700/40',icon: 'fa-exclamation-circle', label: 'Regular' },
+    bom:       { color: 'text-blue-600',   bg: 'bg-blue-50 dark:bg-blue-900/20',  border: 'border-blue-200 dark:border-blue-700/40',  icon: 'fa-check-circle',      label: 'Bom' },
+    excelente: { color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-900/20',border: 'border-green-200 dark:border-green-700/40',icon: 'fa-star',              label: 'Excelente' },
   };
 
   const scoreColor = (score: number) => {
@@ -92,7 +133,7 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
     return '#22c55e';
   };
 
-  const circumference = 2 * Math.PI * 54; // r=54
+  const circumference = 2 * Math.PI * 54;
 
   return (
     <div className="fixed inset-0 z-[600] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
@@ -121,11 +162,14 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed mb-6">
                 Nossa IA analisa seu currículo como um sistema ATS (Applicant Tracking System) real e dá feedback acionável com score, pontos fortes e melhorias prioritárias.
               </p>
+
               {error && (
-                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/40 rounded-2xl text-sm text-red-600 dark:text-red-400 font-medium">
-                  <i className="fas fa-exclamation-triangle mr-2"></i>{error}
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/40 rounded-2xl text-sm text-red-600 dark:text-red-400 font-medium text-left flex items-start gap-3">
+                  <i className="fas fa-exclamation-triangle mt-0.5 shrink-0"></i>
+                  <span>{error}</span>
                 </div>
               )}
+
               <button
                 onClick={handleAnalyze}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] inline-flex items-center gap-3"
@@ -183,7 +227,8 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
                 </div>
                 <div className="flex-1">
                   {(() => {
-                    const v = verdictConfig[analysis.verdict] || verdictConfig.regular;
+                    // FIX: fallback para 'regular' se verdict vier com valor inesperado da IA
+                    const v = verdictConfig[analysis.verdict as keyof typeof verdictConfig] ?? verdictConfig.regular;
                     return (
                       <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${v.bg} ${v.border} border mb-2`}>
                         <i className={`fas ${v.icon} ${v.color} text-xs`}></i>
