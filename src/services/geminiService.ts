@@ -1,42 +1,59 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-/* Updated to follow SDK initialization guidelines exactly */
 const getAI = () => {
-  // Em projetos Vite, variáveis de ambiente no browser devem usar import.meta.env.VITE_*
-  // process.env.* não está disponível no browser e retorna undefined em runtime
-  return new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY as string });
+  // process.env.API_KEY é definido pelo vite.config.ts via `define` a partir de VITE_GEMINI_API_KEY
+  return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
-// Streaming version for real-time feedback
-export const enhanceTextStream = async (text: string, context: string, onUpdate: (text: string) => void): Promise<void> => {
+// ---------------------------------------------------------------------------
+// BUGS CORRIGIDOS:
+//
+// BUG 1 — thinkingConfig: { thinkingBudget: 0 } ← CAUSA RAIZ DE TUDO
+//   O gemini-2.0-flash NÃO suporta thinkingConfig. Esse campo existe apenas
+//   nos modelos gemini-2.5-flash e gemini-2.5-pro.
+//   Resultado: HTTP 400 Bad Request em TODAS as chamadas → catch silencioso → IA "não funciona".
+//   CORREÇÃO: thinkingConfig removido de todas as chamadas.
+//
+// BUG 2 — contents sem role: 'user'
+//   O SDK v1.x espera { role: 'user', parts: [...] }.
+//   Passar { parts: [...] } sem role é ambíguo e pode falhar em alguns endpoints.
+//   CORREÇÃO: role: 'user' adicionado em todos os contents.
+//
+// BUG 3 — enhanceTextStream: onUpdate(text) no catch devolvia o texto original sem aviso
+//   Ao falhar, a função sobreescrevia o campo com o texto original sem nenhum toast de erro.
+//   CORREÇÃO: erro relançado para o App.tsx tratar via showToast.
+//
+// BUG 4 — parseResumeWithAI e analyzeResumeATS: JSON.parse sem sanitização
+//   O modelo pode retornar ```json ... ``` com markdown fences mesmo com
+//   responseMimeType: 'application/json', causando SyntaxError no JSON.parse.
+//   CORREÇÃO: fences removidas antes do parse.
+// ---------------------------------------------------------------------------
+
+export const enhanceTextStream = async (
+  text: string,
+  context: string,
+  onUpdate: (text: string) => void
+): Promise<void> => {
   if (!text) return;
   const ai = getAI();
-  try {
-    const response = await ai.models.generateContentStream({
-      model: 'gemini-2.0-flash',
-      contents: { 
-        parts: [{ 
-          text: `Melhore este texto: "${text}"` 
-        }] 
-      },
-      config: {
-        /* Added systemInstruction to provide better persona context */
-        systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
-        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
-      },
-    });
 
-    let accumulated = '';
-    for await (const chunk of response) {
-      if (chunk.text) {
-        accumulated += chunk.text;
-        onUpdate(accumulated);
-      }
+  // BUG 1 FIX: thinkingConfig removido (não suportado pelo gemini-2.0-flash)
+  // BUG 3 FIX: sem try/catch — relança o erro para o App.tsx exibir showToast
+  const response = await ai.models.generateContentStream({
+    model: 'gemini-2.0-flash',
+    contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }], // BUG 2 FIX
+    config: {
+      systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
+    },
+  });
+
+  let accumulated = '';
+  for await (const chunk of response) {
+    if (chunk.text) {
+      accumulated += chunk.text;
+      onUpdate(accumulated);
     }
-  } catch (error) {
-    console.error("Erro Gemini (Enhance Stream):", error);
-    onUpdate(text); // Fallback logic
   }
 };
 
@@ -46,14 +63,9 @@ export const enhanceText = async (text: string, context: string): Promise<string
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: { 
-        parts: [{ 
-          text: `Melhore este texto: "${text}"` 
-        }] 
-      },
+      contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }],
       config: {
         systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
-        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
       },
     });
     return response.text?.trim() || text;
@@ -63,30 +75,30 @@ export const enhanceText = async (text: string, context: string): Promise<string
   }
 };
 
-// Streaming version for real-time feedback
-export const generateSummaryStream = async (jobTitle: string, skills: string[], experiences: string[], onUpdate: (text: string) => void): Promise<void> => {
+export const generateSummaryStream = async (
+  jobTitle: string,
+  skills: string[],
+  experiences: string[],
+  onUpdate: (text: string) => void
+): Promise<void> => {
   const ai = getAI();
-  try {
-    const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
-    
-    const response = await ai.models.generateContentStream({
-      model: 'gemini-2.0-flash',
-      contents: { parts: [{ text: prompt }] },
-      config: {
-        systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
-        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
-      },
-    });
+  const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
 
-    let accumulated = '';
-    for await (const chunk of response) {
-      if (chunk.text) {
-        accumulated += chunk.text;
-        onUpdate(accumulated);
-      }
+  // BUG 1 FIX + BUG 2 FIX
+  const response = await ai.models.generateContentStream({
+    model: 'gemini-2.0-flash',
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    config: {
+      systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
+    },
+  });
+
+  let accumulated = '';
+  for await (const chunk of response) {
+    if (chunk.text) {
+      accumulated += chunk.text;
+      onUpdate(accumulated);
     }
-  } catch (error) {
-    console.error("Erro Gemini (Summary Stream):", error);
   }
 };
 
@@ -94,13 +106,11 @@ export const generateSummary = async (jobTitle: string, skills: string[], experi
   const ai = getAI();
   try {
     const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
-    
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: { parts: [{ text: prompt }] },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
-        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
       },
     });
     return response.text?.trim() || '';
@@ -115,14 +125,10 @@ export const suggestSkills = async (jobTitle: string): Promise<string[]> => {
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: { 
-        parts: [{ 
-          text: `Sugira competências para ${jobTitle}.` 
-        }] 
-      },
+      contents: [{ role: 'user', parts: [{ text: `Sugira competências para ${jobTitle}.` }] }],
       config: {
         systemInstruction: "Sugira exatamente 10 habilidades (técnicas e interpessoais) fundamentais. Retorne apenas os nomes das habilidades separados por vírgula, sem explicações ou numeração.",
-        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
+        // BUG 1 FIX: thinkingConfig removido
       },
     });
     const skillsText = response.text || '';
@@ -159,13 +165,14 @@ export const generateCoverLetterStream = async (
     Habilidades: ${params.skills}
     Destaques adicionais: ${params.highlights || 'Nenhum'}
   `;
+
   try {
+    // BUG 1 FIX + BUG 2 FIX
     const response = await ai.models.generateContentStream({
       model: 'gemini-2.0-flash',
-      contents: { parts: [{ text: prompt }] },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         systemInstruction: `Você é um especialista em redação de cartas de apresentação profissionais para o mercado brasileiro. Escreva uma carta completa com: saudação, parágrafo de abertura impactante, 2 parágrafos de experiências e valor, encerramento com call-to-action. Use o nome do candidato. Sem títulos ou cabeçalhos — apenas o corpo da carta. Máximo de 4 parágrafos, 250-350 palavras.`,
-        thinkingConfig: { thinkingBudget: 0 },
       },
     });
     let accumulated = '';
@@ -187,50 +194,27 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
 
       interface ResumeData {
         personalInfo: { 
-          fullName: string; 
-          email: string; 
-          phone: string; 
-          location: string; 
-          website: string; 
-          linkedin: string; 
-          jobTitle: string; 
+          fullName: string; email: string; phone: string; location: string;
+          website: string; linkedin: string; jobTitle: string; 
         };
         summary: string;
         experiences: { 
-          id: string; // Gere um ID aleatório
-          company: string; 
-          position: string; 
-          location: string; 
-          startDate: string; 
-          endDate: string; 
-          current: boolean; 
-          description: string; 
+          id: string; company: string; position: string; location: string;
+          startDate: string; endDate: string; current: boolean; description: string; 
         }[];
         education: { 
-          id: string; // Gere um ID aleatório
-          institution: string; 
-          degree: string; 
-          field: string; 
-          location: string; 
-          startDate: string; 
-          endDate: string; 
+          id: string; institution: string; degree: string; field: string;
+          location: string; startDate: string; endDate: string; 
         }[];
         skills: { 
-          id: string; // Gere um ID aleatório
-          name: string; 
-          level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'; // Use 'Intermediate' como padrão se não souber
+          id: string; name: string;
+          level: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
         }[];
         languages: { 
-          id: string; // Gere um ID aleatório
-          name: string; 
-          level: string; 
-          percentage: number; // Estime de 0 a 100
+          id: string; name: string; level: string; percentage: number;
         }[];
         courses: { 
-          id: string; // Gere um ID aleatório
-          name: string; 
-          institution: string; 
-          year: string; 
+          id: string; name: string; institution: string; year: string; 
         }[];
       }
 
@@ -238,17 +222,22 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
       "${text.slice(0, 12000)}"
     `;
 
+    // BUG 1 FIX + BUG 2 FIX
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: { parts: [{ text: prompt }] },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: 'application/json',
-        thinkingConfig: { thinkingBudget: 0 }, // Speed optimization
       },
     });
 
     if (response.text) {
-      return JSON.parse(response.text);
+      // BUG 4 FIX: remove markdown fences que o modelo pode incluir mesmo com responseMimeType json
+      const cleaned = response.text
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+      return JSON.parse(cleaned);
     }
     return {};
   } catch (error) {
@@ -258,7 +247,7 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
 };
 
 export interface ATSAnalysis {
-  score: number; // 0-100
+  score: number;
   summary: string;
   strengths: string[];
   improvements: string[];
@@ -282,7 +271,7 @@ Retorne APENAS um JSON válido com esta estrutura:
   "summary": "<resumo da análise em 1-2 frases>",
   "strengths": ["<ponto forte 1>", "<ponto forte 2>", "<ponto forte 3>"],
   "improvements": ["<melhoria prioritária 1>", "<melhoria 2>", "<melhoria 3>"],
-  "keywords": ["<palavra-chave detectada 1>", "<palavra-chave 2>", "<palavra-chave 3>", "<palavra-chave 4>", "<palavra-chave 5>"],
+  "keywords": ["<palavra-chave 1>", "<palavra-chave 2>", "<palavra-chave 3>", "<palavra-chave 4>", "<palavra-chave 5>"],
   "verdict": "<'fraco' | 'regular' | 'bom' | 'excelente'>"
 }
 
@@ -296,17 +285,22 @@ Critérios de pontuação ATS:
 - Cursos/certificações: +5pts
 Penalize: falta de palavras-chave, texto vago, ausência de datas, seções incompletas.`;
 
+    // BUG 1 FIX + BUG 2 FIX
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: { parts: [{ text: prompt }] },
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: 'application/json',
-        thinkingConfig: { thinkingBudget: 0 },
       },
     });
 
     if (response.text) {
-      return JSON.parse(response.text);
+      // BUG 4 FIX: sanitiza possíveis markdown fences
+      const cleaned = response.text
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+      return JSON.parse(cleaned);
     }
     throw new Error('No response');
   } catch (error) {
@@ -320,10 +314,10 @@ export const generateInterviewQuestions = async (position: string, skills: strin
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: { parts: [{ text: `Gere 5 perguntas de entrevista para o cargo "${position}" com habilidades: ${skills.join(', ')}` }] },
+      contents: [{ role: 'user', parts: [{ text: `Gere 5 perguntas de entrevista para o cargo "${position}" com habilidades: ${skills.join(', ')}` }] }],
       config: {
         systemInstruction: 'Retorne exatamente 5 perguntas de entrevista relevantes para o cargo e habilidades mencionados, focadas no mercado brasileiro. Retorne apenas as perguntas, uma por linha, sem numeração ou marcadores.',
-        thinkingConfig: { thinkingBudget: 0 },
+        // BUG 1 FIX: thinkingConfig removido
       },
     });
     const text = response.text || '';
