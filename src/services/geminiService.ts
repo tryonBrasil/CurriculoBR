@@ -3,8 +3,9 @@ import { GoogleGenAI } from "@google/genai";
 
 /* Updated to follow SDK initialization guidelines exactly */
 const getAI = () => {
-  // The API key must be obtained exclusively from the environment variable process.env.API_KEY
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Em projetos Vite, variáveis de ambiente no browser devem usar import.meta.env.VITE_*
+  // process.env.* não está disponível no browser e retorna undefined em runtime
+  return new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY as string });
 };
 
 // Streaming version for real-time feedback
