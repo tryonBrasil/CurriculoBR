@@ -87,6 +87,57 @@ const FONTS = [
 
 const STORAGE_KEY = 'curriculogo_data_v2';
 
+// FIX: componente movido para fora do App para evitar recriação a cada render
+const AnimatedCounter = ({ target, suffix = '' }: { target: number; suffix?: string }) => {
+  const [count, setCount] = React.useState(0);
+  const ref = React.useRef<HTMLSpanElement>(null);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        observer.disconnect();
+        let start = 0;
+        const duration = 1500;
+        const step = (timestamp: number) => {
+          if (!start) start = timestamp;
+          const progress = Math.min((timestamp - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.floor(eased * target));
+          if (progress < 1) requestAnimationFrame(step);
+          else setCount(target);
+        };
+        requestAnimationFrame(step);
+      }
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+  return <span ref={ref}>{count.toLocaleString('pt-BR')}{suffix}</span>;
+};
+
+// FIX: componente movido para fora do App para evitar recriação a cada render
+const LegalPageLayout: React.FC<{ title: string; children: React.ReactNode; onHome: () => void }> = ({ title, children, onHome }) => (
+  <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
+    <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50">
+      <div className="flex items-center gap-3 cursor-pointer" onClick={onHome}>
+          <i className="fas fa-arrow-left text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"></i>
+          <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Voltar</span>
+      </div>
+      <h1 className="font-black text-xl text-slate-800 dark:text-white uppercase tracking-tight">{title}</h1>
+      <div className="w-20"></div>
+    </header>
+    <main className="flex-1 p-8 md:p-12 overflow-y-auto">
+      <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 leading-relaxed">
+          {children}
+          <div className="mt-12 border-t border-slate-100 dark:border-slate-700 pt-8">
+             <AdUnit slotId="" format="horizontal" />
+          </div>
+      </div>
+    </main>
+  </div>
+);
+
 export default function App() {
   const [view, setView] = useState<'home' | 'templates' | 'editor' | 'privacy' | 'terms' | 'cover-letter-page' | 'sobre' | 'contato' | 'blog' | 'blog-post'>('home');
   const [blogSlug, setBlogSlug] = useState<string>('');
@@ -120,7 +171,7 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, revokePremium, ownerUnlock } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
@@ -174,11 +225,11 @@ export default function App() {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorScrollRef = useRef<HTMLDivElement>(null);
 
-  const navigateTo = (path: string, viewState: typeof view) => {
+  const navigateTo = useCallback((path: string, viewState: typeof view) => {
     window.history.pushState({}, '', path);
     setView(viewState);
     window.scrollTo(0, 0);
-  };
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -319,6 +370,7 @@ export default function App() {
     setFontFamily(resume.fontFamily);
     setCurrentCloudId(resume.id);
     setCurrentCloudName(resume.name);
+    setIsCloudResumesOpen(false); // FIX: fecha o modal após carregar
     navigateTo('/', 'editor');
     showToast(`📂 "${resume.name}" carregado!`, 'success');
   };
@@ -380,7 +432,7 @@ export default function App() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Currículo — ${(data.personalInfo.fullName || 'CurriculoGO').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</title>
+  <title>Currículo — ${(data.personalInfo.fullName || 'CurriculoGO').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</title>
   ${styles}
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -445,6 +497,8 @@ export default function App() {
       action: () => {
         setHistoryDirect({ past: [], present: INITIAL_RESUME_DATA, future: [] });
         localStorage.removeItem(STORAGE_KEY);
+        setCurrentCloudId(null);       // FIX: reseta ID do currículo na nuvem
+        setCurrentCloudName('');       // FIX: reseta nome do currículo na nuvem
         showToast("Dados limpos.");
         setConfirmModal(null);
       }
@@ -722,35 +776,6 @@ export default function App() {
     navigateTo('/', 'editor');
   };
 
-  // Animated counter component for home page stats
-  const AnimatedCounter = ({ target, suffix = '' }: { target: number; suffix?: string }) => {
-    const [count, setCount] = React.useState(0);
-    const ref = React.useRef<HTMLSpanElement>(null);
-    React.useEffect(() => {
-      const el = ref.current;
-      if (!el) return;
-      const observer = new IntersectionObserver(([entry]) => {
-        if (entry.isIntersecting) {
-          observer.disconnect();
-          let start = 0;
-          const duration = 1500;
-          const step = (timestamp: number) => {
-            if (!start) start = timestamp;
-            const progress = Math.min((timestamp - start) / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(Math.floor(eased * target));
-            if (progress < 1) requestAnimationFrame(step);
-            else setCount(target);
-          };
-          requestAnimationFrame(step);
-        }
-      }, { threshold: 0.5 });
-      observer.observe(el);
-      return () => observer.disconnect();
-    }, [target]);
-    return <span ref={ref}>{count.toLocaleString('pt-BR')}{suffix}</span>;
-  };
-
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -766,27 +791,6 @@ export default function App() {
       if (editorScrollRef.current) editorScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
-  const LegalPageLayout: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
-      <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-50">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
-            <i className="fas fa-arrow-left text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"></i>
-            <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Voltar</span>
-        </div>
-        <h1 className="font-black text-xl text-slate-800 dark:text-white uppercase tracking-tight">{title}</h1>
-        <div className="w-20"></div>
-      </header>
-      <main className="flex-1 p-8 md:p-12 overflow-y-auto">
-        <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 leading-relaxed">
-            {children}
-            <div className="mt-12 border-t border-slate-100 dark:border-slate-700 pt-8">
-               <AdUnit slotId="" format="horizontal" />
-            </div>
-        </div>
-      </main>
-    </div>
-  );
 
   const globalOverlays = (
     <>
@@ -968,7 +972,7 @@ export default function App() {
 
   if (view === 'privacy') {
     return (
-      <LegalPageLayout title="Política de Privacidade">
+      <LegalPageLayout title="Política de Privacidade" onHome={() => navigateTo('/', 'home')}>
         {globalOverlays}
         <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300">
             <p className="text-xs text-slate-400">Última atualização: 25 de fevereiro de 2026</p>
@@ -1015,7 +1019,7 @@ export default function App() {
 
   if (view === 'terms') {
     return (
-      <LegalPageLayout title="Termos e Condições">
+      <LegalPageLayout title="Termos e Condições" onHome={() => navigateTo('/', 'home')}>
         {globalOverlays}
         <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300">
             <p className="text-xs text-slate-400">Última atualização: 25 de fevereiro de 2026</p>
