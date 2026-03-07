@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ResumeData } from '../types';
-import { analyzeResumeATS, ATSAnalysis } from '../services/geminiService';
+import { analyzeResumeATS, ATSAnalysis, generateInterviewQuestions } from '../services/geminiService';
 
 interface Props {
   data: ResumeData;
@@ -11,6 +11,8 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<ATSAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<string[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
 
   const buildResumeText = () => {
     const { personalInfo, summary, experiences, education, skills, languages, courses } = data;
@@ -58,6 +60,21 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
       setError('Erro ao analisar com IA. Verifique sua chave de API.');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleInterviewQuestions = async () => {
+    if (!data.experiences[0]?.position && !data.personalInfo?.jobTitle) return;
+    setIsLoadingQuestions(true);
+    try {
+      const position = data.personalInfo?.jobTitle || data.experiences[0]?.position || 'Profissional';
+      const skills = data.skills?.map(s => s.name) || [];
+      const result = await generateInterviewQuestions(position, skills);
+      setQuestions(result);
+    } catch {
+      // silencia
+    } finally {
+      setIsLoadingQuestions(false);
     }
   };
 
@@ -231,6 +248,31 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
                   </div>
                 </div>
               )}
+
+              {/* Interview Questions */}
+              <div>
+                <button
+                  onClick={handleInterviewQuestions}
+                  disabled={isLoadingQuestions}
+                  className="w-full py-3 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700/40 text-violet-700 dark:text-violet-400 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <i className={`fas ${isLoadingQuestions ? 'fa-circle-notch fa-spin' : 'fa-comments'}`}></i>
+                  {isLoadingQuestions ? 'Gerando...' : '🎤 Perguntas de Entrevista'}
+                </button>
+                {questions.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <i className="fas fa-comments text-violet-600"></i> Perguntas Prováveis
+                    </h4>
+                    {questions.map((q, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 bg-violet-50 dark:bg-violet-900/10 rounded-xl border border-violet-100 dark:border-violet-800/30">
+                        <span className="w-5 h-5 bg-violet-100 dark:bg-violet-900/40 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-violet-600 text-[9px] font-black">{i+1}</span>
+                        <p className="text-sm text-slate-700 dark:text-slate-300">{q}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Reanalyze */}
               <button

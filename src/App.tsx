@@ -459,7 +459,9 @@ export default function App() {
     
     setIsImporting(true);
     try {
-      const parsedData = await parseResumeWithAI(importText);
+      // Limita o texto a 15.000 caracteres para evitar estourar a cota da API Gemini
+      const limitedText = importText.trim().slice(0, 15000);
+      const parsedData = await parseResumeWithAI(limitedText);
       updateData({
         ...INITIAL_RESUME_DATA,
         ...parsedData,
@@ -1137,7 +1139,7 @@ export default function App() {
           <div class="meta">${escapeHtml(data.personalInfo?.email || '')} · ${escapeHtml(data.personalInfo?.phone || '')}</div>
         </div>
         <div class="date">${new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-        ${clResult.split('\n\n').map(p => `<p>${p.replace(/\n/g,' ')}</p>`).join('')}
+        ${clResult.split('\n\n').map(p => `<p>${p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,' ')}</p>`).join('')}
         </body></html>
       `);
       w.document.close();

@@ -13,7 +13,7 @@ export const enhanceTextStream = async (text: string, context: string, onUpdate:
   const ai = getAI();
   try {
     const response = await ai.models.generateContentStream({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { 
         parts: [{ 
           text: `Melhore este texto: "${text}"` 
@@ -44,7 +44,7 @@ export const enhanceText = async (text: string, context: string): Promise<string
   const ai = getAI();
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { 
         parts: [{ 
           text: `Melhore este texto: "${text}"` 
@@ -69,7 +69,7 @@ export const generateSummaryStream = async (jobTitle: string, skills: string[], 
     const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
     
     const response = await ai.models.generateContentStream({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { parts: [{ text: prompt }] },
       config: {
         systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
@@ -95,7 +95,7 @@ export const generateSummary = async (jobTitle: string, skills: string[], experi
     const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
     
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { parts: [{ text: prompt }] },
       config: {
         systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
@@ -113,7 +113,7 @@ export const suggestSkills = async (jobTitle: string): Promise<string[]> => {
   const ai = getAI();
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { 
         parts: [{ 
           text: `Sugira competências para ${jobTitle}.` 
@@ -160,7 +160,7 @@ export const generateCoverLetterStream = async (
   `;
   try {
     const response = await ai.models.generateContentStream({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { parts: [{ text: prompt }] },
       config: {
         systemInstruction: `Você é um especialista em redação de cartas de apresentação profissionais para o mercado brasileiro. Escreva uma carta completa com: saudação, parágrafo de abertura impactante, 2 parágrafos de experiências e valor, encerramento com call-to-action. Use o nome do candidato. Sem títulos ou cabeçalhos — apenas o corpo da carta. Máximo de 4 parágrafos, 250-350 palavras.`,
@@ -234,11 +234,11 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
       }
 
       Texto do Currículo:
-      "${text}"
+      "${text.slice(0, 12000)}"
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { parts: [{ text: prompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -296,7 +296,7 @@ Critérios de pontuação ATS:
 Penalize: falta de palavras-chave, texto vago, ausência de datas, seções incompletas.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { parts: [{ text: prompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -318,7 +318,7 @@ export const generateInterviewQuestions = async (position: string, skills: strin
   const ai = getAI();
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: { parts: [{ text: `Gere 5 perguntas de entrevista para o cargo "${position}" com habilidades: ${skills.join(', ')}` }] },
       config: {
         systemInstruction: 'Retorne exatamente 5 perguntas de entrevista relevantes para o cargo e habilidades mencionados, focadas no mercado brasileiro. Retorne apenas as perguntas, uma por linha, sem numeração ou marcadores.',
