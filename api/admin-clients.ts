@@ -186,6 +186,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
 
+  // ── GET: status do cliente (público) — ?status=<uid> ──────────────
+  // Chamado pelo app no login para verificar se o dono ativou um plano manualmente
+  if (req.method === 'GET' && req.query.status) {
+    const uid = String(req.query.status).slice(0, 128);
+    if (!uid) return res.status(400).json({ error: 'uid inválido.' });
+
+    try {
+      const db  = await getDb();
+      const doc = await db.collection(CLIENTS_COLLECTION).doc(uid).get();
+
+      if (!doc.exists) return res.status(200).json({ found: false });
+
+      const d = doc.data();
+      return res.status(200).json({
+        found:       true,
+        plan:        d.plan        ?? null,
+        isVip:       d.isVip       ?? false,
+        isExpired:   d.isExpired   ?? false,
+        activatedAt: d.activatedAt ?? null,
+        expiresAt:   d.expiresAt   ?? null,
+        paymentId:   d.paymentId   ?? null,
+      });
+    } catch (e: any) {
+      console.error('[status-check]', e.message);
+      return res.status(200).json({ found: false }); // falha silenciosa
+    }
+  }
+
   // ── GET: lista clientes (admin) ────────────────────────────────────
   if (req.method === 'GET') {
     const ownerSecret = process.env.OWNER_SECRET;
