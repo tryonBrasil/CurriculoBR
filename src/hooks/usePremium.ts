@@ -164,8 +164,41 @@ export function usePremium() {
         setState(loadState());
         return true;
       }
-    } catch { /* falha silenciosa — não priva acesso por erro de rede */ }
+    } catch { /* falha silenciosa */ }
     return false;
+  };
+
+  // Consulta o servidor para ver se o dono ativou um plano manualmente.
+  // Se o servidor tiver um plano ativo que o localStorage não tem, aplica localmente.
+  const syncPlanFromServer = async (uid: string): Promise<void> => {
+    if (!uid) return;
+    try {
+      const res = await fetch(`/api/admin-clients?status=${encodeURIComponent(uid)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (!data.found || !data.isVip || data.isExpired) return;
+
+      // Servidor tem plano ativo — verifica se o local já tem algo equivalente
+      const localRaw = localStorage.getItem(STORAGE_KEY);
+      const local = localRaw ? JSON.parse(localRaw) : null;
+
+      // Só aplica se o local estiver sem plano ou com plano diferente/menor
+      const serverPlanRank: Record<string, number> = { avulso: 1, monthly: 2, yearly: 3, lifetime: 4 };
+      const serverRank = serverPlanRank[data.plan] ?? 0;
+      const localRank  = local?.plan ? (serverPlanRank[local.plan] ?? 0) : 0;
+
+      if (serverRank > localRank || !local) {
+        // Converte activatedAt do servidor (ISO string) para timestamp numérico
+        const activatedAt = data.activatedAt ? new Date(data.activatedAt).getTime() : Date.now();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          plan:        data.plan,
+          activatedAt,
+          paymentId:   data.paymentId ?? 'server_sync',
+        }));
+        setState(loadState());
+      }
+    } catch { /* falha silenciosa */ }
   };
 
   // Sincroniza os dados do cliente (perfil + status VIP) com o Firestore via /api/admin-clients.
@@ -216,6 +249,7 @@ export function usePremium() {
     ownerUnlock,
     toggleOwnerAccess,
     checkAndRevokeIfBlocked,
+    syncPlanFromServer,
     syncClientToServer,
     unlockForTesting: () => unlock('lifetime', 'test'),
   };
