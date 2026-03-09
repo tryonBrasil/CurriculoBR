@@ -198,15 +198,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (!doc.exists) return res.status(200).json({ found: false });
 
-      const d = doc.data();
+      const d = doc.data() ?? {};
       return res.status(200).json({
         found:       true,
-        plan:        d.plan        ?? null,
-        isVip:       d.isVip       ?? false,
-        isExpired:   d.isExpired   ?? false,
-        activatedAt: d.activatedAt ?? null,
-        expiresAt:   d.expiresAt   ?? null,
-        paymentId:   d.paymentId   ?? null,
+        plan:        d['plan']        ?? null,
+        isVip:       d['isVip']       ?? false,
+        isExpired:   d['isExpired']   ?? false,
+        activatedAt: d['activatedAt'] ?? null,
+        expiresAt:   d['expiresAt']   ?? null,
+        paymentId:   d['paymentId']   ?? null,
       });
     } catch (e: any) {
       console.error('[status-check]', e.message);
