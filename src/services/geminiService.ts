@@ -1,9 +1,13 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+// Modelos em ordem de preferência:
+// 1. gemini-3-flash-preview — mais capaz, mas em preview (pode retornar 503 em picos de demanda)
+// 2. gemini-2.5-flash       — estável, produção, fallback automático quando o preview estiver sobrecarregado
+const PRIMARY_MODEL   = 'gemini-3-flash-preview';
+const FALLBACK_MODEL  = 'gemini-2.5-flash';
+
 const getAI = () => {
-  // process.env.API_KEY é injetado pelo vite.config.ts via `define` a partir de VITE_GEMINI_API_KEY.
-  // Se estiver vazio/ausente, lança erro claro ao invés de falhar silenciosamente com HTTP 400/401.
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -14,6 +18,28 @@ const getAI = () => {
     );
   }
   return new GoogleGenAI({ apiKey });
+};
+
+// Retorna true se o erro é um 503 (modelo sobrecarregado/indisponível) — aciona o fallback
+const isOverloadError = (e: unknown): boolean => {
+  const msg = String((e as any)?.message ?? e);
+  const status = (e as any)?.status ?? (e as any)?.code;
+  return status === 503 || msg.includes('503') || msg.includes('overloaded') || msg.includes('high demand') || msg.includes('temporarily unavailable');
+};
+
+// Escolhe o modelo correto: tenta o primário, usa o fallback em caso de 503
+const withModelFallback = async <T>(
+  fn: (model: string) => Promise<T>
+): Promise<T> => {
+  try {
+    return await fn(PRIMARY_MODEL);
+  } catch (e) {
+    if (isOverloadError(e)) {
+      console.warn(`[Gemini] ${PRIMARY_MODEL} sobrecarregado (503). Usando fallback: ${FALLBACK_MODEL}`);
+      return await fn(FALLBACK_MODEL);
+    }
+    throw e;
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -48,22 +74,27 @@ export const enhanceTextStream = async (
   if (!text) return;
   const ai = getAI();
 
-  // BUG 1 FIX: thinkingConfig removido (não suportado pelo gemini-2.0-flash)
-  // BUG 3 FIX: sem try/catch — relança o erro para o App.tsx exibir showToast
-  const response = await ai.models.generateContentStream({
-    model: 'gemini-3-flash-preview',
-    contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }], // BUG 2 FIX
-    config: {
-      systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
-    },
-  });
-
-  let accumulated = '';
-  for await (const chunk of response) {
-    if (chunk.text) {
-      accumulated += chunk.text;
-      onUpdate(accumulated);
+  // Tenta o modelo primário (gemini-3-flash-preview); se cair 503, usa o fallback (gemini-2.5-flash)
+  const tryStream = async (model: string) => {
+    const response = await ai.models.generateContentStream({
+      model,
+      contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }],
+      config: {
+        systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
+      },
+    });
+    let accumulated = '';
+    for await (const chunk of response) {
+      if (chunk.text) { accumulated += chunk.text; onUpdate(accumulated); }
     }
+  };
+  try {
+    await tryStream(PRIMARY_MODEL);
+  } catch (e) {
+    if (isOverloadError(e)) {
+      console.warn(`[Gemini] ${PRIMARY_MODEL} sobrecarregado. Usando fallback: ${FALLBACK_MODEL}`);
+      await tryStream(FALLBACK_MODEL);
+    } else { throw e; }
   }
 };
 
@@ -71,13 +102,15 @@ export const enhanceText = async (text: string, context: string): Promise<string
   if (!text) return text;
   const ai = getAI();
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }],
-      config: {
-        systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
-      },
-    });
+    const response = await withModelFallback(model =>
+      ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }],
+        config: {
+          systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
+        },
+      })
+    );
     return response.text?.trim() || text;
   } catch (error) {
     console.error("Erro Gemini (Enhance):", error);
@@ -95,13 +128,15 @@ export const generateSummaryStream = async (
   const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
 
   // BUG 1 FIX + BUG 2 FIX
-  const response = await ai.models.generateContentStream({
-    model: 'gemini-3-flash-preview',
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    config: {
-      systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
-    },
-  });
+  const response = await withModelFallback(model =>
+    ai.models.generateContentStream({
+      model,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
+      },
+    })
+  );
 
   let accumulated = '';
   for await (const chunk of response) {
@@ -116,13 +151,15 @@ export const generateSummary = async (jobTitle: string, skills: string[], experi
   const ai = getAI();
   try {
     const prompt = `Escreva um resumo para um ${jobTitle}. Habilidades: ${skills.join(', ')}. Experiências: ${experiences.join('; ')}.`;
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
-      },
-    });
+    const response = await withModelFallback(model =>
+      ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          systemInstruction: "Escreva um resumo profissional atraente de 2 a 3 frases. Use um tom profissional, focado em resultados e competências.",
+        },
+      })
+    );
     return response.text?.trim() || '';
   } catch (error) {
     console.error("Erro Gemini (Summary):", error);
@@ -133,14 +170,15 @@ export const generateSummary = async (jobTitle: string, skills: string[], experi
 export const suggestSkills = async (jobTitle: string): Promise<string[]> => {
   const ai = getAI();
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: `Sugira competências para ${jobTitle}.` }] }],
-      config: {
-        systemInstruction: "Sugira exatamente 10 habilidades (técnicas e interpessoais) fundamentais. Retorne apenas os nomes das habilidades separados por vírgula, sem explicações ou numeração.",
-        // BUG 1 FIX: thinkingConfig removido
-      },
-    });
+    const response = await withModelFallback(model =>
+      ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: `Sugira competências para ${jobTitle}.` }] }],
+        config: {
+          systemInstruction: "Sugira exatamente 10 habilidades (técnicas e interpessoais) fundamentais. Retorne apenas os nomes das habilidades separados por vírgula, sem explicações ou numeração.",
+        },
+      })
+    );
     const skillsText = response.text || '';
     return skillsText.split(',').map(s => s.trim()).filter(Boolean);
   } catch (error) {
@@ -178,13 +216,15 @@ export const generateCoverLetterStream = async (
 
   try {
     // BUG 1 FIX + BUG 2 FIX
-    const response = await ai.models.generateContentStream({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        systemInstruction: `Você é um especialista em redação de cartas de apresentação profissionais para o mercado brasileiro. Escreva uma carta completa com: saudação, parágrafo de abertura impactante, 2 parágrafos de experiências e valor, encerramento com call-to-action. Use o nome do candidato. Sem títulos ou cabeçalhos — apenas o corpo da carta. Máximo de 4 parágrafos, 250-350 palavras.`,
-      },
-    });
+    const response = await withModelFallback(model =>
+      ai.models.generateContentStream({
+        model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          systemInstruction: `Você é um especialista em redação de cartas de apresentação profissionais para o mercado brasileiro. Escreva uma carta completa com: saudação, parágrafo de abertura impactante, 2 parágrafos de experiências e valor, encerramento com call-to-action. Use o nome do candidato. Sem títulos ou cabeçalhos — apenas o corpo da carta. Máximo de 4 parágrafos, 250-350 palavras.`,
+        },
+      })
+    );
     let accumulated = '';
     for await (const chunk of response) {
       if (chunk.text) { accumulated += chunk.text; onUpdate(accumulated); }
@@ -233,13 +273,15 @@ export const parseResumeWithAI = async (text: string): Promise<any> => {
     `;
 
     // BUG 1 FIX + BUG 2 FIX
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        responseMimeType: 'application/json',
-      },
-    });
+    const response = await withModelFallback(model =>
+      ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          responseMimeType: 'application/json',
+        },
+      })
+    );
 
     if (response.text) {
       // BUG 4 FIX: remove markdown fences que o modelo pode incluir mesmo com responseMimeType json
@@ -296,13 +338,15 @@ Critérios de pontuação ATS:
 Penalize: falta de palavras-chave, texto vago, ausência de datas, seções incompletas.`;
 
     // BUG 1 FIX + BUG 2 FIX
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        responseMimeType: 'application/json',
-      },
-    });
+    const response = await withModelFallback(model =>
+      ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          responseMimeType: 'application/json',
+        },
+      })
+    );
 
     if (response.text) {
       // BUG 4 FIX: sanitiza possíveis markdown fences
@@ -322,14 +366,15 @@ Penalize: falta de palavras-chave, texto vago, ausência de datas, seções inco
 export const generateInterviewQuestions = async (position: string, skills: string[]): Promise<string[]> => {
   const ai = getAI();
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: `Gere 5 perguntas de entrevista para o cargo "${position}" com habilidades: ${skills.join(', ')}` }] }],
-      config: {
-        systemInstruction: 'Retorne exatamente 5 perguntas de entrevista relevantes para o cargo e habilidades mencionados, focadas no mercado brasileiro. Retorne apenas as perguntas, uma por linha, sem numeração ou marcadores.',
-        // BUG 1 FIX: thinkingConfig removido
-      },
-    });
+    const response = await withModelFallback(model =>
+      ai.models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: `Gere 5 perguntas de entrevista para o cargo "${position}" com habilidades: ${skills.join(', ')}` }] }],
+        config: {
+          systemInstruction: 'Retorne exatamente 5 perguntas de entrevista relevantes para o cargo e habilidades mencionados, focadas no mercado brasileiro. Retorne apenas as perguntas, uma por linha, sem numeração ou marcadores.',
+        },
+      })
+    );
     const text = response.text || '';
     return text.split('\n').filter(q => q.trim().length > 0).slice(0, 5);
   } catch (error) {
