@@ -100,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       plan           = premium.plan;
       paymentId      = premium.paymentId ?? null;
       activatedAtISO = premium.activatedAt ? new Date(premium.activatedAt).toISOString() : null;
-      const expiresAt = getExpiresAt(plan, premium.activatedAt ?? Date.now());
+      const expiresAt = plan ? getExpiresAt(plan, premium.activatedAt ?? Date.now()) : null;
 
       if (plan === 'lifetime') {
         isVip = true; isExpired = false;
