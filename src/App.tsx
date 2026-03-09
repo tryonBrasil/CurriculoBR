@@ -209,6 +209,7 @@ export default function App() {
   const [ownerError, setOwnerError]                 = useState('');
   const [ownerAuthenticated, setOwnerAuthenticated] = useState(false);
   const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'bloqueados' | 'clientes'>('acesso');
+  const ownerLongPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   // VIP management state
   const [vipBlockList, setVipBlockList]             = useState<any[]>([]);
   const [vipBlockLoading, setVipBlockLoading]       = useState(false);
@@ -245,6 +246,23 @@ export default function App() {
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
+
+  // Toque longo no logo (mobile): segure 2s para abrir o painel do dono
+  const logoTouchTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoTouchStart = () => {
+    logoTouchTimer.current = setTimeout(() => {
+      setIsOwnerModalOpen(true);
+    }, 2000);
+  };
+
+  const handleLogoTouchEnd = () => {
+    if (logoTouchTimer.current) {
+      clearTimeout(logoTouchTimer.current);
+      logoTouchTimer.current = null;
+    }
+  };
+
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
   
@@ -1107,7 +1125,7 @@ export default function App() {
                     >
                       <i className="fas fa-sign-out-alt text-xs"></i> Sair do painel
                     </button>
-                    <p className="text-center text-[9px] text-slate-700 uppercase tracking-widest">Ctrl+Shift+O para fechar</p>
+                    <p className="text-center text-[9px] text-slate-700 uppercase tracking-widest">Ctrl+Shift+O · Segure o logo 3s no mobile</p>
                   </div>
                 )}
 
@@ -1682,7 +1700,12 @@ export default function App() {
         {/* Header */}
         <header className="h-20 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
-            <span className="logo-nav inline-flex items-center gap-2">
+            <span
+              className="logo-nav inline-flex items-center gap-2 select-none"
+              onTouchStart={handleLogoTouchStart}
+              onTouchEnd={handleLogoTouchEnd}
+              onTouchCancel={handleLogoTouchEnd}
+            >
               <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
               <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
             </span>
@@ -2171,7 +2194,12 @@ export default function App() {
              <span className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 hidden sm:block">Voltar</span>
           </div>
           <div className="text-center flex flex-col items-center">
-            <span className="logo-nav inline-flex items-center gap-2">
+            <span
+              className="logo-nav inline-flex items-center gap-2 select-none"
+              onTouchStart={handleLogoTouchStart}
+              onTouchEnd={handleLogoTouchEnd}
+              onTouchCancel={handleLogoTouchEnd}
+            >
               <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
               <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
             </span>
