@@ -170,8 +170,11 @@ export function usePremium() {
 
   // Consulta o servidor para ver se o dono ativou um plano manualmente.
   // Se o servidor tiver um plano ativo que o localStorage não tem, aplica localmente.
+  // Ignorado se o usuário for o próprio dono (cbr_owner_v1 = true).
   const syncPlanFromServer = async (uid: string): Promise<void> => {
     if (!uid) return;
+    // Dono não precisa de sync — ele controla o próprio acesso pelo toggle
+    if (localStorage.getItem(OWNER_KEY) === 'true') return;
     try {
       const res = await fetch(`/api/admin-clients?status=${encodeURIComponent(uid)}`);
       if (!res.ok) return;
