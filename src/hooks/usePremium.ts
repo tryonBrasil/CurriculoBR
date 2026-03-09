@@ -193,13 +193,28 @@ export function usePremium() {
     } catch { /* falha silenciosa — não interrompe o fluxo do usuário */ }
   };
 
+  // Liga/desliga o acesso de dono sem sair do painel
+  const toggleOwnerAccess = useCallback(() => {
+    const current = localStorage.getItem(OWNER_KEY) === 'true';
+    if (current) {
+      localStorage.removeItem(OWNER_KEY);
+    } else {
+      localStorage.setItem(OWNER_KEY, 'true');
+    }
+    setState(loadState());
+  }, []);
+
+  const isOwnerAccessActive = localStorage.getItem(OWNER_KEY) === 'true';
+
   return {
     ...state,
     isVerifying,
+    isOwnerAccessActive,
     unlock,
     verifyAndUnlock,
     revokePremium,
     ownerUnlock,
+    toggleOwnerAccess,
     checkAndRevokeIfBlocked,
     syncClientToServer,
     unlockForTesting: () => unlock('lifetime', 'test'),
