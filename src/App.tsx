@@ -171,7 +171,7 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, checkAndRevokeIfBlocked, syncClientToServer } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, toggleOwnerAccess, isOwnerAccessActive, checkAndRevokeIfBlocked, syncClientToServer } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
@@ -222,6 +222,9 @@ export default function App() {
   const [clientsStats, setClientsStats]             = useState<any>(null);
   const [clientsFilter, setClientsFilter]           = useState<'todos'|'vip'|'expirado'|'free'>('todos');
   const [clientsSearch, setClientsSearch]           = useState('');
+  const [editingClientUid, setEditingClientUid]     = useState<string | null>(null);
+  const [editPlanValue, setEditPlanValue]           = useState<string>('free');
+  const [editPlanLoading, setEditPlanLoading]       = useState(false);
   // Clients list tab
   const [clientList, setClientList]                 = useState<any[]>([]);
   const [clientStats, setClientStats]               = useState<any>(null);
@@ -451,6 +454,30 @@ export default function App() {
       showToast(e.message || 'Erro ao carregar clientes.', 'error');
     } finally {
       setClientsLoading(false);
+    }
+  };
+
+  // ── Set Client Plan ────────────────────────────────────────────────
+  const handleSetClientPlan = async (uid: string) => {
+    setEditPlanLoading(true);
+    try {
+      const res = await fetch('/api/admin-clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerSecret}` },
+        body: JSON.stringify({ action: 'set-plan', uid, plan: editPlanValue }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || '✅ Plano atualizado!', 'success');
+        setEditingClientUid(null);
+        await handleLoadClients();
+      } else {
+        showToast(data.error || 'Erro ao atualizar plano.', 'error');
+      }
+    } catch {
+      showToast('Erro de conexão.', 'error');
+    } finally {
+      setEditPlanLoading(false);
     }
   };
 
@@ -1052,13 +1079,28 @@ export default function App() {
                 {/* ── Tab: Acesso ── */}
                 {ownerTab === 'acesso' && (
                   <div className="space-y-3">
-                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3">
-                      <i className="fas fa-check-circle text-amber-400 text-lg"></i>
-                      <div>
-                        <p className="text-sm font-black text-amber-400">Acesso de Dono Ativo</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">Todos os 15 templates desbloqueados.</p>
+
+                    {/* Toggle de acesso de dono */}
+                    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-sm font-black text-white">Acesso de Dono</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Desbloqueia todos os 15 templates</p>
+                        </div>
+                        {/* Toggle switch */}
+                        <button
+                          onClick={toggleOwnerAccess}
+                          className={`relative w-12 h-6 rounded-full transition-all duration-300 focus:outline-none ${isOwnerAccessActive ? 'bg-amber-500' : 'bg-slate-600'}`}
+                        >
+                          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300 ${isOwnerAccessActive ? 'left-6' : 'left-0.5'}`} />
+                        </button>
+                      </div>
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-black transition-all ${isOwnerAccessActive ? 'bg-amber-500/10 text-amber-400' : 'bg-slate-700/50 text-slate-500'}`}>
+                        <i className={`fas ${isOwnerAccessActive ? 'fa-crown' : 'fa-lock'} text-[10px]`}></i>
+                        {isOwnerAccessActive ? 'Ativo — todos os templates liberados' : 'Inativo — templates bloqueados normalmente'}
                       </div>
                     </div>
+
                     <button
                       onClick={() => { setOwnerAuthenticated(false); setOwnerSecret(''); setOwnerTab('acesso'); }}
                       className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
@@ -1283,36 +1325,79 @@ export default function App() {
 
                       return (
                         <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
-                          {filtered.map((c: any) => {
-                            const pl = planLabel(c);
+                          {filtered.map((cl: any) => {
+                            const pl = planLabel(cl);
+                            const isEditing = editingClientUid === cl.uid;
                             return (
-                              <div key={c.uid} className="flex items-center gap-3 bg-slate-800 rounded-xl p-3 border border-slate-700 hover:border-slate-600 transition-colors">
-                                {/* Avatar */}
-                                {c.photoURL
-                                  ? <img src={c.photoURL} alt="" className="w-9 h-9 rounded-full shrink-0 object-cover" />
-                                  : <div className="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center shrink-0 text-slate-400 text-sm font-black">
-                                      {(c.displayName || c.email || '?')[0].toUpperCase()}
+                              <div key={cl.uid} className="bg-slate-800 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors overflow-hidden">
+                                {/* Main row */}
+                                <div className="flex items-center gap-3 p-3">
+                                  {/* Avatar */}
+                                  {cl.photoURL
+                                    ? <img src={cl.photoURL} alt="" className="w-9 h-9 rounded-full shrink-0 object-cover" />
+                                    : <div className="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center shrink-0 text-slate-400 text-sm font-black">
+                                        {(cl.displayName || cl.email || '?')[0].toUpperCase()}
+                                      </div>
+                                  }
+                                  {/* Info */}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-black text-white truncate">{cl.displayName || '—'}</p>
+                                    <p className="text-[9px] text-slate-500 truncate">{cl.email || cl.uid}</p>
+                                    {cl.expiresAt && cl.isVip && (
+                                      <p className="text-[8px] text-slate-600 mt-0.5">Expira {new Date(cl.expiresAt).toLocaleDateString('pt-BR')}</p>
+                                    )}
+                                  </div>
+                                  {/* Plan badge */}
+                                  <div className={`shrink-0 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${pl.bg} ${pl.color} border border-slate-700`}>
+                                    {pl.icon} {pl.text}
+                                  </div>
+                                  {/* Edit button */}
+                                  <button
+                                    onClick={() => {
+                                      if (isEditing) { setEditingClientUid(null); return; }
+                                      setEditingClientUid(cl.uid);
+                                      setEditPlanValue(cl.plan || 'free');
+                                    }}
+                                    className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all ${isEditing ? 'bg-amber-500 text-black' : 'bg-slate-700 text-slate-400 hover:text-amber-400 hover:bg-slate-600'}`}
+                                    title="Editar plano"
+                                  >
+                                    <i className={`fas ${isEditing ? 'fa-times' : 'fa-pen'} text-[10px]`}></i>
+                                  </button>
+                                </div>
+
+                                {/* Inline edit panel */}
+                                {isEditing && (
+                                  <div className="px-3 pb-3 border-t border-slate-700 pt-3">
+                                    <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-2 font-black">Alterar plano</p>
+                                    <div className="grid grid-cols-3 gap-1.5 mb-3">
+                                      {([
+                                        { value: 'free',     label: '🆓 Free',      color: 'border-slate-600 text-slate-400' },
+                                        { value: 'avulso',   label: '⚡ 7 Dias',    color: 'border-cyan-600 text-cyan-400'   },
+                                        { value: 'monthly',  label: '🗓️ Mensal',   color: 'border-violet-600 text-violet-400'},
+                                        { value: 'yearly',   label: '📅 Anual',     color: 'border-blue-600 text-blue-400'   },
+                                        { value: 'lifetime', label: '👑 Vitalício', color: 'border-amber-500 text-amber-400' },
+                                      ]).map(opt => (
+                                        <button
+                                          key={opt.value}
+                                          onClick={() => setEditPlanValue(opt.value)}
+                                          className={`py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all ${editPlanValue === opt.value ? 'bg-amber-500 border-amber-500 text-black' : `bg-slate-900 ${opt.color} hover:brightness-125`}`}
+                                        >
+                                          {opt.label}
+                                        </button>
+                                      ))}
                                     </div>
-                                }
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-black text-white truncate">{c.displayName || '—'}</p>
-                                  <p className="text-[9px] text-slate-500 truncate">{c.email || c.uid}</p>
-                                  {c.expiresAt && c.isVip && (
-                                    <p className="text-[8px] text-slate-600 mt-0.5">
-                                      Expira {new Date(c.expiresAt).toLocaleDateString('pt-BR')}
-                                    </p>
-                                  )}
-                                  {c.lastSeen && (
-                                    <p className="text-[8px] text-slate-700 mt-0.5">
-                                      Visto {new Date(c.lastSeen).toLocaleDateString('pt-BR')}
-                                    </p>
-                                  )}
-                                </div>
-                                {/* Plan badge */}
-                                <div className={`shrink-0 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${pl.bg} ${pl.color} border border-slate-700`}>
-                                  {pl.icon} {pl.text}
-                                </div>
+                                    <button
+                                      onClick={() => handleSetClientPlan(cl.uid)}
+                                      disabled={editPlanLoading}
+                                      className="w-full py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black rounded-lg font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                                    >
+                                      {editPlanLoading
+                                        ? <><i className="fas fa-circle-notch fa-spin"></i> Salvando...</>
+                                        : <><i className="fas fa-save"></i> Salvar alteração</>
+                                      }
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
