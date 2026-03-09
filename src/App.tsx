@@ -171,12 +171,21 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, checkAndRevokeIfBlocked } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
   // ── Auth + Cloud Save ──────────────────────────────────────────────
   const { user, signInWithGoogle, signOut } = useAuth();
+
+  // Quando o usuário faz login, verifica se está bloqueado no servidor
+  React.useEffect(() => {
+    if (user?.uid) {
+      checkAndRevokeIfBlocked(user.uid).then(blocked => {
+        if (blocked) showToast('⛔ Seu acesso Premium foi revogado pelo administrador.', 'error');
+      });
+    }
+  }, [user?.uid]);
   const { saving: cloudSaving, loading: cloudLoading, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
 
   // ID do currículo aberto da nuvem (null = não salvo ainda / só local)
@@ -192,10 +201,19 @@ export default function App() {
   const [isCloudResumesOpen, setIsCloudResumesOpen]     = useState(false);
 
   // Modal secreto do dono (ativado com Ctrl+Shift+O)
-  const [isOwnerModalOpen, setIsOwnerModalOpen] = useState(false);
-  const [ownerSecret, setOwnerSecret] = useState('');
-  const [ownerLoading, setOwnerLoading] = useState(false);
-  const [ownerError, setOwnerError] = useState('');
+  const [isOwnerModalOpen, setIsOwnerModalOpen]     = useState(false);
+  const [ownerSecret, setOwnerSecret]               = useState('');
+  const [ownerLoading, setOwnerLoading]             = useState(false);
+  const [ownerError, setOwnerError]                 = useState('');
+  const [ownerAuthenticated, setOwnerAuthenticated] = useState(false);
+  const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'clientes'>('acesso');
+  // VIP management state
+  const [vipBlockList, setVipBlockList]             = useState<any[]>([]);
+  const [vipBlockLoading, setVipBlockLoading]       = useState(false);
+  const [vipUid, setVipUid]                         = useState('');
+  const [vipEmail, setVipEmail]                     = useState('');
+  const [vipReason, setVipReason]                   = useState('');
+  const [vipActionLoading, setVipActionLoading]     = useState<string | null>(null);
 
   // Atalho de teclado secreto para o modal do dono: Ctrl+Shift+O
   useEffect(() => {
@@ -328,6 +346,21 @@ export default function App() {
     };
   }, [data, template, fontSize, fontFamily, isDarkMode]);
 
+
+  // Helper: extrai mensagem útil de erros da API Gemini
+  const getAIErrorMessage = (err: any): string => {
+    const msg = err?.message || '';
+    if (msg.includes('VITE_GEMINI_API_KEY') || msg.includes('Chave da API')) {
+      return '❌ Chave da API Gemini não configurada. Configure VITE_GEMINI_API_KEY no Vercel.';
+    }
+    if (err?.status === 400 || err?.status === 401 || err?.status === 403 || msg.includes('API_KEY') || msg.includes('API key')) {
+      return '❌ Chave da API Gemini inválida ou sem permissão. Verifique em aistudio.google.com/app/apikey';
+    }
+    if (err?.status === 429) {
+      return '⚠️ Limite da API Gemini atingido. Aguarde alguns segundos e tente novamente.';
+    }
+    return 'Erro ao processar com IA. Tente novamente.';
+  };
   const showToast = (message: string, type: 'error' | 'success' = 'success') => {
     setToast({ message, type });
   };
@@ -381,11 +414,74 @@ export default function App() {
     const result = await ownerUnlock(ownerSecret);
     setOwnerLoading(false);
     if (result.ok) {
-      setIsOwnerModalOpen(false);
-      setOwnerSecret('');
+      setOwnerAuthenticated(true);
+      setOwnerTab('acesso');
       showToast('👑 Acesso de dono ativado! Todos os templates desbloqueados.', 'success');
     } else {
       setOwnerError(result.error || 'Erro desconhecido.');
+    }
+  };
+
+  // ── VIP Management ─────────────────────────────────────────────────
+  const handleLoadVipList = async () => {
+    setVipBlockLoading(true);
+    try {
+      const res = await fetch('/api/admin-vip', {
+        headers: { 'Authorization': `Bearer ${ownerSecret}` },
+      });
+      if (!res.ok) throw new Error('Falha ao carregar lista.');
+      const data = await res.json();
+      setVipBlockList(data.blocked || []);
+    } catch (e: any) {
+      showToast(e.message || 'Erro ao carregar lista de bloqueados.', 'error');
+    } finally {
+      setVipBlockLoading(false);
+    }
+  };
+
+  const handleVipBlock = async () => {
+    if (!vipUid.trim()) { showToast('UID é obrigatório.', 'error'); return; }
+    setVipActionLoading('block-new');
+    try {
+      const res = await fetch('/api/admin-vip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerSecret}` },
+        body: JSON.stringify({ action: 'block', uid: vipUid.trim(), email: vipEmail.trim(), reason: vipReason.trim() || 'Pagamento não realizado' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`🔒 VIP bloqueado com sucesso.`, 'success');
+        setVipUid(''); setVipEmail(''); setVipReason('');
+        await handleLoadVipList();
+      } else {
+        showToast(data.error || 'Erro ao bloquear.', 'error');
+      }
+    } catch {
+      showToast('Erro de conexão ao bloquear.', 'error');
+    } finally {
+      setVipActionLoading(null);
+    }
+  };
+
+  const handleVipUnblock = async (uid: string, email: string) => {
+    setVipActionLoading(uid);
+    try {
+      const res = await fetch('/api/admin-vip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerSecret}` },
+        body: JSON.stringify({ action: 'unblock', uid }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`✅ VIP de ${email || uid} liberado.`, 'success');
+        await handleLoadVipList();
+      } else {
+        showToast(data.error || 'Erro ao desbloquear.', 'error');
+      }
+    } catch {
+      showToast('Erro de conexão ao desbloquear.', 'error');
+    } finally {
+      setVipActionLoading(null);
     }
   };
 
@@ -667,9 +763,9 @@ export default function App() {
           }
       });
       showToast("Texto refinado pela IA!");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showToast("Erro ao processar a IA. Tente novamente.", "error");
+      showToast(getAIErrorMessage(err), "error");
     } finally {
       setIsEnhancing(null);
     }
@@ -686,9 +782,9 @@ export default function App() {
       });
       
       showToast("Resumo gerado com sucesso!");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showToast("Erro ao gerar resumo.", "error");
+      showToast(getAIErrorMessage(err), "error");
     } finally {
       setIsEnhancing(null);
     }
@@ -710,9 +806,9 @@ export default function App() {
         updateData(prev => ({ ...prev, skills: [...(prev.skills || []), ...newSkills] }));
         showToast("Habilidades sugeridas adicionadas.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showToast("Erro ao sugerir habilidades.", "error");
+      showToast(getAIErrorMessage(err), "error");
     } finally {
       setIsEnhancing(null);
     }
@@ -841,57 +937,204 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* Modal secreto do dono (Ctrl+Shift+O) */}
+      {/* ── Painel do Dono (Ctrl+Shift+O) ── */}
       {isOwnerModalOpen && (
         <div
           className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setIsOwnerModalOpen(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setIsOwnerModalOpen(false); setOwnerAuthenticated(false); } }}
         >
-          <div className="bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-700 p-6 animate-in zoom-in-95 duration-200">
+          <div className={`bg-slate-900 w-full rounded-2xl shadow-2xl border border-slate-700 p-6 animate-in zoom-in-95 duration-200 transition-all ${ownerAuthenticated ? 'max-w-xl' : 'max-w-sm'}`}>
+
+            {/* Header */}
             <div className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 bg-amber-500/20 rounded-xl flex items-center justify-center">
                 <i className="fas fa-crown text-amber-400 text-sm"></i>
               </div>
               <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-widest">Acesso do Dono</h3>
+                <h3 className="text-sm font-black text-white uppercase tracking-widest">Painel do Dono</h3>
                 <p className="text-[10px] text-slate-500">CurriculoGO · Admin</p>
               </div>
-              <button onClick={() => setIsOwnerModalOpen(false)} className="ml-auto text-slate-600 hover:text-slate-300 transition-colors">
+              <button onClick={() => { setIsOwnerModalOpen(false); setOwnerAuthenticated(false); }} className="ml-auto text-slate-600 hover:text-slate-300 transition-colors">
                 <i className="fas fa-times text-xs"></i>
               </button>
             </div>
 
-            <div className="relative mb-4">
-              <input
-                type="password"
-                autoFocus
-                value={ownerSecret}
-                onChange={e => { setOwnerSecret(e.target.value); setOwnerError(''); }}
-                onKeyDown={e => e.key === 'Enter' && !ownerLoading && handleOwnerUnlock()}
-                placeholder="Senha secreta..."
-                className="w-full bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all"
-              />
-              {ownerError && (
-                <p className="text-[10px] text-red-400 font-bold mt-2 flex items-center gap-1">
-                  <i className="fas fa-exclamation-circle"></i> {ownerError}
-                </p>
-              )}
-            </div>
+            {/* ── Tela de senha (não autenticado) ── */}
+            {!ownerAuthenticated && (
+              <>
+                <div className="relative mb-4">
+                  <input
+                    type="password"
+                    autoFocus
+                    value={ownerSecret}
+                    onChange={e => { setOwnerSecret(e.target.value); setOwnerError(''); }}
+                    onKeyDown={e => e.key === 'Enter' && !ownerLoading && handleOwnerUnlock()}
+                    placeholder="Senha secreta..."
+                    className="w-full bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all"
+                  />
+                  {ownerError && (
+                    <p className="text-[10px] text-red-400 font-bold mt-2 flex items-center gap-1">
+                      <i className="fas fa-exclamation-circle"></i> {ownerError}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={handleOwnerUnlock}
+                  disabled={ownerLoading || !ownerSecret.trim()}
+                  className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                >
+                  {ownerLoading
+                    ? <><i className="fas fa-circle-notch fa-spin"></i> Verificando...</>
+                    : <><i className="fas fa-unlock-alt"></i> Entrar no Painel</>
+                  }
+                </button>
+                <p className="text-center text-[9px] text-slate-700 mt-4 uppercase tracking-widest">Ctrl+Shift+O para fechar</p>
+              </>
+            )}
 
-            <button
-              onClick={handleOwnerUnlock}
-              disabled={ownerLoading || !ownerSecret.trim()}
-              className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-            >
-              {ownerLoading
-                ? <><i className="fas fa-circle-notch fa-spin"></i> Verificando...</>
-                : <><i className="fas fa-unlock-alt"></i> Desbloquear</>
-              }
-            </button>
+            {/* ── Painel completo (autenticado) ── */}
+            {ownerAuthenticated && (
+              <>
+                {/* Tabs */}
+                <div className="flex gap-1 bg-slate-800 rounded-xl p-1 mb-5">
+                  <button
+                    onClick={() => setOwnerTab('acesso')}
+                    className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${ownerTab === 'acesso' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <i className="fas fa-unlock-alt text-[10px]"></i> Acesso
+                  </button>
+                  <button
+                    onClick={() => { setOwnerTab('clientes'); handleLoadVipList(); }}
+                    className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${ownerTab === 'clientes' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <i className="fas fa-users text-[10px]"></i> Clientes VIP
+                  </button>
+                </div>
 
-            <p className="text-center text-[9px] text-slate-700 mt-4 uppercase tracking-widest">
-              Ctrl+Shift+O para fechar
-            </p>
+                {/* ── Tab: Acesso ── */}
+                {ownerTab === 'acesso' && (
+                  <div className="space-y-3">
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3">
+                      <i className="fas fa-check-circle text-amber-400 text-lg"></i>
+                      <div>
+                        <p className="text-sm font-black text-amber-400">Acesso de Dono Ativo</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">Todos os 15 templates desbloqueados.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setOwnerAuthenticated(false); setOwnerSecret(''); setOwnerTab('acesso'); }}
+                      className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    >
+                      <i className="fas fa-sign-out-alt text-xs"></i> Sair do painel
+                    </button>
+                    <p className="text-center text-[9px] text-slate-700 uppercase tracking-widest">Ctrl+Shift+O para fechar</p>
+                  </div>
+                )}
+
+                {/* ── Tab: Clientes VIP ── */}
+                {ownerTab === 'clientes' && (
+                  <div className="space-y-4">
+
+                    {/* Formulário de bloqueio */}
+                    <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 space-y-3">
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <i className="fas fa-user-slash text-red-400"></i> Bloquear acesso VIP
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          value={vipUid}
+                          onChange={e => setVipUid(e.target.value)}
+                          placeholder="UID Firebase *"
+                          className="col-span-2 w-full bg-slate-900 border border-slate-700 focus:border-red-500 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 outline-none transition-all"
+                        />
+                        <input
+                          value={vipEmail}
+                          onChange={e => setVipEmail(e.target.value)}
+                          placeholder="E-mail (opcional)"
+                          className="w-full bg-slate-900 border border-slate-700 focus:border-red-500 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 outline-none transition-all"
+                        />
+                        <input
+                          value={vipReason}
+                          onChange={e => setVipReason(e.target.value)}
+                          placeholder="Motivo (ex: Chargeback)"
+                          className="w-full bg-slate-900 border border-slate-700 focus:border-red-500 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 outline-none transition-all"
+                        />
+                      </div>
+                      <p className="text-[9px] text-slate-600">* O UID aparece no Firebase Console → Authentication → Users</p>
+                      <button
+                        onClick={handleVipBlock}
+                        disabled={!vipUid.trim() || vipActionLoading !== null}
+                        className="w-full py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                      >
+                        {vipActionLoading === 'block-new'
+                          ? <><i className="fas fa-circle-notch fa-spin"></i> Bloqueando...</>
+                          : <><i className="fas fa-lock"></i> Bloquear VIP</>
+                        }
+                      </button>
+                    </div>
+
+                    {/* Lista de bloqueados */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <i className="fas fa-ban text-red-500"></i>
+                          Bloqueados ({vipBlockList.length})
+                        </h4>
+                        <button
+                          onClick={handleLoadVipList}
+                          disabled={vipBlockLoading}
+                          className="text-[9px] text-slate-500 hover:text-amber-400 transition-colors uppercase tracking-widest flex items-center gap-1"
+                        >
+                          <i className={`fas ${vipBlockLoading ? 'fa-circle-notch fa-spin' : 'fa-sync-alt'} text-[8px]`}></i>
+                          Atualizar
+                        </button>
+                      </div>
+
+                      {vipBlockLoading ? (
+                        <div className="text-center py-8">
+                          <i className="fas fa-circle-notch fa-spin text-slate-500 text-lg"></i>
+                          <p className="text-[10px] text-slate-600 mt-2 uppercase tracking-widest">Carregando...</p>
+                        </div>
+                      ) : vipBlockList.length === 0 ? (
+                        <div className="text-center py-8 border-2 border-dashed border-slate-700 rounded-xl">
+                          <i className="fas fa-check-circle text-green-500 text-2xl mb-2 block"></i>
+                          <p className="text-[10px] text-slate-500 uppercase tracking-widest">Nenhum cliente bloqueado</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                          {vipBlockList.map((u: any) => (
+                            <div key={u.uid} className="flex items-center gap-3 bg-slate-800 rounded-xl p-3 border border-slate-700 hover:border-slate-600 transition-colors">
+                              <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center shrink-0">
+                                <i className="fas fa-user-slash text-red-400 text-xs"></i>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-black text-white truncate">{u.email || '—'}</p>
+                                <p className="text-[9px] text-slate-500 truncate mt-0.5">
+                                  {u.reason} · {u.blockedAt ? new Date(u.blockedAt).toLocaleDateString('pt-BR') : ''}
+                                </p>
+                                <p className="text-[8px] text-slate-700 truncate font-mono mt-0.5">{u.uid}</p>
+                              </div>
+                              <button
+                                onClick={() => handleVipUnblock(u.uid, u.email)}
+                                disabled={vipActionLoading === u.uid}
+                                className="shrink-0 px-3 py-1.5 bg-green-600/20 hover:bg-green-600/40 text-green-400 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
+                                title="Liberar acesso VIP"
+                              >
+                                {vipActionLoading === u.uid
+                                  ? <i className="fas fa-circle-notch fa-spin text-[8px]"></i>
+                                  : <i className="fas fa-unlock text-[8px]"></i>
+                                }
+                                Liberar
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
