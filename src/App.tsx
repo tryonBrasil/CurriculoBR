@@ -208,7 +208,7 @@ export default function App() {
   const [ownerLoading, setOwnerLoading]             = useState(false);
   const [ownerError, setOwnerError]                 = useState('');
   const [ownerAuthenticated, setOwnerAuthenticated] = useState(false);
-  const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'clientes'>('acesso');
+  const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'bloqueados' | 'clientes'>('acesso');
   // VIP management state
   const [vipBlockList, setVipBlockList]             = useState<any[]>([]);
   const [vipBlockLoading, setVipBlockLoading]       = useState(false);
@@ -360,23 +360,6 @@ export default function App() {
     };
   }, [data, template, fontSize, fontFamily, isDarkMode]);
 
-
-  const handleLoadClients = async () => {
-    setClientLoading(true);
-    try {
-      const res = await fetch('/api/admin-clients', {
-        headers: { 'Authorization': `Bearer ${ownerSecret}` },
-      });
-      if (!res.ok) throw new Error('Falha ao carregar clientes.');
-      const data = await res.json();
-      setClientList(data.clients || []);
-      setClientStats(data.stats || null);
-    } catch (e: any) {
-      showToast(e.message || 'Erro ao carregar clientes.', 'error');
-    } finally {
-      setClientLoading(false);
-    }
-  };
 
   // Helper: extrai mensagem útil de erros da API Gemini
   const getAIErrorMessage = (err: any): string => {
