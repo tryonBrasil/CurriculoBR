@@ -171,19 +171,21 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, checkAndRevokeIfBlocked } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, checkAndRevokeIfBlocked, syncClientToServer } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
   // ── Auth + Cloud Save ──────────────────────────────────────────────
   const { user, signInWithGoogle, signOut } = useAuth();
 
-  // Quando o usuário faz login, verifica se está bloqueado no servidor
+  // Quando o usuário faz login: verifica bloqueio e sincroniza perfil+VIP com Firestore
   React.useEffect(() => {
     if (user?.uid) {
       checkAndRevokeIfBlocked(user.uid).then(blocked => {
         if (blocked) showToast('⛔ Seu acesso Premium foi revogado pelo administrador.', 'error');
       });
+      // Sincroniza perfil (e VIP se tiver) com o servidor para o painel do dono
+      syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
     }
   }, [user?.uid]);
   const { saving: cloudSaving, loading: cloudLoading, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
@@ -214,6 +216,18 @@ export default function App() {
   const [vipEmail, setVipEmail]                     = useState('');
   const [vipReason, setVipReason]                   = useState('');
   const [vipActionLoading, setVipActionLoading]     = useState<string | null>(null);
+  // Clients tab
+  const [clientsList, setClientsList]               = useState<any[]>([]);
+  const [clientsLoading, setClientsLoading]         = useState(false);
+  const [clientsStats, setClientsStats]             = useState<any>(null);
+  const [clientsFilter, setClientsFilter]           = useState<'todos'|'vip'|'expirado'|'free'>('todos');
+  const [clientsSearch, setClientsSearch]           = useState('');
+  // Clients list tab
+  const [clientList, setClientList]                 = useState<any[]>([]);
+  const [clientStats, setClientStats]               = useState<any>(null);
+  const [clientLoading, setClientLoading]           = useState(false);
+  const [clientSearch, setClientSearch]             = useState('');
+  const [clientFilter, setClientFilter]             = useState<'all' | 'vip' | 'expired' | 'blocked' | 'free'>('all');
 
   // Atalho de teclado secreto para o modal do dono: Ctrl+Shift+O
   useEffect(() => {
@@ -347,6 +361,23 @@ export default function App() {
   }, [data, template, fontSize, fontFamily, isDarkMode]);
 
 
+  const handleLoadClients = async () => {
+    setClientLoading(true);
+    try {
+      const res = await fetch('/api/admin-clients', {
+        headers: { 'Authorization': `Bearer ${ownerSecret}` },
+      });
+      if (!res.ok) throw new Error('Falha ao carregar clientes.');
+      const data = await res.json();
+      setClientList(data.clients || []);
+      setClientStats(data.stats || null);
+    } catch (e: any) {
+      showToast(e.message || 'Erro ao carregar clientes.', 'error');
+    } finally {
+      setClientLoading(false);
+    }
+  };
+
   // Helper: extrai mensagem útil de erros da API Gemini
   const getAIErrorMessage = (err: any): string => {
     const msg = err?.message || '';
@@ -419,6 +450,24 @@ export default function App() {
       showToast('👑 Acesso de dono ativado! Todos os templates desbloqueados.', 'success');
     } else {
       setOwnerError(result.error || 'Erro desconhecido.');
+    }
+  };
+
+  // ── Clients Management ──────────────────────────────────────────────
+  const handleLoadClients = async () => {
+    setClientsLoading(true);
+    try {
+      const res = await fetch('/api/admin-clients', {
+        headers: { 'Authorization': `Bearer ${ownerSecret}` },
+      });
+      if (!res.ok) throw new Error('Erro ao carregar clientes.');
+      const data = await res.json();
+      setClientsList(data.clients || []);
+      setClientsStats(data.stats || null);
+    } catch (e: any) {
+      showToast(e.message || 'Erro ao carregar clientes.', 'error');
+    } finally {
+      setClientsLoading(false);
     }
   };
 
@@ -999,15 +1048,21 @@ export default function App() {
                 <div className="flex gap-1 bg-slate-800 rounded-xl p-1 mb-5">
                   <button
                     onClick={() => setOwnerTab('acesso')}
-                    className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${ownerTab === 'acesso' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
+                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'acesso' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
                   >
-                    <i className="fas fa-unlock-alt text-[10px]"></i> Acesso
+                    <i className="fas fa-unlock-alt text-[9px]"></i> Acesso
                   </button>
                   <button
-                    onClick={() => { setOwnerTab('clientes'); handleLoadVipList(); }}
-                    className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${ownerTab === 'clientes' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
+                    onClick={() => { setOwnerTab('bloqueados'); handleLoadVipList(); }}
+                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'bloqueados' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
                   >
-                    <i className="fas fa-users text-[10px]"></i> Clientes VIP
+                    <i className="fas fa-ban text-[9px]"></i> Bloqueados
+                  </button>
+                  <button
+                    onClick={() => { setOwnerTab('clientes'); handleLoadClients(); }}
+                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'clientes' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <i className="fas fa-users text-[9px]"></i> Clientes
                   </button>
                 </div>
 
@@ -1031,8 +1086,8 @@ export default function App() {
                   </div>
                 )}
 
-                {/* ── Tab: Clientes VIP ── */}
-                {ownerTab === 'clientes' && (
+                {/* ── Tab: Bloqueados ── */}
+                {ownerTab === 'bloqueados' && (
                   <div className="space-y-4">
 
                     {/* Formulário de bloqueio */}
@@ -1135,6 +1190,154 @@ export default function App() {
                 )}
               </>
             )}
+
+                {/* ── Tab: Clientes ── */}
+                {ownerTab === 'clientes' && (
+                  <div className="space-y-4">
+
+                    {/* Stats cards */}
+                    {clientsStats && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { label: 'Total',     value: clientsStats.total,    color: 'text-slate-300',  bg: 'bg-slate-800'         },
+                          { label: 'VIP Ativo', value: clientsStats.vip,      color: 'text-green-400',  bg: 'bg-green-900/30'      },
+                          { label: 'Expirado',  value: clientsStats.expired,  color: 'text-amber-400',  bg: 'bg-amber-900/30'      },
+                          { label: 'Free',      value: clientsStats.free,     color: 'text-slate-500',  bg: 'bg-slate-800'         },
+                        ].map(s => (
+                          <div key={s.label} className={`${s.bg} rounded-xl p-2.5 text-center border border-slate-700`}>
+                            <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
+                            <p className="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {clientsStats && clientsStats.vip > 0 && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { label: 'Vitalício', value: clientsStats.lifetime, color: 'text-amber-400',  bg: 'bg-amber-900/20'  },
+                          { label: 'Anual',     value: clientsStats.yearly,   color: 'text-blue-400',   bg: 'bg-blue-900/20'   },
+                          { label: 'Mensal',    value: clientsStats.monthly,  color: 'text-violet-400', bg: 'bg-violet-900/20' },
+                          { label: '7 Dias',    value: clientsStats.avulso,   color: 'text-cyan-400',   bg: 'bg-cyan-900/20'   },
+                        ].map(s => (
+                          <div key={s.label} className={`${s.bg} rounded-xl p-2.5 text-center border border-slate-700`}>
+                            <p className={`text-lg font-black ${s.color}`}>{s.value}</p>
+                            <p className="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Search + filter */}
+                    <div className="flex gap-2">
+                      <input
+                        value={clientsSearch}
+                        onChange={e => setClientsSearch(e.target.value)}
+                        placeholder="Buscar por nome ou e-mail..."
+                        className="flex-1 bg-slate-800 border border-slate-700 focus:border-amber-500 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 outline-none transition-all"
+                      />
+                      <button
+                        onClick={handleLoadClients}
+                        disabled={clientsLoading}
+                        className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:text-amber-400 transition-colors"
+                        title="Atualizar"
+                      >
+                        <i className={`fas ${clientsLoading ? 'fa-circle-notch fa-spin' : 'fa-sync-alt'} text-xs`}></i>
+                      </button>
+                    </div>
+
+                    {/* Filter pills */}
+                    <div className="flex gap-1.5 flex-wrap">
+                      {([
+                        { id: 'todos',     label: 'Todos'      },
+                        { id: 'vip',       label: '✅ VIP Ativo' },
+                        { id: 'expirado',  label: '⏰ Expirado' },
+                        { id: 'free',      label: '🆓 Free'    },
+                      ] as const).map(f => (
+                        <button
+                          key={f.id}
+                          onClick={() => setClientsFilter(f.id)}
+                          className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${clientsFilter === f.id ? 'bg-amber-500 text-black' : 'bg-slate-800 text-slate-500 hover:text-white border border-slate-700'}`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Lista */}
+                    {clientsLoading ? (
+                      <div className="text-center py-10">
+                        <i className="fas fa-circle-notch fa-spin text-slate-500 text-xl"></i>
+                        <p className="text-[10px] text-slate-600 mt-2 uppercase tracking-widest">Carregando clientes...</p>
+                      </div>
+                    ) : (() => {
+                      const search = clientsSearch.toLowerCase();
+                      const filtered = clientsList.filter(c => {
+                        const matchSearch = !search ||
+                          (c.email       ?? '').toLowerCase().includes(search) ||
+                          (c.displayName ?? '').toLowerCase().includes(search);
+                        const matchFilter =
+                          clientsFilter === 'todos'    ? true :
+                          clientsFilter === 'vip'      ? (c.isVip && !c.isExpired) :
+                          clientsFilter === 'expirado' ? (c.isExpired && !c.isVip) :
+                          clientsFilter === 'free'     ? (!c.plan) : true;
+                        return matchSearch && matchFilter;
+                      });
+
+                      const planLabel = (c: any) => {
+                        if (!c.plan) return { text: 'Free', color: 'text-slate-500', bg: 'bg-slate-800', icon: '🆓' };
+                        if (c.isExpired) return { text: 'Expirado', color: 'text-amber-400', bg: 'bg-amber-900/30', icon: '⏰' };
+                        if (c.plan === 'lifetime') return { text: 'Vitalício', color: 'text-amber-400', bg: 'bg-amber-900/30', icon: '👑' };
+                        if (c.plan === 'yearly')   return { text: 'Anual', color: 'text-blue-400', bg: 'bg-blue-900/30', icon: '📅' };
+                        if (c.plan === 'monthly')  return { text: 'Mensal', color: 'text-violet-400', bg: 'bg-violet-900/30', icon: '🗓️' };
+                        return { text: '7 Dias', color: 'text-cyan-400', bg: 'bg-cyan-900/30', icon: '⚡' };
+                      };
+
+                      if (filtered.length === 0) return (
+                        <div className="text-center py-10 border-2 border-dashed border-slate-700 rounded-xl">
+                          <p className="text-[10px] text-slate-500 uppercase tracking-widest">Nenhum cliente encontrado</p>
+                        </div>
+                      );
+
+                      return (
+                        <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                          {filtered.map((c: any) => {
+                            const pl = planLabel(c);
+                            return (
+                              <div key={c.uid} className="flex items-center gap-3 bg-slate-800 rounded-xl p-3 border border-slate-700 hover:border-slate-600 transition-colors">
+                                {/* Avatar */}
+                                {c.photoURL
+                                  ? <img src={c.photoURL} alt="" className="w-9 h-9 rounded-full shrink-0 object-cover" />
+                                  : <div className="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center shrink-0 text-slate-400 text-sm font-black">
+                                      {(c.displayName || c.email || '?')[0].toUpperCase()}
+                                    </div>
+                                }
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-black text-white truncate">{c.displayName || '—'}</p>
+                                  <p className="text-[9px] text-slate-500 truncate">{c.email || c.uid}</p>
+                                  {c.expiresAt && c.isVip && (
+                                    <p className="text-[8px] text-slate-600 mt-0.5">
+                                      Expira {new Date(c.expiresAt).toLocaleDateString('pt-BR')}
+                                    </p>
+                                  )}
+                                  {c.lastSeen && (
+                                    <p className="text-[8px] text-slate-700 mt-0.5">
+                                      Visto {new Date(c.lastSeen).toLocaleDateString('pt-BR')}
+                                    </p>
+                                  )}
+                                </div>
+                                {/* Plan badge */}
+                                <div className={`shrink-0 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${pl.bg} ${pl.color} border border-slate-700`}>
+                                  {pl.icon} {pl.text}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
           </div>
         </div>
       )}
@@ -1162,6 +1365,12 @@ export default function App() {
                 : '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!';
               showToast(msg, 'success');
               window.dispatchEvent(new Event('storage'));
+              // Sincroniza novo status VIP com o servidor para aparecer no painel do dono
+              if (user?.uid) {
+                const raw = localStorage.getItem('cbr_premium_v2');
+                const premiumData = raw ? JSON.parse(raw) : null;
+                syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL }, premiumData);
+              }
             }}
           />
         </Suspense>
