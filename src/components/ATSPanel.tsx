@@ -54,6 +54,10 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
     if (msg.includes('API_KEY') || msg.includes('API key') || msg.includes('401') || msg.includes('403')) {
       return 'Chave de API inválida ou não configurada. Verifique VITE_GEMINI_API_KEY.';
     }
+    // Modelo sobrecarregado (503) — o fallback já foi tentado, ambos falharam
+    if (msg.includes('503') || msg.toLowerCase().includes('high demand') || msg.toLowerCase().includes('overloaded') || msg.toLowerCase().includes('temporarily unavailable')) {
+      return '⚠️ Os modelos Gemini estão com alta demanda agora. Aguarde alguns segundos e tente novamente.';
+    }
     // Quota excedida
     if (msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate limit')) {
       return 'Limite de requisições atingido. Aguarde alguns segundos e tente novamente.';
