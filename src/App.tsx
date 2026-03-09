@@ -171,20 +171,33 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, toggleOwnerAccess, isOwnerAccessActive, checkAndRevokeIfBlocked, syncClientToServer } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, toggleOwnerAccess, isOwnerAccessActive, checkAndRevokeIfBlocked, syncPlanFromServer, syncClientToServer } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
   // ── Auth + Cloud Save ──────────────────────────────────────────────
   const { user, signInWithGoogle, signOut } = useAuth();
 
-  // Quando o usuário faz login: verifica bloqueio e sincroniza perfil+VIP com Firestore
+  // Quando o usuário faz login:
+  // 1) verifica se está bloqueado pelo dono
+  // 2) busca plano ativo no servidor (dono pode ter ativado manualmente)
+  // 3) sincroniza perfil com Firestore para o painel do dono
   React.useEffect(() => {
     if (user?.uid) {
       checkAndRevokeIfBlocked(user.uid).then(blocked => {
-        if (blocked) showToast('⛔ Seu acesso Premium foi revogado pelo administrador.', 'error');
+        if (blocked) {
+          showToast('⛔ Seu acesso Premium foi revogado pelo administrador.', 'error');
+        } else {
+          // Verifica se o dono ativou um plano manualmente no servidor
+          const hadPremiumBefore = !!localStorage.getItem('cbr_premium_v2');
+          syncPlanFromServer(user.uid).then(() => {
+            const hasPremiumNow = !!localStorage.getItem('cbr_premium_v2');
+            if (!hadPremiumBefore && hasPremiumNow) {
+              showToast('🎉 Seu plano VIP foi ativado pelo administrador!', 'success');
+            }
+          });
+        }
       });
-      // Sincroniza perfil (e VIP se tiver) com o servidor para o painel do dono
       syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
     }
   }, [user?.uid]);
