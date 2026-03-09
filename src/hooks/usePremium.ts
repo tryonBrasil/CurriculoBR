@@ -151,6 +151,23 @@ export function usePremium() {
     } catch { return { ok: false, error: 'Erro de conexão.' }; }
   }, []);
 
+  // Verifica com o servidor se o uid está na lista de bloqueados.
+  // Chamado quando o usuário faz login. Se bloqueado, revoga o premium local.
+  const checkAndRevokeIfBlocked = async (uid: string): Promise<boolean> => {
+    if (!uid) return false;
+    try {
+      const res = await fetch(`/api/admin-vip?check=${encodeURIComponent(uid)}`);
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data.blocked) {
+        localStorage.removeItem(STORAGE_KEY);
+        setState(loadState());
+        return true;
+      }
+    } catch { /* falha silenciosa — não priva acesso por erro de rede */ }
+    return false;
+  };
+
   return {
     ...state,
     isVerifying,
@@ -158,6 +175,7 @@ export function usePremium() {
     verifyAndUnlock,
     revokePremium,
     ownerUnlock,
+    checkAndRevokeIfBlocked,
     unlockForTesting: () => unlock('lifetime', 'test'),
   };
 }
