@@ -168,6 +168,31 @@ export function usePremium() {
     return false;
   };
 
+  // Sincroniza os dados do cliente (perfil + status VIP) com o Firestore via /api/admin-clients.
+  // Chamada: ao fazer login (sem premium) e ao ativar qualquer plano VIP.
+  const syncClientToServer = async (user: { uid: string; email: string | null; displayName: string | null; photoURL: string | null }, premiumOverride?: { plan: PremiumPlan; activatedAt: number; paymentId?: string } | null) => {
+    if (!user?.uid) return;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      let premiumData = premiumOverride ?? null;
+      if (!premiumData && raw) {
+        try { premiumData = JSON.parse(raw); } catch { /* ignora */ }
+      }
+      await fetch('/api/admin-clients', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          action:      'sync',
+          uid:         user.uid,
+          email:       user.email        ?? '',
+          displayName: user.displayName  ?? '',
+          photoURL:    user.photoURL     ?? '',
+          premium:     premiumData,
+        }),
+      });
+    } catch { /* falha silenciosa — não interrompe o fluxo do usuário */ }
+  };
+
   return {
     ...state,
     isVerifying,
@@ -176,6 +201,7 @@ export function usePremium() {
     revokePremium,
     ownerUnlock,
     checkAndRevokeIfBlocked,
+    syncClientToServer,
     unlockForTesting: () => unlock('lifetime', 'test'),
   };
 }
