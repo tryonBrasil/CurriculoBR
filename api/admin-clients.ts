@@ -67,12 +67,65 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  // ── POST: sync (público) ───────────────────────────────────────────
+  // ── POST: sync | set-plan ─────────────────────────────────────────
   if (req.method === 'POST') {
-    const { action, uid, email, displayName, photoURL, premium } = req.body ?? {};
+    const { action, uid, email, displayName, photoURL, premium, plan: bodyPlan } = req.body ?? {};
 
-    if (action !== 'sync' || !uid || typeof uid !== 'string') {
+    if (!action || !uid || typeof uid !== 'string') {
       return res.status(400).json({ error: 'Parâmetros inválidos.' });
+    }
+
+    // ── set-plan: requer autenticação admin ───────────────────────────
+    if (action === 'set-plan') {
+      const ownerSecretSP = process.env.OWNER_SECRET;
+      const authSP        = req.headers.authorization;
+      if (!ownerSecretSP || !authSP || authSP !== `Bearer ${ownerSecretSP}`) {
+        return res.status(401).json({ error: 'Não autorizado.' });
+      }
+
+      let dbSP: any;
+      try { dbSP = await getDb(); }
+      catch (e: any) { return res.status(503).json({ error: e.message }); }
+
+      const safeUidSP  = uid.trim().slice(0, 128);
+      const docRefSP   = dbSP.collection(CLIENTS_COLLECTION).doc(safeUidSP);
+      const existingSP = await docRefSP.get();
+      if (!existingSP.exists) {
+        return res.status(404).json({ error: 'Cliente não encontrado.' });
+      }
+
+      const VALID_PLANS_SP = ['avulso', 'monthly', 'yearly', 'lifetime'];
+
+      if (!bodyPlan || bodyPlan === 'free') {
+        await docRefSP.set({
+          plan: null, isVip: false, isExpired: false,
+          activatedAt: null, expiresAt: null, paymentId: null,
+        }, { merge: true });
+        return res.status(200).json({ ok: true, message: 'Plano removido com sucesso.' });
+      }
+
+      if (!VALID_PLANS_SP.includes(bodyPlan)) {
+        return res.status(400).json({ error: 'Plano inválido. Use: avulso, monthly, yearly, lifetime ou free.' });
+      }
+
+      const activatedAtSP = Date.now();
+      const expiresAtSP   = getExpiresAt(bodyPlan, activatedAtSP);
+
+      await docRefSP.set({
+        plan:        bodyPlan,
+        isVip:       true,
+        isExpired:   false,
+        activatedAt: new Date(activatedAtSP).toISOString(),
+        expiresAt:   expiresAtSP ? expiresAtSP.toISOString() : null,
+        paymentId:   'manual_owner',
+      }, { merge: true });
+
+      return res.status(200).json({ ok: true, message: `Plano ${bodyPlan} ativado com sucesso.` });
+    }
+
+    // ── sync: público ─────────────────────────────────────────────────
+    if (action !== 'sync') {
+      return res.status(400).json({ error: 'Ação inválida.' });
     }
 
     const safeUid = uid.trim().slice(0, 128);
@@ -131,65 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true });
   }
 
-  // ── POST: set-plan (admin) ─────────────────────────────────────────
-  if (req.method === 'POST') {
-    const { action, uid, plan } = req.body ?? {};
 
-    if (action !== 'set-plan' || !uid || typeof uid !== 'string') {
-      return res.status(400).json({ error: 'Parâmetros inválidos.' });
-    }
-
-    // Valida autorização
-    const ownerSecret = process.env.OWNER_SECRET;
-    const auth        = req.headers.authorization;
-    if (!ownerSecret || !auth || auth !== `Bearer ${ownerSecret}`) {
-      return res.status(401).json({ error: 'Não autorizado.' });
-    }
-
-    let db2: any;
-    try { db2 = await getDb(); }
-    catch (e: any) { return res.status(503).json({ error: e.message }); }
-
-    const safeUid2 = uid.trim().slice(0, 128);
-    const docRef2  = db2.collection(CLIENTS_COLLECTION).doc(safeUid2);
-    const existing2 = await docRef2.get();
-    if (!existing2.exists) {
-      return res.status(404).json({ error: 'Cliente não encontrado.' });
-    }
-
-    const VALID_PLANS = ['avulso', 'monthly', 'yearly', 'lifetime'];
-
-    if (!plan || plan === 'free') {
-      // Remove plano
-      await docRef2.set({
-        plan:        null,
-        isVip:       false,
-        isExpired:   false,
-        activatedAt: null,
-        expiresAt:   null,
-        paymentId:   null,
-      }, { merge: true });
-      return res.status(200).json({ ok: true, message: 'Plano removido com sucesso.' });
-    }
-
-    if (!VALID_PLANS.includes(plan)) {
-      return res.status(400).json({ error: 'Plano inválido. Use: avulso, monthly, yearly, lifetime ou free.' });
-    }
-
-    const activatedAt = Date.now();
-    const expiresAt   = plan ? getExpiresAt(plan, activatedAt) : null;
-
-    await docRef2.set({
-      plan,
-      isVip:       true,
-      isExpired:   false,
-      activatedAt: new Date(activatedAt).toISOString(),
-      expiresAt:   expiresAt ? expiresAt.toISOString() : null,
-      paymentId:   'manual_owner',
-    }, { merge: true });
-
-    return res.status(200).json({ ok: true, message: `Plano ${plan} ativado com sucesso.` });
-  }
 
   // ── GET: lista clientes (admin) ────────────────────────────────────
   if (req.method === 'GET') {
