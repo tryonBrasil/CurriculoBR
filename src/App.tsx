@@ -171,35 +171,37 @@ export default function App() {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; action: () => void } | null>(null);
 
   // Premium
-  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, toggleOwnerAccess, isOwnerAccessActive, checkAndRevokeIfBlocked, syncPlanFromServer, syncClientToServer } = usePremium();
+  const { isPremium, plan: premiumPlan, daysLeft, isExpired: premiumExpired, isVerifying, ownerUnlock, toggleOwnerAccess, isOwnerAccessActive, checkAndRevokeIfBlocked, syncPlanFromServer, syncClientToServer, revokePremium } = usePremium();
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumModalTemplate, setPremiumModalTemplate] = useState<string>('');
 
   // ── Auth + Cloud Save ──────────────────────────────────────────────
   const { user, signInWithGoogle, signOut } = useAuth();
 
-  // Quando o usuário faz login:
-  // 1) verifica se está bloqueado pelo dono
-  // 2) busca plano ativo no servidor (dono pode ter ativado manualmente)
-  // 3) sincroniza perfil com Firestore para o painel do dono
+  // Quando o auth state muda:
+  // • logout (user === null) → limpa premium do localStorage imediatamente
+  // • login  (user !== null) → carrega plano do servidor para esta conta
   React.useEffect(() => {
-    if (user?.uid) {
-      checkAndRevokeIfBlocked(user.uid).then(blocked => {
-        if (blocked) {
-          showToast('⛔ Seu acesso Premium foi revogado pelo administrador.', 'error');
-        } else {
-          // Verifica se o dono ativou um plano manualmente no servidor
-          const hadPremiumBefore = !!localStorage.getItem('cbr_premium_v2');
-          syncPlanFromServer(user.uid).then(() => {
-            const hasPremiumNow = !!localStorage.getItem('cbr_premium_v2');
-            if (!hadPremiumBefore && hasPremiumNow) {
-              showToast('🎉 Seu plano VIP foi ativado pelo administrador!', 'success');
-            }
-          });
-        }
-      });
-      syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
+    if (!user) {
+      // Logout: limpa o plano para que outra conta não herde o premium
+      revokePremium();
+      return;
     }
+    // Login: limpa plano residual e carrega o plano desta conta do servidor
+    revokePremium();
+    checkAndRevokeIfBlocked(user.uid).then(blocked => {
+      if (blocked) {
+        showToast('⛔ Seu acesso Premium foi revogado pelo administrador.', 'error');
+      } else {
+        syncPlanFromServer(user.uid).then(() => {
+          const hasPremiumNow = !!localStorage.getItem('cbr_premium_v2');
+          if (hasPremiumNow) {
+            showToast('🎉 Plano Premium carregado para sua conta!', 'success');
+          }
+        });
+      }
+    });
+    syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
   }, [user?.uid]);
   const { saving: cloudSaving, loading: cloudLoading, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
 
