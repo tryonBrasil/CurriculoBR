@@ -15,17 +15,17 @@ type Screen = 'choose-plan' | 'choose-pay' | 'pix-loading' | 'pix-qr' | 'pix-don
 const PIX_POLL_MS = 5_000;
 
 const PLANS = {
-  avulso:   { label: 'Avulso',   emoji: '⚡', price: 9.90,  period: '7 dias de acesso · sem renovação' },
-  monthly:  { label: 'Mensal',   emoji: '🚀', price: 14.90, period: 'por mês · cancele quando quiser' },
-  yearly:   { label: 'Anual',    emoji: '🌟', price: 59.90, period: '~R$4,99/mês · economize 66%' },
-  lifetime: { label: 'Vitalício',emoji: '👑', price: 29.90, period: 'paga uma vez · nunca expira' },
+  avulso:   { label: 'Avulso',   emoji: '⚡', price: 9.90,  period: '7 dias premium · sem renovação automática' },
+  monthly:  { label: 'Mensal',   emoji: '🚀', price: 14.90, period: 'por mês · cancele a qualquer hora' },
+  yearly:   { label: 'Anual',    emoji: '🌟', price: 59.90, period: '12 meses · paga menos que 4 cafés' },
+  lifetime: { label: 'Vitalício',emoji: '👑', price: 29.90, period: 'paga uma vez · acesso para sempre' },
 } as const;
 
 const FEATURES: Record<PremiumPlan, string[][]> = {
-  avulso:   [['🎨','12 templates premium desbloqueados'],['🤖','IA para melhorar o currículo'],['📄','Downloads PDF ilimitados'],['⏰','7 dias de acesso'],['✅','Sem renovação automática']],
-  monthly:  [['🎨','12 templates premium desbloqueados'],['🤖','IA para melhorar o currículo'],['📄','Downloads PDF ilimitados'],['☁️','Salvar na nuvem'],['🔄','Cancele quando quiser']],
+  avulso:   [['🎨','12 templates premium desbloqueados'],['🤖','IA para melhorar o currículo'],['📄','Downloads PDF ilimitados'],['⏰','7 dias de acesso'],['✅','Sem cobrança automática — nunca']],
+  monthly:  [['🎨','12 templates premium desbloqueados'],['🤖','IA para melhorar o currículo'],['📄','Downloads PDF ilimitados'],['☁️','Salvar na nuvem'],['🔄','Cancele quando quiser, sem burocracia']],
   yearly:   [['🎨','12 templates premium desbloqueados'],['🤖','IA para melhorar o currículo'],['📄','Downloads PDF ilimitados'],['☁️','Salvar na nuvem'],['💰','Economize R$118,90 vs mensal'],['🆓','2 meses grátis inclusos']],
-  lifetime: [['🎨','12 templates premium desbloqueados'],['🤖','IA para melhorar o currículo'],['📄','Downloads PDF ilimitados'],['☁️','Salvar na nuvem'],['♾️','Nunca expira — paga uma vez'],['🚀','Todos os templates futuros grátis']],
+  lifetime: [['🎨','12 templates premium desbloqueados'],['🤖','IA para melhorar o currículo'],['📄','Downloads PDF ilimitados'],['☁️','Salvar na nuvem'],['♾️','Acesso eterno — paga uma só vez, pronto'],['🚀','Novos templates futuros incluídos automaticamente']],
 };
 
 const GRADIENTS: Record<PremiumPlan, string> = {
@@ -144,7 +144,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
   const headerGradient = screen === 'pix-done' ? 'bg-gradient-to-br from-green-500 to-emerald-600' : isExpired && screen === 'choose-plan' ? 'bg-gradient-to-br from-rose-500 via-orange-500 to-amber-500' : GRADIENTS[selectedPlan];
   const headerEmoji = screen === 'pix-done' ? '🎉' : screen.startsWith('pix') ? '💸' : plan.emoji;
   const headerTitle = screen === 'pix-done' ? 'Premium Ativado!' : screen === 'pix-qr' ? 'Pague com Pix' : screen === 'pix-expired' ? 'QR Code Expirado' : isExpired ? 'Seu acesso expirou 😔' : templateLabel ? <>Template <span className="text-yellow-300">"{templateLabel}"</span> é Premium</> : <>Desbloqueie o <span className="text-yellow-300">Premium</span></>;
-  const headerSub = screen === 'pix-done' ? `Plano ${plan.label} ativado com sucesso! 🚀` : screen === 'pix-qr' ? 'Escaneie no seu banco ou copie o código abaixo' : isExpired ? 'Reative agora e continue criando currículos incríveis' : 'Sem renovação surpresa · sem cadastro · sem e-mail';
+  const headerSub = screen === 'pix-done' ? `Plano ${plan.label} ativado com sucesso! 🚀` : screen === 'pix-qr' ? 'Escaneie no seu banco ou copie o código abaixo' : isExpired ? 'Reative agora e continue criando currículos incríveis' : 'Pague uma vez e turbine suas chances de emprego 🎯';
 
   return (
     <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -182,7 +182,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
               {/* Comparativo */}
               <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 mb-4">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Por que CurriculoGO?</p>
-                {[['❌','Zety cobra R$150/mês após o trial'],['❌','LiveCareer bloqueia download até pagar'],['✅','Sem renovação automática, sem pegadinha'],['✅','Sem cadastro. Pague e use agora.']].map(([icon, text], i) => (
+                {[['❌','Zety cobra R$150/mês depois do trial'],['❌','LiveCareer bloqueia o download e pede cartão'],['✅','Sem renovação automática. Sem pegadinha.'],['✅','Pague e use na hora. Simples assim.']].map(([icon, text], i) => (
                   <div key={i} className="flex items-center gap-2 mb-1">
                     <span className="text-sm w-5 shrink-0">{icon}</span>
                     <span className={`text-xs ${i < 2 ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300 font-semibold'}`}>{text}</span>
@@ -243,9 +243,9 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
 
               {/* CTA */}
               <button onClick={() => setScreen('choose-pay')} className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] text-white mb-3 ${CTA_COLOR[selectedPlan]}`}>
-                {plan.emoji} Quero o plano {plan.label} — R$ {plan.price.toFixed(2).replace('.', ',')}
+                {plan.emoji} Desbloquear agora — R$ {plan.price.toFixed(2).replace('.', ',')}
               </button>
-              <button onClick={onClose} className="w-full py-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold uppercase tracking-widest transition-colors">Agora não, continuar grátis</button>
+              <button onClick={onClose} className="w-full py-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold uppercase tracking-widest transition-colors">Não agora — continuar com o plano grátis</button>
               <p className="text-center text-[10px] text-slate-300 dark:text-slate-600 mt-3">🔒 Pagamento seguro via Mercado Pago · SSL criptografado</p>
             </>
           )}

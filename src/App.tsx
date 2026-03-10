@@ -1967,14 +1967,14 @@ export default function App() {
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
               <span className="inline-flex items-center gap-2 py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse"></span>
-                ✨ Grátis para começar, sem cadastro, sem enrolação
+                ⚡ Grátis agora. Sem cadastro. Sem enrolação. Só resultado.
               </span>
               <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                 Seu currículo novo,<br className="hidden md:block"/>
                 <span style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', fontStyle: 'italic' }}>em minutos.</span> <span>🚀</span>
               </h2>
               <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
-                Design profissional + IA do Google Gemini. Chega de currículo no Word que parece de 2008. 😅
+                IA do Google Gemini + 15 designs prontos para impressionar. Pronto em minutos — não em horas.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
@@ -1988,19 +1988,19 @@ export default function App() {
 
             <div className="mt-4">
                <button onClick={() => navigateTo('/carta-de-apresentacao', 'cover-letter-page')} className="text-slate-400 hover:text-blue-600 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto group">
-                 ✉️ Precisa de uma Carta de Apresentação também? <i className="fas fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
+                 ✉️ Quer uma Carta de Apresentação que chame atenção? <i className="fas fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
                </button>
             </div>
 
             {/* Trust bar */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🙈 Sem Cadastro</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🎯 Abre e Já Usa</span>
               <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🔒 100% Privado</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🔒 Seus Dados Só Seus</span>
               <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">📄 PDF Grátis</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">📄 PDF Grátis Agora</span>
               <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🤖 IA Integrada</span>
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🤖 IA do Google</span>
             </div>
 
             <div className="mt-12 max-w-3xl mx-auto">
@@ -2012,13 +2012,13 @@ export default function App() {
         {/* ── Features / Benefícios ── */}
         <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
-            <p className="text-center text-sm font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12">Por que o CurriculoGO? 🚀</p>
+            <p className="text-center text-sm font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12">Tudo que você precisa. Nada do que te irrita. 🎯</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { emoji: '🎨', icon: 'fa-file-alt', title: '15 Modelos', desc: 'Designs modernos para cada perfil — do conservador ao criativo' },
-                { emoji: '🤖', icon: 'fa-wand-magic-sparkles', title: 'IA do Gemini', desc: 'Sugere textos, habilidades e analisa seu currículo em tempo real' },
-                { emoji: '📄', icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe em alta qualidade sem pagar nada, nem com email' },
-                { emoji: '🙈', icon: 'fa-user-slash', title: 'Zero Cadastro', desc: 'Nem criou conta, nem vai criar. Abre e já usa. Ponto.' },
+                { emoji: '🎨', icon: 'fa-file-alt', title: '15 Modelos', desc: 'Do clássico ao arrojado — template certo para cada vaga' },
+                { emoji: '🤖', icon: 'fa-wand-magic-sparkles', title: 'IA do Gemini', desc: 'Gera textos, sugere habilidades e aumenta seu score ATS' },
+                { emoji: '📄', icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe agora em alta qualidade — sem pagar, sem informar e-mail' },
+                { emoji: '🙈', icon: 'fa-user-slash', title: 'Abre e Usa', desc: 'Sem criar conta, sem confirmar e-mail. Abriu, editou, baixou. Simples.' },
               ].map(f => (
                 <div key={f.icon} className="flex flex-col items-center text-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 cursor-default group">
                   <div className="text-3xl group-hover:scale-125 transition-transform duration-300">{f.emoji}</div>
