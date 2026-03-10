@@ -187,18 +187,13 @@ export default function App() {
       revokePremium();
       return;
     }
-    // Login: limpa plano residual e carrega o plano desta conta do servidor
+    // Login: limpa qualquer estado residual e carrega plano desta conta do servidor
     revokePremium();
     checkAndRevokeIfBlocked(user.uid).then(blocked => {
       if (blocked) {
         showToast('⛔ Seu acesso Premium foi revogado pelo administrador.', 'error');
       } else {
-        syncPlanFromServer(user.uid).then(() => {
-          const hasPremiumNow = !!localStorage.getItem('cbr_premium_v2');
-          if (hasPremiumNow) {
-            showToast('🎉 Plano Premium carregado para sua conta!', 'success');
-          }
-        });
+        syncPlanFromServer(user.uid);
       }
     });
     syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });

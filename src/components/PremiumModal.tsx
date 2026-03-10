@@ -10,8 +10,6 @@ interface PremiumModalProps {
   uid?: string | null; // uid do Firebase — vincula o premium à conta
 }
 
-const STORAGE_KEY = 'cbr_premium_v2';
-
 type Screen = 'choose-plan' | 'choose-pay' | 'pix-loading' | 'pix-qr' | 'pix-done' | 'pix-expired' | 'card-loading';
 
 const PIX_POLL_MS = 5_000;
@@ -98,7 +96,6 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
         if (!res.ok) return;
         const data = await res.json();
         if (data.approved) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ plan, activatedAt: Date.now(), paymentId }));
           if (pollRef.current) clearInterval(pollRef.current);
           if (timerRef.current) clearInterval(timerRef.current);
           setScreen('pix-done');
