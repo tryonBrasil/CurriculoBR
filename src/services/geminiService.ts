@@ -2,10 +2,10 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Modelos em ordem de preferência:
-// 1. gemini-3-flash-preview — mais capaz, mas em preview (pode retornar 503 em picos de demanda)
-// 2. gemini-2.5-flash       — estável, produção, fallback automático quando o preview estiver sobrecarregado
-const PRIMARY_MODEL   = 'gemini-3-flash-preview';
-const FALLBACK_MODEL  = 'gemini-2.5-flash';
+// 1. gemini-2.0-flash  — modelo estável e rápido (primary)
+// 2. gemini-1.5-flash  — fallback automático quando o primary retornar 503
+const PRIMARY_MODEL   = 'gemini-2.0-flash';
+const FALLBACK_MODEL  = 'gemini-1.5-flash';
 
 const getAI = () => {
   const apiKey = process.env.API_KEY;

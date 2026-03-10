@@ -1,4 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { timingSafeEqual } from 'crypto';
+
+function safeCompareBearer(received: string | undefined, secret: string): boolean {
+  if (!received) return false;
+  const expected = `Bearer ${secret}`;
+  try {
+    const a = Buffer.from(received.padEnd(512));
+    const b = Buffer.from(expected.padEnd(512));
+    return timingSafeEqual(a, b) && received.length === expected.length;
+  } catch { return false; }
+}
 
 /**
  * /api/admin-clients — Registro de clientes e status VIP
@@ -62,7 +73,7 @@ function canSync(uid: string): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.SITE_URL || 'https://curriculo-go.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -79,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (action === 'set-plan') {
       const ownerSecretSP = process.env.OWNER_SECRET;
       const authSP        = req.headers.authorization;
-      if (!ownerSecretSP || !authSP || authSP !== `Bearer ${ownerSecretSP}`) {
+      if (!ownerSecretSP || !safeCompareBearer(authSP, ownerSecretSP)) {
         return res.status(401).json({ error: 'Não autorizado.' });
       }
 
@@ -128,6 +139,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Ação inválida.' });
     }
 
+    // Sync: salva APENAS dados de perfil — status VIP NUNCA aceito do cliente
+    // (evita que qualquer pessoa mande premium:{plan:'lifetime'} e se torne VIP)
     const safeUid = uid.trim().slice(0, 128);
     if (!canSync(safeUid)) {
       return res.status(200).json({ ok: true, skipped: true });
@@ -141,40 +154,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const docRef   = db.collection(CLIENTS_COLLECTION).doc(safeUid);
     const existing = await docRef.get();
 
-    // Calcula status VIP a partir dos dados enviados pelo cliente
-    let plan: string | null         = null;
-    let isVip                       = false;
-    let isExpired                   = false;
-    let expiresAtISO: string | null = null;
-    let activatedAtISO: string | null = null;
-    let paymentId: string | null    = null;
-
-    if (premium && premium.plan) {
-      plan           = premium.plan;
-      paymentId      = premium.paymentId ?? null;
-      activatedAtISO = premium.activatedAt ? new Date(premium.activatedAt).toISOString() : null;
-      const expiresAt = plan ? getExpiresAt(plan, premium.activatedAt ?? Date.now()) : null;
-
-      if (plan === 'lifetime') {
-        isVip = true; isExpired = false;
-      } else if (expiresAt) {
-        isExpired    = expiresAt.getTime() < Date.now();
-        isVip        = !isExpired;
-        expiresAtISO = expiresAt.toISOString();
-      }
-    }
-
+    // Apenas dados de perfil — nunca plan/isVip/paymentId do cliente
     const record: Record<string, any> = {
       uid:         safeUid,
       email:       (email       ?? existing.data()?.email       ?? '').toString().slice(0, 254),
       displayName: (displayName ?? existing.data()?.displayName ?? '').toString().slice(0, 128),
       photoURL:    (photoURL    ?? existing.data()?.photoURL    ?? '').toString().slice(0, 512),
-      plan,
-      isVip,
-      isExpired,
-      activatedAt: activatedAtISO,
-      expiresAt:   expiresAtISO,
-      paymentId,
       lastSeen:    now,
     };
 
@@ -220,7 +205,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const auth        = req.headers.authorization;
 
     if (!ownerSecret) return res.status(503).json({ error: 'OWNER_SECRET não configurado.' });
-    if (!auth || auth !== `Bearer ${ownerSecret}`) {
+    if (!safeCompareBearer(auth, ownerSecret)) {
       return res.status(401).json({ error: 'Não autorizado.' });
     }
 

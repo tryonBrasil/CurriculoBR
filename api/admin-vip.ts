@@ -1,4 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { timingSafeEqual } from 'crypto';
+
+function safeCompareBearer(received: string | undefined, secret: string): boolean {
+  if (!received) return false;
+  const expected = `Bearer ${secret}`;
+  try {
+    const a = Buffer.from(received.padEnd(512));
+    const b = Buffer.from(expected.padEnd(512));
+    return timingSafeEqual(a, b) && received.length === expected.length;
+  } catch { return false; }
+}
 
 /**
  * /api/admin-vip — Gerenciamento de VIP bloqueados
@@ -75,7 +86,7 @@ function getIP(req: VercelRequest): string {
 // ── Handler principal ─────────────────────────────────────────────────────────
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.SITE_URL || 'https://curriculo-go.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -107,7 +118,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(503).json({ error: 'OWNER_SECRET não configurado no servidor.' });
   }
 
-  if (!auth || auth !== `Bearer ${ownerSecret}`) {
+  if (!safeCompareBearer(auth, ownerSecret)) {
     return res.status(401).json({ error: 'Não autorizado.' });
   }
 
