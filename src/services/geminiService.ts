@@ -8,7 +8,9 @@ const PRIMARY_MODEL   = 'gemini-2.5-flash';
 const FALLBACK_MODEL  = 'gemini-2.5-flash-lite';
 
 const getAI = () => {
-  const apiKey = process.env.API_KEY;
+  // Vite expõe variáveis do frontend via import.meta.env.VITE_*
+  // process.env.API_KEY era o nome legado (sempre undefined no browser)
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
   if (!apiKey) {
     throw new Error(
       'Chave da API Gemini não configurada. ' +

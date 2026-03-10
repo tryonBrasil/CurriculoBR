@@ -212,7 +212,7 @@ export default function App() {
   const [isSaveModalOpen, setIsSaveModalOpen]           = useState(false);
   const [isCloudResumesOpen, setIsCloudResumesOpen]     = useState(false);
 
-  // Modal secreto do dono (ativado com Ctrl+Shift+O)
+  // Modal do painel admin
   const [isOwnerModalOpen, setIsOwnerModalOpen]     = useState(false);
   const [ownerSecret, setOwnerSecret]               = useState('');
   const [ownerLoading, setOwnerLoading]             = useState(false);
@@ -243,7 +243,7 @@ export default function App() {
   const [clientSearch, setClientSearch]             = useState('');
   const [clientFilter, setClientFilter]             = useState<'all' | 'vip' | 'expired' | 'blocked' | 'free'>('all');
 
-  // Atalho de teclado secreto para o modal do dono: Ctrl+Shift+O
+  // Atalho de teclado para o painel admin
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'O') {
@@ -1024,7 +1024,7 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* ── Painel do Dono (Ctrl+Shift+O) ── */}
+      {/* ── Painel Admin ── */}
       {isOwnerModalOpen && (
         <div
           className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
@@ -1075,7 +1075,7 @@ export default function App() {
                     : <><i className="fas fa-unlock-alt"></i> Entrar no Painel</>
                   }
                 </button>
-                <p className="text-center text-[9px] text-slate-700 mt-4 uppercase tracking-widest">Ctrl+Shift+O para fechar</p>
+
               </>
             )}
 
@@ -1135,7 +1135,7 @@ export default function App() {
                     >
                       <i className="fas fa-sign-out-alt text-xs"></i> Sair do painel
                     </button>
-                    <p className="text-center text-[9px] text-slate-700 uppercase tracking-widest">Ctrl+Shift+O · Segure o logo 3s no mobile</p>
+                    
                   </div>
                 )}
 
