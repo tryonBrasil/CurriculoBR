@@ -77,9 +77,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error('MP Error:', err);
-      return res.status(502).json({ error: 'Erro ao criar preferência no Mercado Pago' });
+      let errBody = '';
+      try { errBody = await response.text(); } catch { /* ignora */ }
+      console.error('MP Error:', response.status, errBody);
+
+      if (response.status === 401) {
+        return res.status(502).json({ error: 'Token do MercadoPago inválido ou expirado. Verifique MP_ACCESS_TOKEN no Vercel.' });
+      }
+      if (response.status === 400) {
+        // Extrair mensagem do MP se possível
+        try {
+          const mp = JSON.parse(errBody);
+          const detail = mp?.cause?.[0]?.description || mp?.message || 'Dados inválidos';
+          return res.status(502).json({ error: `MercadoPago: ${detail}` });
+        } catch { /* ignora */ }
+      }
+      return res.status(502).json({ error: `Erro ${response.status} no MercadoPago. Tente via Pix.` });
     }
 
     const data = await response.json();

@@ -198,6 +198,58 @@ export default function App() {
     });
     syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
   }, [user?.uid]);
+
+  // Busca depoimentos aprovados ao montar
+  useEffect(() => {
+    fetch('/api/reviews')
+      .then(r => r.ok ? r.json() : { reviews: [] })
+      .then(d => setCommunityReviews(d.reviews ?? []))
+      .catch(() => {});
+  }, []);
+
+  const handleSubmitReview = async () => {
+    setReviewError('');
+    if (!reviewName.trim()) { setReviewError('Informe seu nome.'); return; }
+    if (reviewText.trim().length < 20) { setReviewError('Escreva ao menos 20 caracteres.'); return; }
+    setReviewLoading(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: reviewName, role: reviewRole, city: reviewCity, stars: reviewStars, text: reviewText }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setReviewError(data.error || 'Erro ao enviar.'); return; }
+      setReviewSent(true);
+      setReviewName(''); setReviewRole(''); setReviewCity(''); setReviewText(''); setReviewStars(5);
+    } catch { setReviewError('Erro de conexão. Tente novamente.'); }
+    finally { setReviewLoading(false); }
+  };
+
+  const handleLoadPendingReviews = async () => {
+    setPendingReviewsLoading(true);
+    try {
+      const res = await fetch('/api/reviews?pending=1', { headers: { 'Authorization': `Bearer ${ownerSecret}` } });
+      const data = await res.json();
+      setPendingReviews(data.reviews ?? []);
+    } catch { /* ignora */ }
+    finally { setPendingReviewsLoading(false); }
+  };
+
+  const handleReviewAction = async (id: string, action: 'approve' | 'delete') => {
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerSecret}` },
+        body: JSON.stringify({ action, id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPendingReviews(prev => prev.filter(r => r.id !== id));
+        showToast(data.message || 'Feito!', 'success');
+      } else {
+        showToast(data.error || 'Erro.', 'error');
+      }
+    } catch { showToast('Erro de conexão.', 'error'); }
+  };
   const { saving: cloudSaving, loading: cloudLoading, resumes: cloudResumes, saveResume, listResumes, deleteResume } = useCloudSave(user);
 
   // ID do currículo aberto da nuvem (null = não salvo ainda / só local)
@@ -214,11 +266,26 @@ export default function App() {
 
   // Modal do painel admin
   const [isOwnerModalOpen, setIsOwnerModalOpen]     = useState(false);
+
+  // ── Depoimentos da comunidade ─────────────────────────────────────────────
+  const [communityReviews, setCommunityReviews]       = useState<any[]>([]);
+  const [reviewFormOpen, setReviewFormOpen]           = useState(false);
+  const [reviewName, setReviewName]                   = useState('');
+  const [reviewRole, setReviewRole]                   = useState('');
+  const [reviewCity, setReviewCity]                   = useState('');
+  const [reviewStars, setReviewStars]                 = useState(5);
+  const [reviewText, setReviewText]                   = useState('');
+  const [reviewLoading, setReviewLoading]             = useState(false);
+  const [reviewSent, setReviewSent]                   = useState(false);
+  const [reviewError, setReviewError]                 = useState('');
+  // Admin: aba depoimentos
+  const [pendingReviews, setPendingReviews]           = useState<any[]>([]);
+  const [pendingReviewsLoading, setPendingReviewsLoading] = useState(false);
   const [ownerSecret, setOwnerSecret]               = useState('');
   const [ownerLoading, setOwnerLoading]             = useState(false);
   const [ownerError, setOwnerError]                 = useState('');
   const [ownerAuthenticated, setOwnerAuthenticated] = useState(false);
-  const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'bloqueados' | 'clientes'>('acesso');
+  const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'bloqueados' | 'clientes' | 'depoimentos'>('acesso');
   const ownerLongPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   // VIP management state
   const [vipBlockList, setVipBlockList]             = useState<any[]>([]);
@@ -1102,6 +1169,12 @@ export default function App() {
                   >
                     <i className="fas fa-users text-[9px]"></i> Clientes
                   </button>
+                  <button
+                    onClick={() => { setOwnerTab('depoimentos'); handleLoadPendingReviews(); }}
+                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'depoimentos' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <i className="fas fa-star text-[9px]"></i> Reviews
+                  </button>
                 </div>
 
                 {/* ── Tab: Acesso ── */}
@@ -1432,6 +1505,80 @@ export default function App() {
                         </div>
                       );
                     })()}
+                  </div>
+                )}
+
+                {/* ── Tab: Depoimentos ── */}
+                {ownerTab === 'depoimentos' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Aguardando aprovação</p>
+                      <button
+                        onClick={handleLoadPendingReviews}
+                        disabled={pendingReviewsLoading}
+                        className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:text-amber-400 transition-colors text-xs"
+                        title="Atualizar"
+                      >
+                        <i className={`fas ${pendingReviewsLoading ? 'fa-circle-notch fa-spin' : 'fa-sync-alt'}`}></i>
+                      </button>
+                    </div>
+
+                    {pendingReviewsLoading ? (
+                      <div className="text-center py-10">
+                        <i className="fas fa-circle-notch fa-spin text-slate-500 text-xl"></i>
+                        <p className="text-[10px] text-slate-600 mt-2 uppercase tracking-widest">Carregando...</p>
+                      </div>
+                    ) : pendingReviews.length === 0 ? (
+                      <div className="text-center py-10 border-2 border-dashed border-slate-700 rounded-xl">
+                        <i className="fas fa-star text-slate-700 text-2xl mb-3"></i>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-widest">Nenhum depoimento pendente</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-1">
+                        {pendingReviews.map((r: any) => (
+                          <div key={r.id} className="bg-slate-800 rounded-xl border border-slate-700 p-4">
+                            {/* Header */}
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${r.color || 'from-blue-500 to-cyan-600'} flex items-center justify-center text-white font-black text-xs shrink-0`}>
+                                  {r.avatar || r.name?.[0]?.toUpperCase() || '?'}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-black text-white">{r.name}</p>
+                                  <p className="text-[9px] text-slate-500">{[r.role, r.city].filter(Boolean).join(' · ')}</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-0.5 shrink-0">
+                                {[...Array(r.stars || 5)].map((_: any, j: number) => (
+                                  <i key={j} className="fas fa-star text-amber-400 text-[9px]"></i>
+                                ))}
+                              </div>
+                            </div>
+                            {/* Texto */}
+                            <p className="text-xs text-slate-400 leading-relaxed mb-3 italic">"{r.text}"</p>
+                            {/* Data */}
+                            <p className="text-[9px] text-slate-600 mb-3">
+                              Enviado em {new Date(r.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}
+                            </p>
+                            {/* Ações */}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleReviewAction(r.id, 'approve')}
+                                className="flex-1 py-2 bg-green-900/40 hover:bg-green-800/60 border border-green-700 text-green-400 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                              >
+                                <i className="fas fa-check"></i> Aprovar
+                              </button>
+                              <button
+                                onClick={() => handleReviewAction(r.id, 'delete')}
+                                className="flex-1 py-2 bg-red-900/40 hover:bg-red-800/60 border border-red-700 text-red-400 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                              >
+                                <i className="fas fa-trash"></i> Rejeitar
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
           </div>
@@ -2117,8 +2264,11 @@ export default function App() {
         <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
             <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-3 text-sm">Depoimentos</p>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white text-center mb-10 uppercase tracking-tight">Quem já conquistou sua vaga</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white text-center mb-2 uppercase tracking-tight">Quem já conquistou sua vaga</h3>
+            <p className="text-center text-sm text-slate-400 mb-10">Histórias reais de quem usou o CurriculoGO para se destacar</p>
+
+            {/* Depoimentos fixos */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               {[
                 { name: 'Ana Paula S.', role: 'Analista de Marketing', city: 'São Paulo, SP', text: 'Criei meu currículo em 20 minutos com o template Aurora Dark. Na semana seguinte já estava sendo chamada para entrevistas. Melhor ferramenta que já usei!', stars: 5, avatar: 'A', color: 'from-pink-500 to-rose-600' },
                 { name: 'Ricardo M.', role: 'Dev Frontend', city: 'Belo Horizonte, MG', text: 'O template Tech Dark é perfeito para desenvolvedores. A análise ATS com IA me ajudou a otimizar o currículo e consegui 3 entrevistas em uma semana.', stars: 5, avatar: 'R', color: 'from-blue-500 to-cyan-600' },
@@ -2138,6 +2288,121 @@ export default function App() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Depoimentos da comunidade (aprovados) */}
+            {communityReviews.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                {communityReviews.map((t: any) => (
+                  <div key={t.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-blue-100 dark:border-slate-700 shadow-sm relative">
+                    <span className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full">Verificado</span>
+                    <div className="flex items-center gap-1 mb-4">
+                      {[...Array(t.stars)].map((_: any, j: number) => <i key={j} className="fas fa-star text-amber-400 text-xs"></i>)}
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-5 italic">"{t.text}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>{t.avatar}</div>
+                      <div>
+                        <p className="font-black text-slate-900 dark:text-white text-sm">{t.name}</p>
+                        <p className="text-xs text-slate-400 font-medium">{[t.role, t.city].filter(Boolean).join(' · ')}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* CTA: Deixar depoimento */}
+            <div className="mt-8 border-t border-slate-200 dark:border-slate-700 pt-10">
+              {!reviewFormOpen && !reviewSent && (
+                <div className="text-center">
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Você usou o CurriculoGO e conseguiu sua vaga? <span className="font-black text-slate-700 dark:text-white">Conta pra gente! 🎉</span></p>
+                  <button
+                    onClick={() => setReviewFormOpen(true)}
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg hover:shadow-xl active:scale-95"
+                  >
+                    <i className="fas fa-star"></i> Compartilhar minha experiência
+                  </button>
+                </div>
+              )}
+
+              {reviewSent && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-check text-green-500 text-2xl"></i>
+                  </div>
+                  <h4 className="font-black text-slate-900 dark:text-white text-lg mb-2">Depoimento enviado! 🎉</h4>
+                  <p className="text-slate-500 text-sm mb-4">Obrigado! Seu depoimento será publicado após uma breve revisão.</p>
+                  <button onClick={() => { setReviewSent(false); setReviewFormOpen(false); }} className="text-xs text-blue-500 hover:text-blue-700 font-bold uppercase tracking-widest">Fechar</button>
+                </div>
+              )}
+
+              {reviewFormOpen && !reviewSent && (
+                <div className="max-w-xl mx-auto bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <div className="flex items-center justify-between mb-5">
+                    <h4 className="font-black text-slate-900 dark:text-white">Sua experiência 💬</h4>
+                    <button onClick={() => setReviewFormOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                      <i className="fas fa-times text-xs"></i>
+                    </button>
+                  </div>
+
+                  {/* Estrelas */}
+                  <div className="mb-4">
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Avaliação</p>
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map(s => (
+                        <button key={s} onClick={() => setReviewStars(s)} className="text-2xl transition-transform hover:scale-110 active:scale-95">
+                          <i className={`fas fa-star ${s <= reviewStars ? 'text-amber-400' : 'text-slate-200 dark:text-slate-600'}`}></i>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Campos */}
+                  <div className="space-y-3 mb-4">
+                    <input
+                      value={reviewName} onChange={e => setReviewName(e.target.value)} maxLength={60}
+                      placeholder="Seu nome *"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all"
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        value={reviewRole} onChange={e => setReviewRole(e.target.value)} maxLength={60}
+                        placeholder="Cargo / área"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all"
+                      />
+                      <input
+                        value={reviewCity} onChange={e => setReviewCity(e.target.value)} maxLength={60}
+                        placeholder="Cidade"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all"
+                      />
+                    </div>
+                    <div className="relative">
+                      <textarea
+                        value={reviewText} onChange={e => setReviewText(e.target.value.slice(0, 400))}
+                        placeholder="Conte como o CurriculoGO te ajudou... (mínimo 20 caracteres) *"
+                        rows={4}
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all resize-none"
+                      />
+                      <span className="absolute bottom-2 right-3 text-[10px] text-slate-400">{reviewText.length}/400</span>
+                    </div>
+                  </div>
+
+                  {reviewError && <p className="text-xs text-red-500 font-medium mb-3">⚠️ {reviewError}</p>}
+
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={reviewLoading}
+                    className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 text-white rounded-xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                  >
+                    {reviewLoading
+                      ? <><i className="fas fa-circle-notch fa-spin"></i> Enviando...</>
+                      : <><i className="fas fa-paper-plane"></i> Enviar depoimento</>
+                    }
+                  </button>
+                  <p className="text-center text-[10px] text-slate-400 mt-3">Seu depoimento será publicado após uma breve revisão pelo time do CurriculoGO.</p>
+                </div>
+              )}
             </div>
           </div>
         </section>

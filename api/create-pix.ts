@@ -55,9 +55,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.error('MP Pix Error:', errText);
-      return res.status(502).json({ error: 'Erro ao criar pagamento Pix no Mercado Pago' });
+      let errText = '';
+      try { errText = await response.text(); } catch { /* ignora */ }
+      console.error('MP Pix Error:', response.status, errText);
+
+      if (response.status === 401) {
+        return res.status(502).json({ error: 'Token do MercadoPago inválido ou expirado. Verifique MP_ACCESS_TOKEN no Vercel.' });
+      }
+      if (response.status === 400) {
+        try {
+          const mp = JSON.parse(errText);
+          const detail = mp?.cause?.[0]?.description || mp?.message || 'Dados inválidos';
+          return res.status(502).json({ error: `MercadoPago: ${detail}` });
+        } catch { /* ignora */ }
+      }
+      return res.status(502).json({ error: `Erro ${response.status} no MercadoPago. Verifique se o Pix está habilitado na sua conta MP.` });
     }
 
     const payment  = await response.json();

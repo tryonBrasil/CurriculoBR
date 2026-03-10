@@ -126,10 +126,20 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
     setError(''); setScreen('card-loading');
     try {
       const res = await fetch('/api/create-preference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan }) });
-      if (!res.ok) throw new Error('Erro ao conectar com o servidor de pagamento.');
+      if (!res.ok) {
+        let msg = 'Erro ao conectar com o servidor de pagamento.';
+        try {
+          const errData = await res.json();
+          if (errData?.error) msg = errData.error;
+          // Mensagens amigáveis para erros comuns
+          if (msg.includes('MP_ACCESS_TOKEN')) msg = 'Pagamento não configurado pelo administrador. Tente via Pix.';
+          if (msg.includes('401') || msg.includes('Unauthorized')) msg = 'Credencial de pagamento inválida. Contate o suporte.';
+        } catch { /* usa msg padrão */ }
+        throw new Error(msg);
+      }
       const data = await res.json();
       const url = data.init_point || data.sandbox_init_point;
-      if (!url) throw new Error('Link de pagamento não retornado.');
+      if (!url) throw new Error('Link de pagamento não retornado pelo servidor.');
       localStorage.setItem('cbr_pending_payment', selectedPlan);
       if (uid) localStorage.setItem(PENDING_UID_KEY, uid);
       window.location.href = url;
