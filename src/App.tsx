@@ -1457,6 +1457,7 @@ export default function App() {
             onClose={() => setIsPremiumModalOpen(false)}
             isExpired={premiumExpired}
             daysLeft={daysLeft}
+            uid={user?.uid ?? null}
             onUnlocked={(plan) => {
               setIsPremiumModalOpen(false);
               const msg = plan === 'lifetime'

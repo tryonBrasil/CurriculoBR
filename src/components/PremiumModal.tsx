@@ -7,6 +7,7 @@ interface PremiumModalProps {
   onUnlocked?: (plan: PremiumPlan) => void;
   isExpired?: boolean;
   daysLeft?: number | null;
+  uid?: string | null; // uid do Firebase — vincula o premium à conta
 }
 
 const STORAGE_KEY = 'cbr_premium_v2';
@@ -54,7 +55,9 @@ const CTA_COLOR: Record<PremiumPlan, string> = {
   lifetime: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
 };
 
-const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onUnlocked, isExpired = false }) => {
+const PENDING_UID_KEY = 'cbr_pending_uid';
+
+const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onUnlocked, isExpired = false, uid }) => {
   const [screen, setScreen] = useState<Screen>('choose-plan');
   const [selectedPlan, setSelectedPlan] = useState<PremiumPlan>('yearly');
   const [error, setError] = useState('');
@@ -90,7 +93,8 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
     if (pollRef.current) clearInterval(pollRef.current);
     const check = async () => {
       try {
-        const res = await fetch(`/api/check-pix?payment_id=${paymentId}`);
+        const uidParam = uid ? `&uid=${encodeURIComponent(uid)}` : '';
+        const res = await fetch(`/api/check-pix?payment_id=${paymentId}${uidParam}`);
         if (!res.ok) return;
         const data = await res.json();
         if (data.approved) {
@@ -130,6 +134,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
       const url = data.init_point || data.sandbox_init_point;
       if (!url) throw new Error('Link de pagamento não retornado.');
       localStorage.setItem('cbr_pending_payment', selectedPlan);
+      if (uid) localStorage.setItem(PENDING_UID_KEY, uid);
       window.location.href = url;
     } catch (e: any) { setError(e.message || 'Erro inesperado.'); setScreen('choose-pay'); }
   };

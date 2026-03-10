@@ -1,17 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 
-// ── Chaves de storage ──────────────────────────────────────────────────
-const STORAGE_KEY  = 'cbr_premium_v2';
-const PENDING_KEY  = 'cbr_pending_payment';
+// ── Chaves de storage ──────────────────────────────────────────────────────
+const STORAGE_KEY   = 'cbr_premium_v2';
+const PENDING_KEY   = 'cbr_pending_payment';
+const PENDING_UID   = 'cbr_pending_uid';    // uid guardado antes do redirect p/ cartão
 
-// OWNER_KEY REMOVIDA intencionalmente.
-// O acesso de dono vive APENAS em estado React (memória da sessão).
-// Vantagens:
-//   • Nenhum rastro no localStorage — DevTools não revela nada
-//   • Desaparece automaticamente ao fechar/recarregar a aba
-//   • Não pode ser ativado manualmente por qualquer usuário
-
-// ── Tipos públicos ─────────────────────────────────────────────────────
+// ── Tipos públicos ─────────────────────────────────────────────────────────
 export type PremiumPlan = 'avulso' | 'monthly' | 'yearly' | 'lifetime';
 
 export interface PremiumState {
@@ -22,8 +16,8 @@ export interface PremiumState {
   isExpired: boolean;
 }
 
-const AVULSO_MS  = 7  * 24 * 60 * 60 * 1000;
-const MONTHLY_MS = 30 * 24 * 60 * 60 * 1000;
+const AVULSO_MS  = 7   * 24 * 60 * 60 * 1000;
+const MONTHLY_MS = 30  * 24 * 60 * 60 * 1000;
 const YEARLY_MS  = 365 * 24 * 60 * 60 * 1000;
 
 function getDurationMs(plan: PremiumPlan): number | null {
@@ -33,7 +27,6 @@ function getDurationMs(plan: PremiumPlan): number | null {
   return null;
 }
 
-// loadState lê APENAS plano pago — nunca mais o OWNER_KEY
 function loadState(): PremiumState {
   // Migração v1 → v2
   if (localStorage.getItem('cbr_premium_v1') === 'true') {
@@ -53,7 +46,7 @@ function loadState(): PremiumState {
     }
   } catch { /* ignora */ }
 
-  // Remove chave legada do dono (se ainda existir de versões antigas)
+  // Remove chave legada do dono
   localStorage.removeItem('cbr_owner_v1');
 
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -61,11 +54,9 @@ function loadState(): PremiumState {
 
   try {
     const saved = JSON.parse(raw) as { plan: PremiumPlan; activatedAt: number; paymentId?: string };
-
     if (saved.plan === 'lifetime') {
       return { isPremium: true, plan: 'lifetime', expiresAt: null, daysLeft: null, isExpired: false };
     }
-
     const durationMs = getDurationMs(saved.plan);
     if (durationMs) {
       const expiresAt = new Date(saved.activatedAt + durationMs);
@@ -87,20 +78,15 @@ function saveState(plan: PremiumPlan, paymentId: string) {
 
 // Estado VIP virtual do dono — não persiste em lugar nenhum
 const OWNER_PREMIUM_STATE: PremiumState = {
-  isPremium: true,
-  plan: 'lifetime',
-  expiresAt: null,
-  daysLeft: null,
-  isExpired: false,
+  isPremium: true, plan: 'lifetime', expiresAt: null, daysLeft: null, isExpired: false,
 };
 
 export function usePremium() {
   const [state, setState]                 = useState<PremiumState>(loadState);
   const [isVerifying, setIsVerifying]     = useState(false);
-  // ── ACESSO DE DONO: apenas React state, zero localStorage ───────────
+  // Acesso de dono: apenas React state, zero localStorage
   const [isOwnerAccessActive, setIsOwner] = useState(false);
 
-  // O que o app enxerga: se o dono estiver ativo, sobrepõe o plano real
   const effectiveState = isOwnerAccessActive ? OWNER_PREMIUM_STATE : state;
 
   useEffect(() => {
@@ -111,23 +97,27 @@ export function usePremium() {
   }, [isOwnerAccessActive]);
 
   useEffect(() => {
-    const onStorage = () => {
-      if (!isOwnerAccessActive) setState(loadState());
-    };
+    const onStorage = () => { if (!isOwnerAccessActive) setState(loadState()); };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, [isOwnerAccessActive]);
 
+  // ── Retorno do cartão (Mercado Pago Checkout Pro) ─────────────────────────
   useEffect(() => {
     const params    = new URLSearchParams(window.location.search);
     const paymentId = params.get('payment_id');
     const status    = params.get('status');
-    const pendingValue = localStorage.getItem(PENDING_KEY);
-    if (!pendingValue) return;
-    const plan: PremiumPlan = (['avulso','monthly','yearly','lifetime'].includes(pendingValue)
-      ? pendingValue : 'avulso') as PremiumPlan;
+    const pendingPlan = localStorage.getItem(PENDING_KEY);
+    if (!pendingPlan) return;
+
+    const plan: PremiumPlan = (['avulso','monthly','yearly','lifetime'].includes(pendingPlan)
+      ? pendingPlan : 'avulso') as PremiumPlan;
+
+    const pendingUid = localStorage.getItem(PENDING_UID) ?? undefined;
     localStorage.removeItem(PENDING_KEY);
-    if (status === 'approved' && paymentId) verifyAndUnlock(paymentId, plan);
+    localStorage.removeItem(PENDING_UID);
+
+    if (status === 'approved' && paymentId) verifyAndUnlock(paymentId, plan, pendingUid);
     if (paymentId || status) window.history.replaceState({}, '', window.location.pathname);
   }, []);
 
@@ -136,10 +126,16 @@ export function usePremium() {
     setState(loadState());
   }, []);
 
-  const verifyAndUnlock = useCallback(async (paymentId: string, plan: PremiumPlan = 'avulso') => {
+  // verifyAndUnlock: verifica pagamento E passa uid para salvar no Firestore
+  const verifyAndUnlock = useCallback(async (
+    paymentId: string,
+    plan: PremiumPlan = 'avulso',
+    uid?: string,
+  ) => {
     setIsVerifying(true);
     try {
-      const res  = await fetch(`/api/verify-payment?payment_id=${paymentId}`);
+      const uidParam = uid ? `&uid=${encodeURIComponent(uid)}` : '';
+      const res  = await fetch(`/api/verify-payment?payment_id=${paymentId}${uidParam}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       if (data.approved) {
@@ -157,30 +153,23 @@ export function usePremium() {
     setState(loadState());
   }, []);
 
-  // ownerUnlock: confirma senha com o servidor e ativa APENAS em memória
+  // ownerUnlock: confirma senha no servidor → ativa apenas em memória React
   const ownerUnlock = useCallback(async (secret: string): Promise<{ ok: boolean; error?: string }> => {
     if (!secret.trim()) return { ok: false, error: 'Digite a senha.' };
     try {
       const res  = await fetch('/api/owner-unlock', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ secret }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret }),
       });
       const data = await res.json();
-      if (res.ok && data.ok) {
-        setIsOwner(true); // ← só React state, zero localStorage
-        return { ok: true };
-      }
+      if (res.ok && data.ok) { setIsOwner(true); return { ok: true }; }
       return { ok: false, error: data.error || 'Senha incorreta.' };
     } catch { return { ok: false, error: 'Erro de conexão.' }; }
   }, []);
 
-  // toggleOwnerAccess: liga/desliga sem tocar no localStorage
-  const toggleOwnerAccess = useCallback(() => {
-    setIsOwner(prev => !prev);
-  }, []);
+  const toggleOwnerAccess = useCallback(() => setIsOwner(prev => !prev), []);
 
-  // Verifica se o uid está bloqueado pelo admin
+  // Verifica se uid está bloqueado pelo admin
   const checkAndRevokeIfBlocked = async (uid: string): Promise<boolean> => {
     if (!uid) return false;
     try {
@@ -197,7 +186,9 @@ export function usePremium() {
     return false;
   };
 
-  // Consulta o servidor para ver se o admin ativou um plano manualmente
+  // ── syncPlanFromServer ────────────────────────────────────────────────────
+  // Ao fazer login: consulta Firestore via admin-clients e aplica o plano
+  // salvo no servidor. Isso garante que o premium segue a conta, não o device.
   const syncPlanFromServer = async (uid: string): Promise<void> => {
     if (!uid || isOwnerAccessActive) return;
     try {
@@ -209,37 +200,32 @@ export function usePremium() {
       const localRaw = localStorage.getItem(STORAGE_KEY);
       const local    = localRaw ? JSON.parse(localRaw) : null;
 
-      const serverPlanRank: Record<string, number> = { avulso: 1, monthly: 2, yearly: 3, lifetime: 4 };
-      const serverRank = serverPlanRank[data.plan] ?? 0;
-      const localRank  = local?.plan ? (serverPlanRank[local.plan] ?? 0) : 0;
+      const rank: Record<string, number> = { avulso: 1, monthly: 2, yearly: 3, lifetime: 4 };
+      const serverRank = rank[data.plan] ?? 0;
+      const localRank  = local?.plan ? (rank[local.plan] ?? 0) : 0;
 
-      if (serverRank > localRank || !local) {
+      if (serverRank >= localRank || !local) {
+        // Servidor tem plano igual ou superior → aplica localmente
         const activatedAt = data.activatedAt ? new Date(data.activatedAt).getTime() : Date.now();
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          plan:      data.plan,
-          activatedAt,
-          paymentId: data.paymentId ?? 'server_sync',
+          plan: data.plan, activatedAt, paymentId: data.paymentId ?? 'server_sync',
         }));
         setState(loadState());
       }
     } catch { /* falha silenciosa */ }
   };
 
-  // Sincroniza apenas dados de perfil (sem premium — servidor ignora mesmo)
+  // Sincroniza apenas dados de perfil com o Firestore
   const syncClientToServer = async (
     user: { uid: string; email: string | null; displayName: string | null; photoURL: string | null }
   ) => {
     if (!user?.uid) return;
     try {
       await fetch('/api/admin-clients', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          action:      'sync',
-          uid:         user.uid,
-          email:       user.email       ?? '',
-          displayName: user.displayName ?? '',
-          photoURL:    user.photoURL    ?? '',
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sync', uid: user.uid,
+          email: user.email ?? '', displayName: user.displayName ?? '', photoURL: user.photoURL ?? '',
         }),
       });
     } catch { /* falha silenciosa */ }
@@ -258,5 +244,7 @@ export function usePremium() {
     syncPlanFromServer,
     syncClientToServer,
     unlockForTesting: () => unlock('lifetime', 'test'),
+    // Expõe PENDING_UID key para o PremiumModal usar
+    PENDING_UID_KEY: PENDING_UID,
   };
 }
