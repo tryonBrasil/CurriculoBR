@@ -2,8 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 
 // ── Chaves de storage ──────────────────────────────────────────────────
 const STORAGE_KEY  = 'cbr_premium_v2';
-const OWNER_KEY    = 'cbr_owner_v1';
 const PENDING_KEY  = 'cbr_pending_payment';
+
+// OWNER_KEY REMOVIDA intencionalmente.
+// O acesso de dono vive APENAS em estado React (memória da sessão).
+// Vantagens:
+//   • Nenhum rastro no localStorage — DevTools não revela nada
+//   • Desaparece automaticamente ao fechar/recarregar a aba
+//   • Não pode ser ativado manualmente por qualquer usuário
 
 // ── Tipos públicos ─────────────────────────────────────────────────────
 export type PremiumPlan = 'avulso' | 'monthly' | 'yearly' | 'lifetime';
@@ -16,25 +22,26 @@ export interface PremiumState {
   isExpired: boolean;
 }
 
-const AVULSO_MS  = 7  * 24 * 60 * 60 * 1000;   // 7 dias
-const MONTHLY_MS = 30 * 24 * 60 * 60 * 1000;   // 30 dias
-const YEARLY_MS  = 365 * 24 * 60 * 60 * 1000;  // 365 dias
+const AVULSO_MS  = 7  * 24 * 60 * 60 * 1000;
+const MONTHLY_MS = 30 * 24 * 60 * 60 * 1000;
+const YEARLY_MS  = 365 * 24 * 60 * 60 * 1000;
 
 function getDurationMs(plan: PremiumPlan): number | null {
   if (plan === 'avulso')  return AVULSO_MS;
   if (plan === 'monthly') return MONTHLY_MS;
   if (plan === 'yearly')  return YEARLY_MS;
-  return null; // lifetime = sem expiração
+  return null;
 }
 
+// loadState lê APENAS plano pago — nunca mais o OWNER_KEY
 function loadState(): PremiumState {
-  // ── Migração de usuários com plano antigo ──
+  // Migração v1 → v2
   if (localStorage.getItem('cbr_premium_v1') === 'true') {
     const paymentId = localStorage.getItem('cbr_premium_payment_id') ?? 'migrated_v1';
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ plan: 'lifetime', activatedAt: Date.now(), paymentId }));
     localStorage.removeItem('cbr_premium_v1');
   }
-  // Migra 'weekly' antigo para 'avulso'
+  // Migra 'weekly' → 'avulso'
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -46,9 +53,8 @@ function loadState(): PremiumState {
     }
   } catch { /* ignora */ }
 
-  if (localStorage.getItem(OWNER_KEY) === 'true') {
-    return { isPremium: true, plan: 'lifetime', expiresAt: null, daysLeft: null, isExpired: false };
-  }
+  // Remove chave legada do dono (se ainda existir de versões antigas)
+  localStorage.removeItem('cbr_owner_v1');
 
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return { isPremium: false, plan: null, expiresAt: null, daysLeft: null, isExpired: false };
@@ -79,25 +85,43 @@ function saveState(plan: PremiumPlan, paymentId: string) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ plan, activatedAt: Date.now(), paymentId }));
 }
 
+// Estado VIP virtual do dono — não persiste em lugar nenhum
+const OWNER_PREMIUM_STATE: PremiumState = {
+  isPremium: true,
+  plan: 'lifetime',
+  expiresAt: null,
+  daysLeft: null,
+  isExpired: false,
+};
+
 export function usePremium() {
-  const [state, setState] = useState<PremiumState>(loadState);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [state, setState]                 = useState<PremiumState>(loadState);
+  const [isVerifying, setIsVerifying]     = useState(false);
+  // ── ACESSO DE DONO: apenas React state, zero localStorage ───────────
+  const [isOwnerAccessActive, setIsOwner] = useState(false);
+
+  // O que o app enxerga: se o dono estiver ativo, sobrepõe o plano real
+  const effectiveState = isOwnerAccessActive ? OWNER_PREMIUM_STATE : state;
 
   useEffect(() => {
-    const id = setInterval(() => setState(loadState()), 60_000);
+    const id = setInterval(() => {
+      if (!isOwnerAccessActive) setState(loadState());
+    }, 60_000);
     return () => clearInterval(id);
-  }, []);
+  }, [isOwnerAccessActive]);
 
   useEffect(() => {
-    const onStorage = () => setState(loadState());
+    const onStorage = () => {
+      if (!isOwnerAccessActive) setState(loadState());
+    };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  }, [isOwnerAccessActive]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params    = new URLSearchParams(window.location.search);
     const paymentId = params.get('payment_id');
-    const status = params.get('status');
+    const status    = params.get('status');
     const pendingValue = localStorage.getItem(PENDING_KEY);
     if (!pendingValue) return;
     const plan: PremiumPlan = (['avulso','monthly','yearly','lifetime'].includes(pendingValue)
@@ -115,7 +139,7 @@ export function usePremium() {
   const verifyAndUnlock = useCallback(async (paymentId: string, plan: PremiumPlan = 'avulso') => {
     setIsVerifying(true);
     try {
-      const res = await fetch(`/api/verify-payment?payment_id=${paymentId}`);
+      const res  = await fetch(`/api/verify-payment?payment_id=${paymentId}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       if (data.approved) {
@@ -129,38 +153,43 @@ export function usePremium() {
 
   const revokePremium = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(OWNER_KEY);
+    setIsOwner(false);
     setState(loadState());
   }, []);
 
+  // ownerUnlock: confirma senha com o servidor e ativa APENAS em memória
   const ownerUnlock = useCallback(async (secret: string): Promise<{ ok: boolean; error?: string }> => {
     if (!secret.trim()) return { ok: false, error: 'Digite a senha.' };
     try {
-      const res = await fetch('/api/owner-unlock', {
-        method: 'POST',
+      const res  = await fetch('/api/owner-unlock', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret }),
+        body:    JSON.stringify({ secret }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        localStorage.setItem(OWNER_KEY, 'true');
-        setState(loadState());
+        setIsOwner(true); // ← só React state, zero localStorage
         return { ok: true };
       }
       return { ok: false, error: data.error || 'Senha incorreta.' };
     } catch { return { ok: false, error: 'Erro de conexão.' }; }
   }, []);
 
-  // Verifica com o servidor se o uid está na lista de bloqueados.
-  // Chamado quando o usuário faz login. Se bloqueado, revoga o premium local.
+  // toggleOwnerAccess: liga/desliga sem tocar no localStorage
+  const toggleOwnerAccess = useCallback(() => {
+    setIsOwner(prev => !prev);
+  }, []);
+
+  // Verifica se o uid está bloqueado pelo admin
   const checkAndRevokeIfBlocked = async (uid: string): Promise<boolean> => {
     if (!uid) return false;
     try {
-      const res = await fetch(`/api/admin-vip?check=${encodeURIComponent(uid)}`);
+      const res  = await fetch(`/api/admin-vip?check=${encodeURIComponent(uid)}`);
       if (!res.ok) return false;
       const data = await res.json();
       if (data.blocked) {
         localStorage.removeItem(STORAGE_KEY);
+        setIsOwner(false);
         setState(loadState());
         return true;
       }
@@ -168,82 +197,56 @@ export function usePremium() {
     return false;
   };
 
-  // Consulta o servidor para ver se o dono ativou um plano manualmente.
-  // Se o servidor tiver um plano ativo que o localStorage não tem, aplica localmente.
-  // Ignorado se o usuário for o próprio dono (cbr_owner_v1 = true).
+  // Consulta o servidor para ver se o admin ativou um plano manualmente
   const syncPlanFromServer = async (uid: string): Promise<void> => {
-    if (!uid) return;
-    // Dono não precisa de sync — ele controla o próprio acesso pelo toggle
-    if (localStorage.getItem(OWNER_KEY) === 'true') return;
+    if (!uid || isOwnerAccessActive) return;
     try {
-      const res = await fetch(`/api/admin-clients?status=${encodeURIComponent(uid)}`);
+      const res  = await fetch(`/api/admin-clients?status=${encodeURIComponent(uid)}`);
       if (!res.ok) return;
       const data = await res.json();
-
       if (!data.found || !data.isVip || data.isExpired) return;
 
-      // Servidor tem plano ativo — verifica se o local já tem algo equivalente
       const localRaw = localStorage.getItem(STORAGE_KEY);
-      const local = localRaw ? JSON.parse(localRaw) : null;
+      const local    = localRaw ? JSON.parse(localRaw) : null;
 
-      // Só aplica se o local estiver sem plano ou com plano diferente/menor
       const serverPlanRank: Record<string, number> = { avulso: 1, monthly: 2, yearly: 3, lifetime: 4 };
       const serverRank = serverPlanRank[data.plan] ?? 0;
       const localRank  = local?.plan ? (serverPlanRank[local.plan] ?? 0) : 0;
 
       if (serverRank > localRank || !local) {
-        // Converte activatedAt do servidor (ISO string) para timestamp numérico
         const activatedAt = data.activatedAt ? new Date(data.activatedAt).getTime() : Date.now();
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          plan:        data.plan,
+          plan:      data.plan,
           activatedAt,
-          paymentId:   data.paymentId ?? 'server_sync',
+          paymentId: data.paymentId ?? 'server_sync',
         }));
         setState(loadState());
       }
     } catch { /* falha silenciosa */ }
   };
 
-  // Sincroniza os dados do cliente (perfil + status VIP) com o Firestore via /api/admin-clients.
-  // Chamada: ao fazer login (sem premium) e ao ativar qualquer plano VIP.
-  const syncClientToServer = async (user: { uid: string; email: string | null; displayName: string | null; photoURL: string | null }, premiumOverride?: { plan: PremiumPlan; activatedAt: number; paymentId?: string } | null) => {
+  // Sincroniza apenas dados de perfil (sem premium — servidor ignora mesmo)
+  const syncClientToServer = async (
+    user: { uid: string; email: string | null; displayName: string | null; photoURL: string | null }
+  ) => {
     if (!user?.uid) return;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      let premiumData = premiumOverride ?? null;
-      if (!premiumData && raw) {
-        try { premiumData = JSON.parse(raw); } catch { /* ignora */ }
-      }
       await fetch('/api/admin-clients', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
           action:      'sync',
           uid:         user.uid,
-          email:       user.email        ?? '',
-          displayName: user.displayName  ?? '',
-          photoURL:    user.photoURL     ?? '',
-          premium:     premiumData,
+          email:       user.email       ?? '',
+          displayName: user.displayName ?? '',
+          photoURL:    user.photoURL    ?? '',
         }),
       });
-    } catch { /* falha silenciosa — não interrompe o fluxo do usuário */ }
+    } catch { /* falha silenciosa */ }
   };
 
-  // Liga/desliga o acesso de dono sem sair do painel
-  const toggleOwnerAccess = useCallback(() => {
-    const current = localStorage.getItem(OWNER_KEY) === 'true';
-    if (current) {
-      localStorage.removeItem(OWNER_KEY);
-    } else {
-      localStorage.setItem(OWNER_KEY, 'true');
-    }
-    setState(loadState());
-  }, []);
-
-  const isOwnerAccessActive = localStorage.getItem(OWNER_KEY) === 'true';
-
   return {
-    ...state,
+    ...effectiveState,
     isVerifying,
     isOwnerAccessActive,
     unlock,

@@ -1466,9 +1466,7 @@ export default function App() {
               window.dispatchEvent(new Event('storage'));
               // Sincroniza novo status VIP com o servidor para aparecer no painel do dono
               if (user?.uid) {
-                const raw = localStorage.getItem('cbr_premium_v2');
-                const premiumData = raw ? JSON.parse(raw) : null;
-                syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL }, premiumData);
+                syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
               }
             }}
           />
