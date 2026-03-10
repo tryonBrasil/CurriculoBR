@@ -2,10 +2,10 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Modelos em ordem de preferência:
-// 1. gemini-2.0-flash  — modelo estável e rápido (primary)
-// 2. gemini-1.5-flash  — fallback automático quando o primary retornar 503
-const PRIMARY_MODEL   = 'gemini-2.0-flash';
-const FALLBACK_MODEL  = 'gemini-1.5-flash';
+// 1. gemini-2.5-flash      — modelo principal gratuito (1M tokens, 250 req/dia)
+// 2. gemini-2.5-flash-lite — fallback gratuito (1.000 req/dia, mais leve)
+const PRIMARY_MODEL   = 'gemini-2.5-flash';
+const FALLBACK_MODEL  = 'gemini-2.5-flash-lite';
 
 const getAI = () => {
   const apiKey = process.env.API_KEY;
