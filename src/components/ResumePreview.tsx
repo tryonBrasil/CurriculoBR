@@ -497,46 +497,49 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
             </header>
             {/* Body */}
             <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '1fr 2fr', gap: '0' }}>
-              {/* Sidebar */}
+              {/* Sidebar — respeita sectionOrder entre summary/skills/extras */}
               <div className="px-8 py-6 space-y-6 overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', borderRight: '1px solid rgba(124,58,237,0.3)' }}>
-                {summary && (
-                  <div className={sectionWrapperStyle('summary')} onDragOver={(e) => handleDragOver(e, 'summary')} onDrop={(e) => handleDrop(e, 'summary')} onClick={() => onSectionClick?.('summary')}>
-                    <DragHandle id="summary" />
-                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-2" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Perfil</h2>
-                    <p className="text-[0.8em] leading-relaxed" style={{ color: '#cbd5e1' }}>{summary}</p>
-                  </div>
-                )}
-                {skills.length > 0 && (
-                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
-                    <DragHandle id="skills" />
-                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Habilidades</h2>
-                    <div className="flex flex-wrap gap-1.5">
-                      {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded-md text-[0.75em] font-bold" style={{ background: 'rgba(124,58,237,0.25)', color: '#c4b5fd', border: '1px solid rgba(124,58,237,0.4)' }}>{s.name}</span>)}
+                {sectionOrder.filter(id => ['summary','skills','extras'].includes(id)).map(id => {
+                  if (id === 'summary' && summary) return (
+                    <div key={id} className={sectionWrapperStyle('summary')} onDragOver={(e) => handleDragOver(e, 'summary')} onDrop={(e) => handleDrop(e, 'summary')} onClick={() => onSectionClick?.('summary')}>
+                      <DragHandle id="summary" />
+                      <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-2" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Perfil</h2>
+                      <p className="text-[0.8em] leading-relaxed" style={{ color: '#cbd5e1' }}>{summary}</p>
                     </div>
-                  </div>
-                )}
-                {(languages.length > 0 || courses.length > 0) && (
-                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
-                    <DragHandle id="extras" />
-                    {languages.length > 0 && <>
-                      <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Idiomas</h2>
-                      <div className="space-y-2 mb-4">
-                        {languages.map(l => (
-                          <div key={l.id} className="text-[0.78em]">
-                            <div className="flex justify-between mb-0.5" style={{ color: '#e2e8f0' }}><span className="font-bold">{l.name}</span><span style={{ color: '#94a3b8' }}>{l.level}</span></div>
-                            <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}><div className="h-full rounded-full" style={{ width: `${l.percentage}%`, background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }}></div></div>
-                          </div>
-                        ))}
+                  );
+                  if (id === 'skills' && skills.length > 0) return (
+                    <div key={id} className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                      <DragHandle id="skills" />
+                      <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Habilidades</h2>
+                      <div className="flex flex-wrap gap-1.5">
+                        {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded-md text-[0.75em] font-bold" style={{ background: 'rgba(124,58,237,0.25)', color: '#c4b5fd', border: '1px solid rgba(124,58,237,0.4)' }}>{s.name}</span>)}
                       </div>
-                    </>}
-                    {courses.length > 0 && <>
-                      <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-2" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Cursos</h2>
-                      <div className="space-y-2">
-                        {courses.map(c => <div key={c.id} className="text-[0.78em]"><p className="font-bold" style={{ color: '#e2e8f0' }}>{c.name}</p><p style={{ color: '#94a3b8' }}>{c.institution} • {c.year}</p></div>)}
-                      </div>
-                    </>}
-                  </div>
-                )}
+                    </div>
+                  );
+                  if (id === 'extras' && (languages.length > 0 || courses.length > 0)) return (
+                    <div key={id} className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                      <DragHandle id="extras" />
+                      {languages.length > 0 && <>
+                        <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Idiomas</h2>
+                        <div className="space-y-2 mb-4">
+                          {languages.map(l => (
+                            <div key={l.id} className="text-[0.78em]">
+                              <div className="flex justify-between mb-0.5" style={{ color: '#e2e8f0' }}><span className="font-bold">{l.name}</span><span style={{ color: '#94a3b8' }}>{l.level}</span></div>
+                              <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}><div className="h-full rounded-full" style={{ width: `${l.percentage}%`, background: 'linear-gradient(90deg, #7c3aed, #2563eb)' }}></div></div>
+                            </div>
+                          ))}
+                        </div>
+                      </>}
+                      {courses.length > 0 && <>
+                        <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-2" style={{ color: '#a78bfa', borderBottom: '1px solid rgba(124,58,237,0.4)', paddingBottom: '6px' }}>Cursos</h2>
+                        <div className="space-y-2">
+                          {courses.map(c => <div key={c.id} className="text-[0.78em]"><p className="font-bold" style={{ color: '#e2e8f0' }}>{c.name}</p><p style={{ color: '#94a3b8' }}>{c.institution} • {c.year}</p></div>)}
+                        </div>
+                      </>}
+                    </div>
+                  );
+                  return null;
+                })}
               </div>
               {/* Main — ordem respeita sectionOrder (exclui summary/skills/extras que ficam na sidebar) */}
               <div className="px-8 py-6 space-y-6 overflow-hidden">
@@ -920,50 +923,53 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                   return null;
                 })}
               </div>
-              {/* Right narrow column */}
+              {/* Right narrow column — respeita sectionOrder entre skills/extras/projects */}
               <div className="px-6 py-6 space-y-6 overflow-hidden bg-slate-50">
-                {skills.length > 0 && (
-                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
-                    <DragHandle id="skills" />
-                    <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-3">Skills</h2>
-                    <div className="space-y-1.5">
-                      {skills.map(s => <div key={s.id} className="text-[0.78em] font-bold text-slate-700 border-b border-slate-200 pb-1.5">{s.name}</div>)}
+                {sectionOrder.filter(id => ['skills','extras','projects'].includes(id)).map(id => {
+                  if (id === 'skills' && skills.length > 0) return (
+                    <div key={id} className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                      <DragHandle id="skills" />
+                      <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-3">Skills</h2>
+                      <div className="space-y-1.5">
+                        {skills.map(s => <div key={s.id} className="text-[0.78em] font-bold text-slate-700 border-b border-slate-200 pb-1.5">{s.name}</div>)}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {(languages.length > 0 || courses.length > 0) && (
-                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
-                    <DragHandle id="extras" />
-                    {languages.length > 0 && <>
-                      <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-2">Idiomas</h2>
-                      <div className="space-y-1.5 mb-4">
-                        {languages.map(l => <div key={l.id} className="text-[0.75em]"><p className="font-black text-slate-900">{l.name}</p><p className="text-slate-500">{l.level}</p></div>)}
-                      </div>
-                    </>}
-                    {courses.length > 0 && <>
-                      <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-2">Cursos</h2>
-                      <div className="space-y-2">
-                        {courses.map(c => <div key={c.id} className="text-[0.75em]"><p className="font-bold text-slate-900 leading-tight">{c.name}</p><p className="text-slate-500">{c.institution}</p></div>)}
-                      </div>
-                    </>}
-                  </div>
-                )}
-                {projects.length > 0 && (
-                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
-                    <DragHandle id="projects" />
-                    <h2 className="font-black uppercase tracking-[0.2em] mb-4 text-[0.88em] text-slate-900">Projetos</h2>
-                    <div className="space-y-4">
-                      {projects.map(proj => (
-                        <div key={proj.id}>
-                          <h3 className="font-black text-[0.95em] text-slate-900">{proj.name}</h3>
-                          {proj.technologies && <p className="text-[0.82em] font-bold text-slate-600 mt-0.5">{proj.technologies}</p>}
-                          {proj.description && <p className="text-[0.82em] text-slate-600 mt-1 leading-relaxed">{proj.description}</p>}
-                          {proj.url && <p className="text-[0.75em] text-blue-600 mt-0.5">{proj.url.replace(/^https?:\/\//, '')}</p>}
+                  );
+                  if (id === 'extras' && (languages.length > 0 || courses.length > 0)) return (
+                    <div key={id} className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                      <DragHandle id="extras" />
+                      {languages.length > 0 && <>
+                        <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-2">Idiomas</h2>
+                        <div className="space-y-1.5 mb-4">
+                          {languages.map(l => <div key={l.id} className="text-[0.75em]"><p className="font-black text-slate-900">{l.name}</p><p className="text-slate-500">{l.level}</p></div>)}
                         </div>
-                      ))}
+                      </>}
+                      {courses.length > 0 && <>
+                        <h2 className="font-black uppercase tracking-[0.2em] text-[0.7em] text-slate-900 mb-2">Cursos</h2>
+                        <div className="space-y-2">
+                          {courses.map(c => <div key={c.id} className="text-[0.75em]"><p className="font-bold text-slate-900 leading-tight">{c.name}</p><p className="text-slate-500">{c.institution}</p></div>)}
+                        </div>
+                      </>}
                     </div>
-                  </div>
-                )}
+                  );
+                  if (id === 'projects' && projects.length > 0) return (
+                    <div key={id} className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                      <DragHandle id="projects" />
+                      <h2 className="font-black uppercase tracking-[0.2em] mb-4 text-[0.88em] text-slate-900">Projetos</h2>
+                      <div className="space-y-4">
+                        {projects.map(proj => (
+                          <div key={proj.id}>
+                            <h3 className="font-black text-[0.95em] text-slate-900">{proj.name}</h3>
+                            {proj.technologies && <p className="text-[0.82em] font-bold text-slate-600 mt-0.5">{proj.technologies}</p>}
+                            {proj.description && <p className="text-[0.82em] text-slate-600 mt-1 leading-relaxed">{proj.description}</p>}
+                            {proj.url && <p className="text-[0.75em] text-blue-600 mt-0.5">{proj.url.replace(/^https?:\/\//, '')}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                  return null;
+                })}
               </div>
             </div>
           </div>
@@ -993,39 +999,42 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
               </div>
             </header>
             <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '1fr 2fr', gap: '0' }}>
-              {/* Left pastel sidebar */}
+              {/* Left pastel sidebar — respeita sectionOrder entre skills/extras */}
               <div className="px-7 py-7 space-y-6 overflow-hidden" style={{ background: '#fff0f6' }}>
-                {skills.length > 0 && (
-                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
-                    <DragHandle id="skills" />
-                    <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Habilidades</h2>
-                    <div className="flex flex-wrap gap-1.5">
-                      {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded-full text-[0.75em] font-bold" style={{ background: '#fce7f3', color: '#9d174d' }}>{s.name}</span>)}
+                {sectionOrder.filter(id => ['skills','extras'].includes(id)).map(id => {
+                  if (id === 'skills' && skills.length > 0) return (
+                    <div key={id} className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                      <DragHandle id="skills" />
+                      <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Habilidades</h2>
+                      <div className="flex flex-wrap gap-1.5">
+                        {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded-full text-[0.75em] font-bold" style={{ background: '#fce7f3', color: '#9d174d' }}>{s.name}</span>)}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {(languages.length > 0 || courses.length > 0) && (
-                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
-                    <DragHandle id="extras" />
-                    {languages.length > 0 && <>
-                      <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Idiomas</h2>
-                      <div className="space-y-2 mb-4">
-                        {languages.map(l => (
-                          <div key={l.id} className="text-[0.78em]">
-                            <div className="flex justify-between font-semibold mb-0.5" style={{ color: '#831843' }}><span>{l.name}</span><span style={{ color: '#db2777' }}>{l.level}</span></div>
-                            <div className="h-1.5 rounded-full" style={{ background: '#fce7f3' }}><div className="h-full rounded-full" style={{ width: `${l.percentage}%`, background: 'linear-gradient(90deg, #f9a8d4, #db2777)' }}></div></div>
-                          </div>
-                        ))}
-                      </div>
-                    </>}
-                    {courses.length > 0 && <>
-                      <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-2 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Cursos</h2>
-                      <div className="space-y-2">
-                        {courses.map(c => <div key={c.id} className="text-[0.78em]"><p className="font-bold leading-tight" style={{ color: '#831843' }}>{c.name}</p><p style={{ color: '#9d174d' }}>{c.institution} • {c.year}</p></div>)}
-                      </div>
-                    </>}
-                  </div>
-                )}
+                  );
+                  if (id === 'extras' && (languages.length > 0 || courses.length > 0)) return (
+                    <div key={id} className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                      <DragHandle id="extras" />
+                      {languages.length > 0 && <>
+                        <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-3 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Idiomas</h2>
+                        <div className="space-y-2 mb-4">
+                          {languages.map(l => (
+                            <div key={l.id} className="text-[0.78em]">
+                              <div className="flex justify-between font-semibold mb-0.5" style={{ color: '#831843' }}><span>{l.name}</span><span style={{ color: '#db2777' }}>{l.level}</span></div>
+                              <div className="h-1.5 rounded-full" style={{ background: '#fce7f3' }}><div className="h-full rounded-full" style={{ width: `${l.percentage}%`, background: 'linear-gradient(90deg, #f9a8d4, #db2777)' }}></div></div>
+                            </div>
+                          ))}
+                        </div>
+                      </>}
+                      {courses.length > 0 && <>
+                        <h2 className="font-black uppercase tracking-widest text-[0.72em] mb-2 pb-1.5" style={{ color: '#db2777', borderBottom: '2px solid #fce7f3' }}>Cursos</h2>
+                        <div className="space-y-2">
+                          {courses.map(c => <div key={c.id} className="text-[0.78em]"><p className="font-bold leading-tight" style={{ color: '#831843' }}>{c.name}</p><p style={{ color: '#9d174d' }}>{c.institution} • {c.year}</p></div>)}
+                        </div>
+                      </>}
+                    </div>
+                  );
+                  return null;
+                })}
               </div>
               {/* Right main */}
               <div className="px-8 py-7 space-y-5 overflow-hidden">
@@ -1182,56 +1191,59 @@ const ResumePreview: React.FC<Props> = ({ data, template, onSectionClick, onReor
                   return null;
                 })}
               </div>
-              {/* Right sidebar */}
+              {/* Right sidebar — respeita sectionOrder entre skills/extras/projects */}
               <div className="px-6 py-6 space-y-6 overflow-hidden" style={{ background: '#161b22' }}>
-                {skills.length > 0 && (
-                  <div className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
-                    <DragHandle id="skills" />
-                    <h2 className="text-[0.7em] font-bold mb-3" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> skills[]</h2>
-                    <div className="flex flex-wrap gap-1.5">
-                      {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded text-[0.72em] font-bold" style={{ background: 'rgba(56,139,253,0.15)', color: '#58a6ff', border: '1px solid rgba(56,139,253,0.3)' }}>{s.name}</span>)}
+                {sectionOrder.filter(id => ['skills','extras','projects'].includes(id)).map(id => {
+                  if (id === 'skills' && skills.length > 0) return (
+                    <div key={id} className={sectionWrapperStyle('skills')} onDragOver={(e) => handleDragOver(e, 'skills')} onDrop={(e) => handleDrop(e, 'skills')} onClick={() => onSectionClick?.('skills')}>
+                      <DragHandle id="skills" />
+                      <h2 className="text-[0.7em] font-bold mb-3" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> skills[]</h2>
+                      <div className="flex flex-wrap gap-1.5">
+                        {skills.map(s => <span key={s.id} className="px-2 py-0.5 rounded text-[0.72em] font-bold" style={{ background: 'rgba(56,139,253,0.15)', color: '#58a6ff', border: '1px solid rgba(56,139,253,0.3)' }}>{s.name}</span>)}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {(languages.length > 0 || courses.length > 0) && (
-                  <div className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
-                    <DragHandle id="extras" />
-                    {languages.length > 0 && <>
-                      <h2 className="text-[0.7em] font-bold mb-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> languages()</h2>
-                      <div className="space-y-2 mb-4">
-                        {languages.map(l => (
-                          <div key={l.id} className="text-[0.72em]">
-                            <div className="flex justify-between mb-0.5" style={{ color: '#c9d1d9' }}><span className="font-bold">{l.name}</span><span style={{ color: '#6e7681' }}>{l.level}</span></div>
-                            <div className="h-1 rounded" style={{ background: '#21262d' }}><div className="h-full rounded" style={{ width: `${l.percentage}%`, background: '#3fb950' }}></div></div>
+                  );
+                  if (id === 'extras' && (languages.length > 0 || courses.length > 0)) return (
+                    <div key={id} className={sectionWrapperStyle('extras')} onDragOver={(e) => handleDragOver(e, 'extras')} onDrop={(e) => handleDrop(e, 'extras')} onClick={() => onSectionClick?.('extras')}>
+                      <DragHandle id="extras" />
+                      {languages.length > 0 && <>
+                        <h2 className="text-[0.7em] font-bold mb-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> languages()</h2>
+                        <div className="space-y-2 mb-4">
+                          {languages.map(l => (
+                            <div key={l.id} className="text-[0.72em]">
+                              <div className="flex justify-between mb-0.5" style={{ color: '#c9d1d9' }}><span className="font-bold">{l.name}</span><span style={{ color: '#6e7681' }}>{l.level}</span></div>
+                              <div className="h-1 rounded" style={{ background: '#21262d' }}><div className="h-full rounded" style={{ width: `${l.percentage}%`, background: '#3fb950' }}></div></div>
+                            </div>
+                          ))}
+                        </div>
+                      </>}
+                      {courses.length > 0 && <>
+                        <h2 className="text-[0.7em] font-bold mb-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> certs[]</h2>
+                        <div className="space-y-2">
+                          {courses.map(c => <div key={c.id} className="text-[0.72em]"><p className="font-bold" style={{ color: '#c9d1d9' }}>{c.name}</p><p style={{ color: '#6e7681' }}>{c.institution} • {c.year}</p></div>)}
+                        </div>
+                      </>}
+                    </div>
+                  );
+                  if (id === 'projects' && projects.length > 0) return (
+                    <div key={id} className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
+                      <DragHandle id="projects" />
+                      <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#58a6ff', borderBottom: '1px solid #30363d', paddingBottom: '6px' }}>Projetos</h2>
+                      <div className="space-y-4">
+                        {projects.map(proj => (
+                          <div key={proj.id} className="relative pl-4" style={{ borderLeft: '2px solid #30363d' }}>
+                            <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full" style={{ background: '#58a6ff' }}></div>
+                            <h3 className="font-bold text-[0.88em]" style={{ color: '#e6edf3' }}>{proj.name}</h3>
+                            {proj.technologies && <p className="text-[0.78em] font-bold mt-0.5" style={{ color: '#58a6ff' }}>{proj.technologies}</p>}
+                            {proj.description && <p className="text-[0.78em] leading-relaxed mt-1" style={{ color: '#8b949e' }}>{proj.description}</p>}
+                            {proj.url && <p className="text-[0.72em] mt-0.5" style={{ color: '#3fb950' }}>{proj.url.replace(/^https?:\/\//, '')}</p>}
                           </div>
                         ))}
                       </div>
-                    </>}
-                    {courses.length > 0 && <>
-                      <h2 className="text-[0.7em] font-bold mb-2" style={{ color: '#3fb950' }}><span style={{ color: '#58a6ff' }}>#</span> certs[]</h2>
-                      <div className="space-y-2">
-                        {courses.map(c => <div key={c.id} className="text-[0.72em]"><p className="font-bold" style={{ color: '#c9d1d9' }}>{c.name}</p><p style={{ color: '#6e7681' }}>{c.institution} • {c.year}</p></div>)}
-                      </div>
-                    </>}
-                  </div>
-                )}
-                {projects.length > 0 && (
-                  <div className={sectionWrapperStyle('projects')} onDragOver={(e) => handleDragOver(e, 'projects')} onDrop={(e) => handleDrop(e, 'projects')} onClick={() => onSectionClick?.('projects')}>
-                    <DragHandle id="projects" />
-                    <h2 className="font-black uppercase tracking-widest text-[0.75em] mb-3" style={{ color: '#58a6ff', borderBottom: '1px solid #30363d', paddingBottom: '6px' }}>Projetos</h2>
-                    <div className="space-y-4">
-                      {projects.map(proj => (
-                        <div key={proj.id} className="relative pl-4" style={{ borderLeft: '2px solid #30363d' }}>
-                          <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full" style={{ background: '#58a6ff' }}></div>
-                          <h3 className="font-bold text-[0.88em]" style={{ color: '#e6edf3' }}>{proj.name}</h3>
-                          {proj.technologies && <p className="text-[0.78em] font-bold mt-0.5" style={{ color: '#58a6ff' }}>{proj.technologies}</p>}
-                          {proj.description && <p className="text-[0.78em] leading-relaxed mt-1" style={{ color: '#8b949e' }}>{proj.description}</p>}
-                          {proj.url && <p className="text-[0.72em] mt-0.5" style={{ color: '#3fb950' }}>{proj.url.replace(/^https?:\/\//, '')}</p>}
-                        </div>
-                      ))}
                     </div>
-                  </div>
-                )}
+                  );
+                  return null;
+                })}
               </div>
             </div>
           </div>
