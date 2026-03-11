@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Currículos salvos na nuvem — só o próprio usuário acessa
+    match /users/{uid}/resumes/{resumeId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Registro de clientes e planos — só o backend (Admin SDK) escreve
+    match /clients_registry/{uid} {
+      allow read, write: if false;
+    }
+
+    // Bloqueios VIP — só o backend escreve
+    match /vip_blocks/{uid} {
+      allow read, write: if false;
+    }
+
+    // Depoimentos — qualquer um pode criar (pending), ninguém lê/edita diretamente
+    // O backend (Admin SDK) faz tudo via server-side
+    match /reviews/{reviewId} {
+      allow read, write: if false;
+    }
+  }
+}
