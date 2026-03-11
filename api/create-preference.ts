@@ -1,4 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createRateLimiter } from './_rateLimiter';
+
+// 3 tentativas por IP a cada 10 minutos
+const rateLimit = createRateLimiter(3, 10 * 60 * 1000);
 
 const PLANS: Record<string, { price: number; title: string; description: string }> = {
   avulso: {
@@ -31,6 +35,13 @@ const PLANS: Record<string, { price: number; title: string; description: string 
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Rate limit: 3 criações de preferência por IP a cada 10 minutos
+  const { allowed, retryAfter } = rateLimit(req);
+  if (!allowed) {
+    res.setHeader('Retry-After', String(retryAfter));
+    return res.status(429).json({ error: `Muitas tentativas. Aguarde ${retryAfter} segundos antes de tentar novamente.` });
+  }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
   if (!accessToken) return res.status(500).json({ error: 'MP_ACCESS_TOKEN não configurado' });

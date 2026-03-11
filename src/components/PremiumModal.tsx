@@ -115,7 +115,11 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
     setError(''); setScreen('pix-loading');
     try {
       const res = await fetch('/api/create-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan }) });
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error((err as any).error || 'Erro ao gerar Pix.'); }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg = res.status === 429 ? (err.error || 'Muitas tentativas. Aguarde alguns minutos.') : (err.error || 'Erro ao gerar Pix.');
+        throw new Error(msg);
+      }
       const data = await res.json();
       setPixPaymentId(data.payment_id); setPixQrCode(data.qr_code); setPixQrBase64(data.qr_code_base64 ?? ''); setPixExpiresAt(new Date(data.expires_at));
       setScreen('pix-qr'); startPolling(data.payment_id, selectedPlan);
