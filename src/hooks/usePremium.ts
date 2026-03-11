@@ -165,7 +165,11 @@ export function usePremium() {
         body: JSON.stringify({ secret }),
       });
       const data = await res.json();
-      if (res.ok && data.ok) { setIsOwner(true); return { ok: true }; }
+      if (res.ok && data.ok) {
+        // Autentica mas NÃO ativa premium automaticamente
+        // O dono precisa ligar o toggle manualmente
+        return { ok: true };
+      }
       return { ok: false, error: data.error || 'Senha incorreta.' };
     } catch { return { ok: false, error: 'Erro de conexão.' }; }
   }, []);
