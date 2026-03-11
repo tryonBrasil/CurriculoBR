@@ -5,16 +5,37 @@ interface ContatoProps {
 }
 
 const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
-  const [enviado, setEnviado] = useState(false);
-  const [form, setForm] = useState({ nome: '', email: '', mensagem: '' });
+  const [enviado, setEnviado]     = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [erro, setErro]           = useState('');
+  const [form, setForm]           = useState({ nome: '', email: '', mensagem: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Abre o cliente de e-mail padrão como fallback
-    const subject = encodeURIComponent(`Contato CurriculoGO - ${form.nome.trim().slice(0, 80)}`);
-    const body = encodeURIComponent(`Nome: ${form.nome.trim()}\nE-mail: ${form.email.trim()}\n\n${form.mensagem.trim()}`);
-    window.open(`mailto:contato@curriculogo.com.br?subject=${subject}&body=${body}`);
-    setEnviado(true);
+    setErro('');
+
+    if (!form.nome.trim())      { setErro('Informe seu nome.');       return; }
+    if (!form.email.trim())     { setErro('Informe seu e-mail.');     return; }
+    if (form.mensagem.trim().length < 10) { setErro('Mensagem muito curta.'); return; }
+
+    setLoading(true);
+    try {
+      const res  = await fetch('/api/contact', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ nome: form.nome.trim(), email: form.email.trim(), mensagem: form.mensagem.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErro(data.error || 'Erro ao enviar. Tente novamente.');
+        return;
+      }
+      setEnviado(true);
+    } catch {
+      setErro('Erro de conexão. Verifique sua internet e tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,7 +48,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <span className="logo-nav inline-flex items-center gap-2">
             <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-              <span className="font-black text-[1.1rem] tracking-tight " style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+            <span className="font-black text-[1.1rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
           </span>
         </div>
       </header>
@@ -38,57 +59,75 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
 
         {enviado ? (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-8 text-center">
-            <i className="fa fa-check-circle text-4xl text-green-500 mb-4 block"></i>
-            <h2 className="text-xl font-bold text-green-800 dark:text-green-300 mb-2">Mensagem preparada!</h2>
-            <p className="text-green-700 dark:text-green-400 mb-6">Seu cliente de e-mail foi aberto. Envie a mensagem para falarmos com você em breve.</p>
-            <button onClick={() => { setEnviado(false); setForm({ nome: '', email: '', mensagem: '' }); }}
-              className="text-blue-600 hover:underline text-sm">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fa fa-check text-green-500 text-2xl"></i>
+            </div>
+            <h2 className="text-xl font-bold text-green-800 dark:text-green-300 mb-2">Mensagem enviada! 🎉</h2>
+            <p className="text-green-700 dark:text-green-400 mb-6">Recebemos sua mensagem e responderemos em até 48 horas úteis no e-mail informado.</p>
+            <button
+              onClick={() => { setEnviado(false); setForm({ nome: '', email: '', mensagem: '' }); }}
+              className="text-blue-600 hover:underline text-sm font-medium"
+            >
               Enviar outra mensagem
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 space-y-5">
+
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nome</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nome *</label>
               <input
-                type="text"
-                required
+                type="text" required
                 value={form.nome}
                 onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
                 maxLength={100}
                 placeholder="Seu nome completo"
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">E-mail</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">E-mail *</label>
               <input
-                type="email"
-                required
+                type="email" required
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 placeholder="seu@email.com"
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mensagem</label>
-              <textarea
-                required
-                maxLength={2000}
-                rows={5}
-                value={form.mensagem}
-                onChange={e => setForm(f => ({ ...f, mensagem: e.target.value }))}
-                placeholder="Descreva sua dúvida ou sugestão..."
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              />
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mensagem *</label>
+              <div className="relative">
+                <textarea
+                  required
+                  maxLength={2000}
+                  rows={5}
+                  value={form.mensagem}
+                  onChange={e => setForm(f => ({ ...f, mensagem: e.target.value }))}
+                  placeholder="Descreva sua dúvida ou sugestão..."
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-all"
+                />
+                <span className="absolute bottom-2 right-3 text-[10px] text-slate-400">{form.mensagem.length}/2000</span>
+              </div>
             </div>
+
+            {erro && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+                <p className="text-sm text-red-600 dark:text-red-400">⚠️ {erro}</p>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
             >
-              <i className="fa fa-envelope mr-2"></i>
-              Enviar Mensagem
+              {loading
+                ? <><i className="fa fa-circle-notch fa-spin"></i> Enviando...</>
+                : <><i className="fa fa-paper-plane"></i> Enviar Mensagem</>
+              }
             </button>
           </form>
         )}

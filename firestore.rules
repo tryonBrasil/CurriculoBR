@@ -23,4 +23,9 @@ service cloud.firestore {
       allow read, write: if false;
     }
   }
+
+    match /contact_messages/{msgId} {
+      allow read, write: if false;
+    }
+  }
 }

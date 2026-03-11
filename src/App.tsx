@@ -226,6 +226,22 @@ export default function App() {
     finally { setReviewLoading(false); }
   };
 
+  const handleLoadMessages = async () => {
+    setOwnerMessagesLoading(true);
+    try {
+      const res  = await fetch('/api/contact', { headers: { Authorization: `Bearer ${ownerSecret}` } });
+      const data = await res.json();
+      setOwnerMessages(data.messages ?? []);
+    } catch { /* ignore */ } finally {
+      setOwnerMessagesLoading(false);
+    }
+  };
+
+  const handleDeleteMessage = async (id: string) => {
+    await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerSecret}` }, body: JSON.stringify({ action: 'delete', id }) });
+    setOwnerMessages(m => m.filter(x => x.id !== id));
+  };
+
   const handleLoadPendingReviews = async () => {
     setPendingReviewsLoading(true);
     try {
@@ -286,7 +302,9 @@ export default function App() {
   const [ownerLoading, setOwnerLoading]             = useState(false);
   const [ownerError, setOwnerError]                 = useState('');
   const [ownerAuthenticated, setOwnerAuthenticated] = useState(false);
-  const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'bloqueados' | 'clientes' | 'depoimentos'>('acesso');
+  const [ownerMessages, setOwnerMessages]             = useState<any[]>([]);
+  const [ownerMessagesLoading, setOwnerMessagesLoading] = useState(false);
+  const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'bloqueados' | 'clientes' | 'depoimentos' | 'mensagens'>('acesso');
   const ownerLongPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   // VIP management state
   const [vipBlockList, setVipBlockList]             = useState<any[]>([]);
@@ -1166,6 +1184,7 @@ export default function App() {
                     { id: 'bloqueados',  icon: 'fa-ban',        label: 'Bloqueados',  onClick: () => { setOwnerTab('bloqueados'); handleLoadVipList(); } },
                     { id: 'clientes',    icon: 'fa-users',      label: 'Clientes',    onClick: () => { setOwnerTab('clientes'); handleLoadClients(); } },
                     { id: 'depoimentos', icon: 'fa-star',       label: 'Reviews',     onClick: () => { setOwnerTab('depoimentos'); handleLoadPendingReviews(); } },
+                    { id: 'mensagens',   icon: 'fa-inbox',      label: 'Msgs',        onClick: () => { setOwnerTab('mensagens'); handleLoadMessages(); } },
                   ] as const).map(tab => (
                     <button
                       key={tab.id}
@@ -1577,6 +1596,39 @@ export default function App() {
                                 <i className="fas fa-trash"></i> Rejeitar
                               </button>
                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Tab: Mensagens ── */}
+                {ownerTab === 'mensagens' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Mensagens de Contato</p>
+                      <button onClick={handleLoadMessages} className="text-xs text-amber-400 hover:text-amber-300 font-bold">↻ Atualizar</button>
+                    </div>
+                    {ownerMessagesLoading ? (
+                      <p className="text-center text-slate-400 text-xs py-6"><i className="fas fa-circle-notch fa-spin mr-1"></i> Carregando...</p>
+                    ) : ownerMessages.length === 0 ? (
+                      <p className="text-center text-slate-500 text-xs py-6">Nenhuma mensagem ainda.</p>
+                    ) : (
+                      <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                        {ownerMessages.map((msg: any) => (
+                          <div key={msg.id} className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div>
+                                <p className="text-sm font-bold text-white leading-tight">{msg.nome}</p>
+                                <p className="text-[11px] text-amber-400">{msg.email}</p>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] text-slate-500">{msg.createdAt ? new Date(msg.createdAt).toLocaleDateString('pt-BR') : ''}</span>
+                                <button onClick={() => handleDeleteMessage(msg.id)} title="Excluir" className="text-slate-500 hover:text-red-400 transition-colors text-xs"><i className="fas fa-trash"></i></button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{msg.mensagem}</p>
                           </div>
                         ))}
                       </div>
