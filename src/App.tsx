@@ -1151,30 +1151,22 @@ export default function App() {
               <>
                 {/* Tabs */}
                 <div className="flex gap-1 bg-slate-800 rounded-xl p-1 mb-5">
-                  <button
-                    onClick={() => setOwnerTab('acesso')}
-                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'acesso' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    <i className="fas fa-unlock-alt text-[9px]"></i> Acesso
-                  </button>
-                  <button
-                    onClick={() => { setOwnerTab('bloqueados'); handleLoadVipList(); }}
-                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'bloqueados' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    <i className="fas fa-ban text-[9px]"></i> Bloqueados
-                  </button>
-                  <button
-                    onClick={() => { setOwnerTab('clientes'); handleLoadClients(); }}
-                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'clientes' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    <i className="fas fa-users text-[9px]"></i> Clientes
-                  </button>
-                  <button
-                    onClick={() => { setOwnerTab('depoimentos'); handleLoadPendingReviews(); }}
-                    className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1 ${ownerTab === 'depoimentos' ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    <i className="fas fa-star text-[9px]"></i> Reviews
-                  </button>
+                  {([
+                    { id: 'acesso',      icon: 'fa-unlock-alt', label: 'Acesso',      onClick: () => setOwnerTab('acesso') },
+                    { id: 'bloqueados',  icon: 'fa-ban',        label: 'Bloqueados',  onClick: () => { setOwnerTab('bloqueados'); handleLoadVipList(); } },
+                    { id: 'clientes',    icon: 'fa-users',      label: 'Clientes',    onClick: () => { setOwnerTab('clientes'); handleLoadClients(); } },
+                    { id: 'depoimentos', icon: 'fa-star',       label: 'Reviews',     onClick: () => { setOwnerTab('depoimentos'); handleLoadPendingReviews(); } },
+                  ] as const).map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={tab.onClick}
+                      title={tab.label}
+                      className={`flex-1 py-2 rounded-lg transition-all flex flex-col items-center justify-center gap-0.5 ${ownerTab === tab.id ? 'bg-amber-500 text-black shadow' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      <i className={`fas ${tab.icon} text-xs`}></i>
+                      <span className="text-[8px] font-black uppercase tracking-widest leading-none hidden sm:block">{tab.label}</span>
+                    </button>
+                  ))}
                 </div>
 
                 {/* ── Tab: Acesso ── */}

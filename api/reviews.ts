@@ -79,13 +79,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
       const db   = await getDb();
+      // Sem orderBy para evitar necessidade de índice composto no Firestore
+      // A ordenação é feita em memória após o get()
       const snap = await db.collection(COLLECTION)
         .where('status', '==', isPending ? 'pending' : 'approved')
-        .orderBy('createdAt', 'desc')
         .limit(isPending ? 50 : 30)
         .get();
 
-      const reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const reviews = snap.docs
+        .map(d => ({ id: d.id, ...d.data() as any }))
+        .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
       return res.status(200).json({ reviews });
     } catch (e: any) {
       return res.status(500).json({ error: e.message });
