@@ -3,6 +3,7 @@ import { ResumeData, TemplateId, Experience, Education, Language, Course, Projec
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
+import { exportToDocx } from './services/exportService';
 import Toast from './components/Toast';
 import TemplateThumbnail from './components/TemplateThumbnail';
 import ConfirmModal from './components/ConfirmModal';
@@ -636,6 +637,15 @@ export default function App() {
       showToast('Erro de conexão ao desbloquear.', 'error');
     } finally {
       setVipActionLoading(null);
+    }
+  };
+
+  const handleExportDocx = async () => {
+    try {
+      await exportToDocx(data);
+      showToast('✅ Arquivo Word gerado com sucesso!', 'success');
+    } catch (e: any) {
+      showToast(e.message || 'Erro ao gerar o arquivo Word.', 'error');
     }
   };
 
@@ -2781,6 +2791,15 @@ export default function App() {
         >
           <i className="fas fa-file-pdf"></i>
           <span>PDF</span>
+        </button>
+        {/* Word / DOCX */}
+        <button
+          onClick={handleExportDocx}
+          title="Exportar como Word (.docx)"
+          className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+        >
+          <i className="fas fa-file-word text-base"></i>
+          <span className="text-[9px] font-black uppercase tracking-wide">Word</span>
         </button>
         {/* Templates / Estilos */}
         <button
