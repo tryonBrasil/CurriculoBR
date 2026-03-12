@@ -2581,6 +2581,9 @@ export default function App() {
               )}
             </section>
 
+            {/* Ad — between free and premium templates */}
+            <AdUnit slotId="1859950229" format="horizontal" />
+
             {/* ── Seção Premium ── */}
             <section>
               <div className="flex items-center justify-between mb-6">
