@@ -20,6 +20,10 @@ const AdUnit: React.FC<AdUnitProps> = ({
   useEffect(() => {
     // 1. Só executa se houver o slotId e se o script do Google já existir na janela
     if (typeof window !== 'undefined' && slotId) {
+      // LGPD: só carrega anúncio se o usuário aceitou os cookies
+      const consent = localStorage.getItem('curriculogo_cookie_consent');
+      if (consent !== 'accepted') return;
+
       try {
         // Verifica se o elemento já foi processado pelo Google (evita o erro 'All ins elements must be empty')
         // O AdSense adiciona um atributo 'data-adsbygoogle-status' após processar
@@ -34,6 +38,12 @@ const AdUnit: React.FC<AdUnitProps> = ({
   }, [slotId]); // Re-executa se o slot mudar (útil se você alternar tipos de ads)
 
   if (!slotId) return null;
+
+  // LGPD: não renderiza o elemento <ins> se o usuário recusou cookies
+  const consent = typeof window !== 'undefined'
+    ? localStorage.getItem('curriculogo_cookie_consent')
+    : null;
+  if (consent === 'declined') return null;
 
   return (
     <div 
