@@ -140,7 +140,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
 
         {/* Ad — before content */}
         <div className="mb-10">
-          <AdUnit slotId="" format="horizontal" />
+          <AdUnit slotId="9330741559" format="horizontal" />
         </div>
 
         {/* Article content */}
@@ -160,7 +160,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
 
         {/* Ad — after content */}
         <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
-          <AdUnit slotId="" format="horizontal" />
+          <AdUnit slotId="8105289790" format="horizontal" />
         </div>
 
         {/* CTA */}

@@ -80,7 +80,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
 
         {/* Ad — top */}
         <div className="mb-10">
-          <AdUnit slotId="" format="horizontal" />
+          <AdUnit slotId="1289104587" format="horizontal" />
         </div>
 
         {/* Featured post */}
@@ -142,7 +142,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
               {/* Ad after 4th article */}
               {idx === 3 && (
                 <div className="md:col-span-2 lg:col-span-3">
-                  <AdUnit slotId="" format="horizontal" />
+                  <AdUnit slotId="3547931830" format="horizontal" />
                 </div>
               )}
             </React.Fragment>
