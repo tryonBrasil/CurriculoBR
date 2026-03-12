@@ -203,7 +203,7 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: 'habilidades-mais-valorizadas-mercado-2025',
-    title: 'As Habilidades Mais Valorizadas pelo Mercado em 2025',
+    title: 'As Habilidades Mais Valorizadas pelo Mercado em 2026',
     description: 'Descubra quais competências técnicas e comportamentais os recrutadores mais buscam e como destacá-las no seu currículo.',
     category: 'Mercado',
     readTime: '7 min',
