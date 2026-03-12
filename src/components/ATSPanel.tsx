@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ResumeData } from '../types';
 import { analyzeResumeATS, ATSAnalysis, generateInterviewQuestions } from '../services/geminiService';
+import AdUnit from './AdUnit';
 
 interface Props {
   data: ResumeData;
@@ -297,6 +298,9 @@ const ATSPanel: React.FC<Props> = ({ data, onClose }) => {
                   </div>
                 </div>
               )}
+
+              {/* Ad — between analysis result and interview questions */}
+              <AdUnit slotId="3967238812" format="horizontal" />
 
               {/* Interview Questions */}
               <div>
