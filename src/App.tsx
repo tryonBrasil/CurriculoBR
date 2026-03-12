@@ -132,7 +132,7 @@ const LegalPageLayout: React.FC<{ title: string; children: React.ReactNode; onHo
       <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 leading-relaxed">
           {children}
           <div className="mt-12 border-t border-slate-100 dark:border-slate-700 pt-8">
-             <AdUnit slotId="" format="horizontal" />
+             <AdUnit slotId="9347110890" format="horizontal" />
           </div>
       </div>
     </main>
@@ -2110,7 +2110,7 @@ export default function App() {
 
               {/* AdUnit */}
               <div className="mt-6">
-                <AdUnit slotId="" format="horizontal" />
+                <AdUnit slotId="1712163456" format="horizontal" />
               </div>
             </div>
           </div>
@@ -2205,7 +2205,7 @@ export default function App() {
             </div>
 
             <div className="mt-12 max-w-3xl mx-auto">
-               <AdUnit slotId="" format="horizontal" />
+               <AdUnit slotId="4709503090" format="horizontal" />
             </div>
           </div>
         </main>
