@@ -149,7 +149,11 @@ export default function App() {
   const [fontSize, setFontSize] = useState(12);
   const [fontFamily, setFontFamily] = useState<string>("'Inter', sans-serif");
   const [isEnhancing, setIsEnhancing] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // FIX 1: Só abre o painel de estilos por padrão no desktop (≥768px).
+  // No mobile, iniciar como true abre o bottom sheet bloqueando todo o editor.
+  const [isSidebarOpen, setIsSidebarOpen] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
   const [highlightedStep, setHighlightedStep] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
@@ -1026,12 +1030,13 @@ export default function App() {
     setPreviewScale(Math.min(0.95, Math.max(0.35, scale)));
   }, []);
 
-  // Recalcula o fit quando muda de view ou a sidebar abre/fecha (com delay p/ aguardar o CSS transition)
+  // FIX 3: Recalcula fit ao mudar view, sidebar OU mobileView.
+  // No mobile, ao trocar para 'preview' o container sai de display:none e precisa refittar.
   useEffect(() => {
     if (view !== 'editor') return;
     const timer = setTimeout(fitToScreen, 350);
     return () => clearTimeout(timer);
-  }, [view, isSidebarOpen, fitToScreen]);
+  }, [view, isSidebarOpen, mobileView, fitToScreen]);
 
   // Ouve resize da janela — separado do sidebar para não perder eventos durante transições
   useEffect(() => {
@@ -1335,10 +1340,7 @@ export default function App() {
                     </div>
                   </div>
                 )}
-              </>
-            )}
-
-                {/* ── Tab: Clientes ── */}
+              {/* ── Tab: Clientes ── */}
                 {ownerTab === 'clientes' && (
                   <div className="space-y-4">
 
@@ -1635,6 +1637,8 @@ export default function App() {
                     )}
                   </div>
                 )}
+              </>
+            )}
           </div>
         </div>
       )}
@@ -2858,7 +2862,7 @@ export default function App() {
         </button>
         {/* Templates / Estilos */}
         <button
-          onClick={() => setIsSidebarOpen(true)}
+          onClick={() => setIsSidebarOpen(v => !v)}
           className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${isSidebarOpen ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/20' : 'text-slate-400 dark:text-slate-500'}`}
         >
           <i className="fas fa-palette text-base"></i>
@@ -2876,7 +2880,9 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto pb-16 md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+          style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' } as React.CSSProperties}
+        >
            
            <div className="relative shrink-0">
            <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2 tabs-scroll-container">
@@ -3205,7 +3211,8 @@ export default function App() {
               background: isDarkMode
                 ? 'radial-gradient(ellipse at 60% 40%, #1e293b 0%, #0f172a 100%)'
                 : 'radial-gradient(ellipse at 60% 40%, #e2e8f0 0%, #cbd5e1 100%)',
-              padding: '32px 24px 48px',
+              // FIX 4: padding bottom >64px (bottom nav) + safe-area para iPhones
+              padding: '32px 24px calc(80px + env(safe-area-inset-bottom, 0px)) 24px',
             }}
           >
             {/* Wrapper que dá a ilusão do papel na mesa */}
@@ -3299,12 +3306,13 @@ export default function App() {
         {/* Overlay para fechar o bottom sheet no mobile */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/40 z-[55] md:hidden"
+            className="fixed inset-0 bg-black/40 z-[65] md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
         {/* SIDEBAR: drawer lateral no desktop, bottom sheet no mobile */}
-        <div className={`no-print bg-white dark:bg-slate-900 flex flex-col shrink-0 z-[56] transition-all duration-300 ease-in-out shadow-2xl overflow-hidden
+        {/* FIX 2: z-[70] > bottom nav z-[60] → sidebar não fica atrás da nav */}
+        <div className={`no-print bg-white dark:bg-slate-900 flex flex-col shrink-0 z-[70] transition-all duration-300 ease-in-out shadow-2xl overflow-hidden
           md:border-l md:border-slate-100 md:dark:border-slate-800
           fixed bottom-0 left-0 right-0 rounded-t-3xl md:rounded-none md:relative md:bottom-auto md:left-auto md:right-auto
           ${isSidebarOpen
@@ -3330,7 +3338,10 @@ export default function App() {
                 <i className="fas fa-times text-xs"></i>
               </button>
            </div>
-           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-7 pb-8">
+           {/* FIX 2: padding bottom dinâmico — no mobile o conteúdo inferior não some atrás da bottom nav */}
+           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-7"
+             style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' } as React.CSSProperties}
+           >
               <section>
                  <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tamanho da Fonte</h3>
