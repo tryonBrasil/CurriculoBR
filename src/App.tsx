@@ -149,11 +149,10 @@ export default function App() {
   const [fontSize, setFontSize] = useState(12);
   const [fontFamily, setFontFamily] = useState<string>("'Inter', sans-serif");
   const [isEnhancing, setIsEnhancing] = useState<string | null>(null);
-  // FIX 1: No mobile o bottom sheet NÃO deve abrir automaticamente.
-  // Antes era sempre `true` → sidebar cobria todo o editor ao entrar na tela.
-  const [isSidebarOpen, setIsSidebarOpen] = useState(
-    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
-  );
+  // FIX 1: Começa FECHADO em todos os dispositivos.
+  // Um useEffect abre automaticamente no desktop (≥768px) após o mount.
+  // No mobile nunca abre automaticamente — só via botão "Estilos".
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [highlightedStep, setHighlightedStep] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
@@ -332,6 +331,11 @@ export default function App() {
   const [clientLoading, setClientLoading]           = useState(false);
   const [clientSearch, setClientSearch]             = useState('');
   const [clientFilter, setClientFilter]             = useState<'all' | 'vip' | 'expired' | 'blocked' | 'free'>('all');
+
+  // FIX 1 (cont): abre o painel de estilos por padrão somente em telas de desktop
+  useEffect(() => {
+    if (window.innerWidth >= 768) setIsSidebarOpen(true);
+  }, []);
 
   // Atalho de teclado para o painel admin
   useEffect(() => {
@@ -2861,7 +2865,7 @@ export default function App() {
           <i className="fas fa-file-word text-base"></i>
           <span className="text-[9px] font-black uppercase tracking-wide">Word</span>
         </button>
-        {/* Templates / Estilos - FIX 5: era setIsSidebarOpen(true), agora é toggle */}
+        {/* Templates / Estilos — FIX 5: toggle (antes só abria, nunca fechava) */}
         <button
           onClick={() => setIsSidebarOpen(v => !v)}
           className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${isSidebarOpen ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/20' : 'text-slate-400 dark:text-slate-500'}`}
@@ -2881,7 +2885,7 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* FIX 7: pb-20 (80px) > h-16 (64px) bottom nav + margem safe-area iOS. md:pb-0 mantém desktop sem alteração */}
+        {/* FIX 7: pb-20 (80px) > h-16 (64px) da bottom nav; md:pb-0 preserva desktop */}
         <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto pb-20 md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
            
            <div className="relative shrink-0">
@@ -3211,7 +3215,7 @@ export default function App() {
               background: isDarkMode
                 ? 'radial-gradient(ellipse at 60% 40%, #1e293b 0%, #0f172a 100%)'
                 : 'radial-gradient(ellipse at 60% 40%, #e2e8f0 0%, #cbd5e1 100%)',
-              // FIX 4: 80px > bottom nav h-16 (64px), garante que o rodapé do currículo não fique oculto
+              // FIX 4: 80px garante que o rodapé do currículo não fique atrás da bottom nav (64px)
               padding: '32px 24px 80px',
             }}
           >
@@ -3303,16 +3307,14 @@ export default function App() {
           </button>
         )}
 
-        {/* Overlay para fechar o bottom sheet no mobile */}
-        {/* FIX 2: z-[65] > bottom nav z-[60] → overlay cobre tudo inclusive a nav quando sidebar está aberta */}
+        {/* Overlay — FIX 2: z-[65] > bottom nav z-[60] */}
         {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-black/40 z-[65] md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
-        {/* SIDEBAR: drawer lateral no desktop, bottom sheet no mobile */}
-        {/* FIX 2: z-[70] > bottom nav z-[60] → sidebar fica na frente de tudo no mobile */}
+        {/* SIDEBAR — FIX 2: z-[70] > bottom nav z-[60], sidebar nunca fica atrás da nav */}
         <div className={`no-print bg-white dark:bg-slate-900 flex flex-col shrink-0 z-[70] transition-all duration-300 ease-in-out shadow-2xl overflow-hidden
           md:border-l md:border-slate-100 md:dark:border-slate-800
           fixed bottom-0 left-0 right-0 rounded-t-3xl md:rounded-none md:relative md:bottom-auto md:left-auto md:right-auto
@@ -3339,7 +3341,7 @@ export default function App() {
                 <i className="fas fa-times text-xs"></i>
               </button>
            </div>
-           {/* FIX 2: pb-20 no mobile garante que itens do fim da sidebar não fiquem atrás da bottom nav */}
+           {/* FIX 2: pb-20 no mobile → conteúdo da sidebar não some atrás da bottom nav */}
            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-7 pb-20 md:pb-8">
               <section>
                  <div className="flex justify-between items-center mb-3">
