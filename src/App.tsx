@@ -382,10 +382,29 @@ export default function App() {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorScrollRef = useRef<HTMLDivElement>(null);
 
+  // ─── Mapa de title/description por rota (para SEO de SPA) ───────────────
+  const PAGE_META: Record<string, { title: string; description: string }> = {
+    '/':                         { title: 'CurriculoGO — Gerador de Currículos Profissionais Grátis', description: 'Crie seu currículo profissional em minutos. Comece grátis com 3 modelos ou desbloqueie 12 templates premium a partir de R$9,90. Análise ATS com IA, download em PDF.' },
+    '/editor':                   { title: 'Editor de Currículo Online Grátis | CurriculoGO', description: 'Edite seu currículo online em tempo real. Escolha entre 15 modelos profissionais, personalize fonte e cor, e exporte em PDF gratuitamente.' },
+    '/carta-de-apresentacao':    { title: 'Carta de Apresentação Profissional | CurriculoGO', description: 'Crie uma carta de apresentação profissional com IA integrada. Personalizada para cada vaga, em minutos.' },
+    '/blog':                     { title: 'Blog de Dicas de Currículo | CurriculoGO', description: 'Guias práticos sobre currículo, mercado de trabalho e carreira. Dicas para criar um CV que abre portas.' },
+    '/sobre':                    { title: 'Sobre o CurriculoGO | Criador de Currículos Online', description: 'Conheça o CurriculoGO, a ferramenta gratuita para criar currículos profissionais online.' },
+    '/contato':                  { title: 'Contato | CurriculoGO', description: 'Entre em contato com a equipe do CurriculoGO. Estamos aqui para ajudar.' },
+    '/privacidade':              { title: 'Política de Privacidade | CurriculoGO', description: 'Veja como o CurriculoGO protege seus dados pessoais.' },
+    '/termos':                   { title: 'Termos de Uso | CurriculoGO', description: 'Leia os termos de uso do CurriculoGO.' },
+  };
+
   const navigateTo = useCallback((path: string, viewState: typeof view) => {
     window.history.pushState({}, '', path);
     setView(viewState);
     window.scrollTo(0, 0);
+    // Atualiza title/description para pages não-artigo (artigos são gerenciados pelo BlogPost.tsx)
+    const meta = PAGE_META[path];
+    if (meta) {
+      document.title = meta.title;
+      const descEl = document.querySelector("meta[name='description']") as HTMLMetaElement;
+      if (descEl) descEl.content = meta.description;
+    }
   }, []);
 
   useEffect(() => {
