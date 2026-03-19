@@ -2,6 +2,32 @@ import React, { useEffect } from 'react';
 import { BLOG_POSTS } from './blogData';
 import AdUnit from '../components/AdUnit';
 
+// ─── Configuração base — troque quando registrar domínio próprio ──────────────
+const BASE_URL      = 'https://curriculo-go.vercel.app';
+const DEFAULT_TITLE = 'CurriculoGO — Gerador de Currículos Profissionais Grátis';
+const DEFAULT_DESC  = 'Crie seu currículo profissional em minutos. Comece grátis com 3 modelos ou desbloqueie 12 templates premium a partir de R$9,90. Análise ATS com IA, download em PDF.';
+
+// ─── Helpers de meta ──────────────────────────────────────────────────────────
+function setMeta(selector: string, attrName: string, attrKey: string, value: string) {
+  let el = document.querySelector(selector) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attrName, attrKey);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', value);
+}
+
+function setCanonical(href: string) {
+  let el = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = 'canonical';
+    document.head.appendChild(el);
+  }
+  el.href = href;
+}
+
 interface BlogPostProps {
   slug: string;
   onVoltar: () => void;
@@ -17,31 +43,71 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [slug]);
 
-  // Inject Article JSON-LD for SEO
+  // ─── SEO: title, metas e canonical dinâmicos por artigo ───────────────────
+  useEffect(() => {
+    if (!post) return;
+
+    const pageTitle = `${post.title} | CurriculoGO`;
+    const pageUrl   = `${BASE_URL}/blog/${post.slug}`;
+
+    // <title>
+    document.title = pageTitle;
+
+    // Meta description
+    setMeta("meta[name='description']",        'name',     'description',  post.description);
+
+    // Canonical
+    setCanonical(pageUrl);
+
+    // Open Graph
+    setMeta("meta[property='og:title']",       'property', 'og:title',       pageTitle);
+    setMeta("meta[property='og:description']", 'property', 'og:description', post.description);
+    setMeta("meta[property='og:url']",         'property', 'og:url',         pageUrl);
+    setMeta("meta[property='og:type']",        'property', 'og:type',        'article');
+
+    // Twitter Card
+    setMeta("meta[name='twitter:title']",       'name', 'twitter:title',       pageTitle);
+    setMeta("meta[name='twitter:description']", 'name', 'twitter:description', post.description);
+
+    // Restaura padrão ao sair da página de artigo
+    return () => {
+      document.title = DEFAULT_TITLE;
+      setMeta("meta[name='description']",        'name',     'description',    DEFAULT_DESC);
+      setCanonical(`${BASE_URL}/`);
+      setMeta("meta[property='og:title']",       'property', 'og:title',       DEFAULT_TITLE);
+      setMeta("meta[property='og:description']", 'property', 'og:description', DEFAULT_DESC);
+      setMeta("meta[property='og:url']",         'property', 'og:url',         `${BASE_URL}/`);
+      setMeta("meta[property='og:type']",        'property', 'og:type',        'website');
+      setMeta("meta[name='twitter:title']",       'name', 'twitter:title',       DEFAULT_TITLE);
+      setMeta("meta[name='twitter:description']", 'name', 'twitter:description', DEFAULT_DESC);
+    };
+  }, [post]);
+
+  // ─── JSON-LD Article structured data ─────────────────────────────────────
   useEffect(() => {
     if (!post) return;
     const existingScript = document.getElementById('article-jsonld');
     if (existingScript) existingScript.remove();
 
     const script = document.createElement('script');
-    script.id = 'article-jsonld';
+    script.id   = 'article-jsonld';
     script.type = 'application/ld+json';
     script.text = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "headline": post.title,
-      "description": post.description,
-      "datePublished": post.date,
-      "dateModified": post.date,
-      "author": { "@type": "Organization", "name": "CurriculoGO" },
-      "publisher": {
-        "@type": "Organization",
-        "name": "CurriculoGO",
-        "url": "https://curriculo-go.vercel.app/",
-        "logo": { "@type": "ImageObject", "url": "https://curriculo-go.vercel.app/og-image.png" }
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline:        post.title,
+      description:     post.description,
+      datePublished:   post.date,
+      dateModified:    post.date,
+      author: { '@type': 'Organization', name: 'CurriculoGO', url: BASE_URL },
+      publisher: {
+        '@type': 'Organization',
+        name:    'CurriculoGO',
+        url:     BASE_URL,
+        logo:    { '@type': 'ImageObject', url: `${BASE_URL}/og-image.png` },
       },
-      "mainEntityOfPage": { "@type": "WebPage", "@id": `https://curriculo-go.vercel.app/blog/${post.slug}` },
-      "image": "https://curriculo-go.vercel.app/og-image.png"
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${BASE_URL}/blog/${post.slug}` },
+      image: `${BASE_URL}/og-image.png`,
     });
     document.head.appendChild(script);
 

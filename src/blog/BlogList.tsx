@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BLOG_POSTS } from './blogData';
 import AdUnit from '../components/AdUnit';
 
@@ -12,6 +12,42 @@ const CATEGORIES = ['Todos', 'Iniciantes', 'Dicas', 'Conteúdo', 'Mercado', 'ATS
 
 const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo }) => {
   const [activeCategory, setActiveCategory] = useState('Todos');
+
+  // ─── SEO: atualiza canonical e structured data para /blog ────────────────
+  useEffect(() => {
+    const BASE = 'https://curriculo-go.vercel.app';
+
+    // Canonical dinâmico
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = `${BASE}/blog`;
+
+    // Structured data — BreadcrumbList para o blog
+    const existing = document.getElementById('blog-list-jsonld');
+    if (existing) existing.remove();
+    const script = document.createElement('script');
+    script.id   = 'blog-list-jsonld';
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Início',  item: `${BASE}/`    },
+        { '@type': 'ListItem', position: 2, name: 'Blog',    item: `${BASE}/blog` },
+      ],
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      document.getElementById('blog-list-jsonld')?.remove();
+      // Restaura canonical para home ao sair
+      if (canonical) canonical.href = `${BASE}/`;
+    };
+  }, []);
 
   const filtered = activeCategory === 'Todos'
     ? BLOG_POSTS
