@@ -211,6 +211,27 @@ export default function App() {
       .catch(() => {});
   }, []);
 
+  // Bug 3 fix: escuta evento 'premium-activated' disparado por usePremium após verificação
+  // de pagamento por cartão — garante toast correto e syncClientToServer no retorno do MP
+  useEffect(() => {
+    const handlePremiumActivated = (e: Event) => {
+      const { plan } = (e as CustomEvent<{ plan: string; paymentId: string }>).detail;
+      const PLAN_MSGS: Record<string, string> = {
+        avulso:   '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!',
+        monthly:  '🚀 Plano Mensal ativado! Todos os templates desbloqueados!',
+        yearly:   '🌟 Plano Anual ativado! Todos os templates desbloqueados!',
+        lifetime: '👑 Premium Vitalício ativado! Todos os templates desbloqueados para sempre!',
+      };
+      showToast(PLAN_MSGS[plan] ?? '⚡ Premium ativado!', 'success');
+      window.dispatchEvent(new Event('storage'));
+      if (user?.uid) {
+        syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
+      }
+    };
+    window.addEventListener('premium-activated', handlePremiumActivated);
+    return () => window.removeEventListener('premium-activated', handlePremiumActivated);
+  }, [user, syncClientToServer]);
+
   const handleSubmitReview = async () => {
     setReviewError('');
     if (!reviewName.trim()) { setReviewError('Informe seu nome.'); return; }
@@ -1686,9 +1707,13 @@ export default function App() {
             uid={user?.uid ?? null}
             onUnlocked={(plan) => {
               setIsPremiumModalOpen(false);
-              const msg = plan === 'lifetime'
-                ? '👑 Premium Vitalício ativado! Todos os templates desbloqueados para sempre!'
-                : '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!';
+              const PLAN_MSGS: Record<string, string> = {
+                avulso:   '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!',
+                monthly:  '🚀 Plano Mensal ativado! Todos os templates desbloqueados!',
+                yearly:   '🌟 Plano Anual ativado! Todos os templates desbloqueados!',
+                lifetime: '👑 Premium Vitalício ativado! Todos os templates desbloqueados para sempre!',
+              };
+              const msg = PLAN_MSGS[plan] ?? '⚡ Premium ativado! Todos os templates desbloqueados!';
               showToast(msg, 'success');
               window.dispatchEvent(new Event('storage'));
               // Sincroniza novo status VIP com o servidor para aparecer no painel do dono

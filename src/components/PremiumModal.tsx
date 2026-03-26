@@ -109,7 +109,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
     };
     check();
     pollRef.current = setInterval(check, PIX_POLL_MS);
-  }, [onUnlocked]);
+  }, [onUnlocked, uid]);
 
   const handlePixCheckout = async () => {
     setError(''); setScreen('pix-loading');

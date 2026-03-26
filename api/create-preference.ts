@@ -50,7 +50,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     process.env.SITE_URL ||
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : 'http://localhost:5173');
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : null);
+
+  if (!baseUrl) {
+    console.error('create-preference: nenhuma variável de URL configurada (SITE_URL, VERCEL_PROJECT_PRODUCTION_URL ou VERCEL_URL).');
+    return res.status(500).json({ error: 'URL do site não configurada. Defina SITE_URL nas variáveis de ambiente do Vercel.' });
+  }
 
   // Ignora qualquer price/amount enviado pelo cliente — preço definido exclusivamente no servidor
   const { plan = 'avulso' } = req.body ?? {};

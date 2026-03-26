@@ -98,9 +98,9 @@ export function usePremium() {
     localStorage.removeItem(PENDING_KEY);
     localStorage.removeItem(PENDING_UID);
 
-    if (status === 'approved' && paymentId) verifyAndActivate(paymentId, plan, pendingUid);
+    if (status === 'approved' && paymentId) verifyAndActivate(paymentId, plan, pendingUid, undefined);
     if (paymentId || status) window.history.replaceState({}, '', window.location.pathname);
-  }, []);
+  }, [verifyAndActivate]);
 
   // ── Carrega plano do servidor para este uid ───────────────────────────────
   const loadPremiumFromServer = useCallback(async (uid: string): Promise<void> => {
@@ -130,6 +130,7 @@ export function usePremium() {
     paymentId: string,
     plan: PremiumPlan = 'avulso',
     uid?: string,
+    onSuccess?: (plan: PremiumPlan) => void,
   ) => {
     setIsVerifying(true);
     try {
@@ -141,6 +142,9 @@ export function usePremium() {
         const resolvedPlan = (['avulso','monthly','yearly','lifetime'].includes(data.plan)
           ? data.plan : plan) as PremiumPlan;
         unlock(resolvedPlan, paymentId);
+        onSuccess?.(resolvedPlan);
+        // Dispara evento global para App.tsx reagir (toast, syncClientToServer)
+        window.dispatchEvent(new CustomEvent('premium-activated', { detail: { plan: resolvedPlan, paymentId } }));
       }
     } catch { console.error('Falha ao verificar pagamento'); }
     finally { setIsVerifying(false); }
