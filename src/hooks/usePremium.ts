@@ -83,24 +83,6 @@ export function usePremium() {
   // Remove qualquer rastro legacy de versões anteriores
   useEffect(() => { cleanupLegacy(); }, []);
 
-  // Retorno do cartão (Mercado Pago Checkout Pro)
-  useEffect(() => {
-    const params      = new URLSearchParams(window.location.search);
-    const paymentId   = params.get('payment_id');
-    const status      = params.get('status');
-    const pendingPlan = localStorage.getItem(PENDING_KEY);
-    if (!pendingPlan) return;
-
-    const plan = (['avulso','monthly','yearly','lifetime'].includes(pendingPlan)
-      ? pendingPlan : 'avulso') as PremiumPlan;
-    const pendingUid = localStorage.getItem(PENDING_UID) ?? undefined;
-
-    localStorage.removeItem(PENDING_KEY);
-    localStorage.removeItem(PENDING_UID);
-
-    if (status === 'approved' && paymentId) verifyAndActivate(paymentId, plan, pendingUid, undefined);
-    if (paymentId || status) window.history.replaceState({}, '', window.location.pathname);
-  }, [verifyAndActivate]);
 
   // ── Carrega plano do servidor para este uid ───────────────────────────────
   const loadPremiumFromServer = useCallback(async (uid: string): Promise<void> => {
@@ -149,6 +131,26 @@ export function usePremium() {
     } catch { console.error('Falha ao verificar pagamento'); }
     finally { setIsVerifying(false); }
   }, [unlock]);
+
+  // Retorno do cartão (Mercado Pago Checkout Pro)
+  // (useEffect posicionado APÓS verifyAndActivate para evitar erro TS2448)
+  useEffect(() => {
+    const params      = new URLSearchParams(window.location.search);
+    const paymentId   = params.get('payment_id');
+    const status      = params.get('status');
+    const pendingPlan = localStorage.getItem(PENDING_KEY);
+    if (!pendingPlan) return;
+
+    const plan = (['avulso','monthly','yearly','lifetime'].includes(pendingPlan)
+      ? pendingPlan : 'avulso') as PremiumPlan;
+    const pendingUid = localStorage.getItem(PENDING_UID) ?? undefined;
+
+    localStorage.removeItem(PENDING_KEY);
+    localStorage.removeItem(PENDING_UID);
+
+    if (status === 'approved' && paymentId) verifyAndActivate(paymentId, plan, pendingUid, undefined);
+    if (paymentId || status) window.history.replaceState({}, '', window.location.pathname);
+  }, [verifyAndActivate]);
 
   // Alias para compatibilidade com PremiumModal (que chama verifyAndUnlock)
   const verifyAndUnlock = verifyAndActivate;
