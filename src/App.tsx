@@ -2161,10 +2161,6 @@ export default function App() {
                 )}
               </div>
 
-              {/* AdUnit */}
-              <div className="mt-6">
-                <AdUnit slotId="1712163456" format="horizontal" />
-              </div>
             </div>
           </div>
         </main>
@@ -2257,9 +2253,6 @@ export default function App() {
               <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🤖 IA do Google</span>
             </div>
 
-            <div className="mt-12 max-w-3xl mx-auto">
-               <AdUnit slotId="4709503090" format="horizontal" />
-            </div>
           </div>
         </main>
 
@@ -2291,6 +2284,11 @@ export default function App() {
               <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
               <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9 ⭐</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p></div>
             </div>
+          </div>
+
+          {/* Ad — dentro da seção de conteúdo (benefícios), não no hero sem conteúdo */}
+          <div className="mt-10 max-w-3xl mx-auto">
+            <AdUnit slotId="4709503090" format="horizontal" />
           </div>
         </section>
 
@@ -2633,9 +2631,6 @@ export default function App() {
                 </div>
               )}
             </section>
-
-            {/* Ad — between free and premium templates */}
-            <AdUnit slotId="1859950229" format="horizontal" />
 
             {/* ── Seção Premium ── */}
             <section>
