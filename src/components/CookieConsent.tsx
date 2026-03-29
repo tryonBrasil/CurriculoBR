@@ -14,14 +14,19 @@ const CookieConsent: React.FC = () => {
     }
   }, []);
 
+  const dispatchConsentEvent = () =>
+    window.dispatchEvent(new Event('curriculogo_consent_changed'));
+
   const accept = () => {
     localStorage.setItem(COOKIE_KEY, 'accepted');
     setVisible(false);
+    dispatchConsentEvent();
   };
 
   const decline = () => {
     localStorage.setItem(COOKIE_KEY, 'declined');
     setVisible(false);
+    dispatchConsentEvent();
   };
 
   if (!visible) return null;

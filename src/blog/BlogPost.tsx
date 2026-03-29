@@ -204,11 +204,6 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
           </div>
         </div>
 
-        {/* Ad — before content */}
-        <div className="mb-10">
-          <AdUnit slotId="9330741559" format="horizontal" />
-        </div>
-
         {/* Article content */}
         <article
           className="
@@ -224,8 +219,11 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
-        {/* Ad — after content */}
+        {/* Ads — after content (both slots, stacked) */}
         <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
+          <AdUnit slotId="9330741559" format="horizontal" />
+        </div>
+        <div className="mt-6">
           <AdUnit slotId="8105289790" format="horizontal" />
         </div>
 

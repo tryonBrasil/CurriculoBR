@@ -1,4 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+const CONSENT_KEY = 'curriculogo_cookie_consent';
+const CONSENT_EVENT = 'curriculogo_consent_changed';
 
 interface AdUnitProps {
   slotId: string;
@@ -8,53 +11,55 @@ interface AdUnitProps {
   style?: React.CSSProperties;
 }
 
-const AdUnit: React.FC<AdUnitProps> = ({ 
-  slotId, 
-  format = 'auto', 
-  responsive = true, 
+const AdUnit: React.FC<AdUnitProps> = ({
+  slotId,
+  format = 'auto',
+  responsive = true,
   className = '',
-  style 
+  style,
 }) => {
   const adRef = useRef<HTMLModElement>(null);
 
+  // Lê o estado inicial do localStorage e mantém reativo via evento customizado
+  const [consent, setConsent] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(CONSENT_KEY);
+  });
+
+  // Escuta o evento disparado pelo CookieConsent quando o usuário decide
   useEffect(() => {
-    // 1. Só executa se houver o slotId e se o script do Google já existir na janela
-    if (typeof window !== 'undefined' && slotId) {
-      // LGPD: só carrega anúncio se o usuário aceitou os cookies
-      const consent = localStorage.getItem('curriculogo_cookie_consent');
-      if (consent !== 'accepted') return;
+    const handler = () => {
+      setConsent(localStorage.getItem(CONSENT_KEY));
+    };
+    window.addEventListener(CONSENT_EVENT, handler);
+    return () => window.removeEventListener(CONSENT_EVENT, handler);
+  }, []);
 
-      try {
-        // Verifica se o elemento já foi processado pelo Google (evita o erro 'All ins elements must be empty')
-        // O AdSense adiciona um atributo 'data-adsbygoogle-status' após processar
-        if (adRef.current && !adRef.current.getAttribute('data-adsbygoogle-status')) {
-          const adsbygoogle = (window as any).adsbygoogle || [];
-          adsbygoogle.push({});
-        }
-      } catch (e) {
-        console.error("AdSense Error:", e);
+  // Empurra o anuncio para o AdSense apenas quando consent === 'accepted'
+  useEffect(() => {
+    if (consent !== 'accepted' || !slotId) return;
+    if (typeof window === 'undefined') return;
+
+    try {
+      if (adRef.current && !adRef.current.getAttribute('data-adsbygoogle-status')) {
+        const adsbygoogle = (window as any).adsbygoogle || [];
+        adsbygoogle.push({});
       }
+    } catch (e) {
+      console.error('AdSense Error:', e);
     }
-  }, [slotId]); // Re-executa se o slot mudar (útil se você alternar tipos de ads)
+  }, [consent, slotId]);
 
-  if (!slotId) return null;
-
-  // LGPD: não renderiza o elemento <ins> se o usuário recusou cookies
-  const consent = typeof window !== 'undefined'
-    ? localStorage.getItem('curriculogo_cookie_consent')
-    : null;
-  if (consent === 'declined') return null;
+  // Nao renderiza NADA enquanto o usuario nao aceitou — nem o <ins> vazio
+  if (!slotId || consent !== 'accepted') return null;
 
   return (
-    <div 
+    <div
       className={`ad-container my-6 text-center overflow-hidden min-h-[100px] flex flex-col items-center justify-center ${className}`}
-      // A key ajuda o React a entender que este é um elemento novo se o slot mudar
-      key={slotId} 
     >
       <span className="text-[10px] text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-2 block w-full text-center">
         Publicidade
       </span>
-      
       <ins
         ref={adRef}
         className="adsbygoogle"
@@ -62,7 +67,7 @@ const AdUnit: React.FC<AdUnitProps> = ({
         data-ad-client="ca-pub-8618931854003885"
         data-ad-slot={slotId}
         data-ad-format={format}
-        data-full-width-responsive={responsive ? "true" : "false"}
+        data-full-width-responsive={responsive ? 'true' : 'false'}
       ></ins>
     </div>
   );

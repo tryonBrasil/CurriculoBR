@@ -114,11 +114,6 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
           ))}
         </div>
 
-        {/* Ad — top */}
-        <div className="mb-10">
-          <AdUnit slotId="1289104587" format="horizontal" />
-        </div>
-
         {/* Featured post */}
         {featured && (
           <div
@@ -145,6 +140,11 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
             </div>
           </div>
         )}
+
+        {/* Ad — between featured post and article grid */}
+        <div className="mb-10">
+          <AdUnit slotId="1289104587" format="horizontal" />
+        </div>
 
         {/* Article grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">

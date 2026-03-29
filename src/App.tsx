@@ -131,9 +131,6 @@ const LegalPageLayout: React.FC<{ title: string; children: React.ReactNode; onHo
     <main className="flex-1 p-8 md:p-12 overflow-y-auto">
       <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 leading-relaxed">
           {children}
-          <div className="mt-12 border-t border-slate-100 dark:border-slate-700 pt-8">
-             <AdUnit slotId="9347110890" format="horizontal" />
-          </div>
       </div>
     </main>
   </div>
