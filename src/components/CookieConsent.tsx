@@ -19,6 +19,11 @@ const CookieConsent: React.FC = () => {
 
   const accept = () => {
     localStorage.setItem(COOKIE_KEY, 'accepted');
+    // Habilita anúncios personalizados após aceite
+    if (typeof window !== 'undefined') {
+      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+      ((window as any).adsbygoogle as any).requestNonPersonalizedAds = 0;
+    }
     setVisible(false);
     dispatchConsentEvent();
   };

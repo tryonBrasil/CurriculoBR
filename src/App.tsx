@@ -2283,10 +2283,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Ad — dentro da seção de conteúdo (benefícios), não no hero sem conteúdo */}
-          <div className="mt-10 max-w-3xl mx-auto">
-            <AdUnit slotId="4709503090" format="horizontal" />
-          </div>
         </section>
 
         {/* ── ATS Feature Highlight ── */}
@@ -2542,6 +2538,107 @@ export default function App() {
               <button onClick={() => navigateTo('/blog', 'blog')} className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest">
                 Ver todos os artigos <i className="fas fa-arrow-right ml-1"></i>
               </button>
+            </div>
+          </div>
+        </section>
+
+
+        {/* ── Guia Rápido + FAQ — conteúdo editorial para o AdSense ── */}
+        <section className="relative z-10 py-20 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+          <div className="max-w-4xl mx-auto">
+
+            {/* Guia rápido */}
+            <div className="mb-16">
+              <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">Guia Rápido</span>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-1 mb-2 uppercase tracking-tight">Como Fazer um Currículo que Chama Atenção</h2>
+              <p className="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
+                Um currículo bem feito é a diferença entre ser chamado para a entrevista ou ficar de fora. Veja os pontos essenciais que todo recrutador observa nos primeiros segundos de leitura.
+              </p>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  {
+                    num: '01',
+                    title: 'Objetivo Profissional Direto',
+                    text: 'Escreva 2 a 3 linhas específicas sobre o cargo que você busca e o que você oferece. Evite frases genéricas como "busco crescimento". O recrutador leva menos de 10 segundos para decidir se continua lendo.',
+                    color: 'text-blue-600',
+                    bg: 'bg-blue-50 dark:bg-blue-900/20',
+                  },
+                  {
+                    num: '02',
+                    title: 'Experiências com Resultados',
+                    text: 'Descreva cada experiência com verbos de ação e, sempre que possível, com números: "Reduzi o tempo de atendimento em 30%" é muito mais impactante do que "Trabalhei no atendimento ao cliente".',
+                    color: 'text-teal-600',
+                    bg: 'bg-teal-50 dark:bg-teal-900/20',
+                  },
+                  {
+                    num: '03',
+                    title: 'Habilidades Relevantes para a Vaga',
+                    text: 'Adapte a seção de habilidades para cada candidatura. Leia o anúncio da vaga e inclua exatamente as palavras-chave que o recrutador — e o sistema ATS — estão procurando.',
+                    color: 'text-violet-600',
+                    bg: 'bg-violet-50 dark:bg-violet-900/20',
+                  },
+                  {
+                    num: '04',
+                    title: 'Design Limpo e Legível',
+                    text: 'Fontes legíveis, hierarquia visual clara e no máximo uma página (ou duas para seniores). Evite cores excessivas, fotos grandes e informações irrelevantes como RG, CPF ou pretensão salarial.',
+                    color: 'text-orange-600',
+                    bg: 'bg-orange-50 dark:bg-orange-900/20',
+                  },
+                ].map(item => (
+                  <div key={item.num} className={`${item.bg} rounded-2xl p-6 border border-white/50 dark:border-slate-700`}>
+                    <span className={`text-3xl font-black ${item.color} opacity-40 block mb-2`}>{item.num}</span>
+                    <h3 className="font-black text-slate-900 dark:text-white mb-2 text-base">{item.title}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Anúncio dentro do conteúdo editorial */}
+            <div className="max-w-3xl mx-auto mb-16">
+              <AdUnit slotId="4709503090" format="horizontal" />
+            </div>
+
+            {/* FAQ */}
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">FAQ</span>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-1 mb-10 uppercase tracking-tight">Perguntas Frequentes</h2>
+              <div className="space-y-6">
+                {[
+                  {
+                    q: 'O CurriculoGO é realmente gratuito?',
+                    a: 'Sim. Você pode criar, editar e baixar seu currículo em PDF com 3 modelos profissionais completamente grátis, sem precisar criar conta ou informar e-mail. Os planos pagos desbloqueiam 12 templates premium adicionais e recursos avançados.',
+                  },
+                  {
+                    q: 'Preciso me cadastrar para usar?',
+                    a: 'Não. O CurriculoGO funciona direto no navegador, sem cadastro. Seus dados ficam salvos localmente no seu dispositivo. Opcionalmente, você pode criar uma conta gratuita para salvar seus currículos na nuvem e acessá-los de qualquer lugar.',
+                  },
+                  {
+                    q: 'O que é análise ATS e por que ela importa?',
+                    a: 'ATS (Applicant Tracking System) são sistemas de triagem automática usados por empresas para filtrar currículos antes de um humano os ver. Estima-se que mais de 70% dos currículos são eliminados por esses sistemas. A análise ATS do CurriculoGO usa IA para pontuar e otimizar seu currículo para passar por esses filtros.',
+                  },
+                  {
+                    q: 'Posso editar meu currículo depois de criar?',
+                    a: 'Sim, sempre. O editor salva automaticamente seu progresso no navegador. Se criar uma conta gratuita, pode salvar versões diferentes na nuvem e editar de qualquer dispositivo a qualquer momento.',
+                  },
+                  {
+                    q: 'Qual o formato de download disponível?',
+                    a: 'O download é feito em PDF de alta qualidade, pronto para envio por e-mail ou upload em plataformas de emprego como LinkedIn, Gupy, Vagas.com e InfoJobs. Também é possível exportar em formato Word (.docx) para edições adicionais.',
+                  },
+                  {
+                    q: 'Os modelos passam pela triagem ATS das empresas?',
+                    a: 'Sim. Todos os templates do CurriculoGO foram desenvolvidos com estrutura compatível com sistemas ATS: texto selecionável, hierarquia de títulos legível por máquina e sem elementos que confundem os algoritmos, como tabelas complexas ou caixas de texto sobrepostas.',
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700">
+                    <h3 className="font-black text-slate-900 dark:text-white mb-2 flex items-start gap-3">
+                      <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                      {item.q}
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pl-9">{item.a}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>

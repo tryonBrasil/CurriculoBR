@@ -19,39 +19,38 @@ const AdUnit: React.FC<AdUnitProps> = ({
   style,
 }) => {
   const adRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
 
-  // Lê o estado inicial do localStorage e mantém reativo via evento customizado
   const [consent, setConsent] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem(CONSENT_KEY);
   });
 
-  // Escuta o evento disparado pelo CookieConsent quando o usuário decide
+  // Escuta mudança de consentimento
   useEffect(() => {
-    const handler = () => {
-      setConsent(localStorage.getItem(CONSENT_KEY));
-    };
+    const handler = () => setConsent(localStorage.getItem(CONSENT_KEY));
     window.addEventListener(CONSENT_EVENT, handler);
     return () => window.removeEventListener(CONSENT_EVENT, handler);
   }, []);
 
-  // Empurra o anuncio para o AdSense apenas quando consent === 'accepted'
+  // Empurra o anúncio ao AdSense assim que o componente monta.
+  // O anúncio é exibido SEMPRE — não personalizado por padrão (NPA),
+  // personalizado somente após o usuário aceitar os cookies.
+  // Isso garante que o revisor do Google veja os anúncios na primeira visita.
   useEffect(() => {
-    if (consent !== 'accepted' || !slotId) return;
-    if (typeof window === 'undefined') return;
+    if (!slotId || typeof window === 'undefined') return;
+    if (pushed.current) return;
+    pushed.current = true;
 
     try {
-      if (adRef.current && !adRef.current.getAttribute('data-adsbygoogle-status')) {
-        const adsbygoogle = (window as any).adsbygoogle || [];
-        adsbygoogle.push({});
-      }
+      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+      ((window as any).adsbygoogle as any[]).push({});
     } catch (e) {
       console.error('AdSense Error:', e);
     }
-  }, [consent, slotId]);
+  }, [slotId]);
 
-  // Nao renderiza NADA enquanto o usuario nao aceitou — nem o <ins> vazio
-  if (!slotId || consent !== 'accepted') return null;
+  if (!slotId) return null;
 
   return (
     <div
