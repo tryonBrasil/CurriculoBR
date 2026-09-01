@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getDb } from './_firebaseAdmin';
 
 /**
  * GET /api/verify-payment?payment_id=xxx&uid=yyy
@@ -27,20 +28,6 @@ function getExpiresAt(plan: string): string | null {
 }
 
 // ── Firebase Admin (lazy init) ─────────────────────────────────────────────
-let adminReady = false;
-async function getDb() {
-  const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-  const { getFirestore } = await import('firebase-admin/firestore');
-  if (!adminReady && !getApps().length) {
-    const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    if (!projectId || !clientEmail || !privateKey) throw new Error('Firebase Admin não configurado.');
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-    adminReady = true;
-  }
-  return getFirestore();
-}
 
 async function savePremiumToFirestore(uid: string, plan: string, paymentId: string) {
   try {

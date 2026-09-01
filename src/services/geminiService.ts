@@ -22,6 +22,14 @@ const getAI = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+// Wrapper com timeout: rejeita a Promise após `ms` milissegundos
+function withTimeout<T>(promise: Promise<T>, ms: number, label = 'Gemini'): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label} demorou mais de ${ms / 1000}s. Tente novamente.`)), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
+}
+
 // Retorna true se o erro é um 503 (modelo sobrecarregado/indisponível) — aciona o fallback
 const isOverloadError = (e: unknown): boolean => {
   const msg = String((e as any)?.message ?? e);
@@ -78,13 +86,13 @@ export const enhanceTextStream = async (
 
   // Tenta o modelo primário (gemini-3-flash-preview); se cair 503, usa o fallback (gemini-2.5-flash)
   const tryStream = async (model: string) => {
-    const response = await ai.models.generateContentStream({
+    const response = await withTimeout(ai.models.generateContentStream({
       model,
       contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }],
       config: {
         systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
       },
-    });
+    }), 30_000, 'Gemini Stream');
     let accumulated = '';
     for await (const chunk of response) {
       if (chunk.text) { accumulated += chunk.text; onUpdate(accumulated); }
@@ -104,14 +112,16 @@ export const enhanceText = async (text: string, context: string): Promise<string
   if (!text) return text;
   const ai = getAI();
   try {
-    const response = await withModelFallback(model =>
-      ai.models.generateContent({
-        model,
-        contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }],
-        config: {
-          systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
-        },
-      })
+    const response = await withTimeout(
+      withModelFallback(model =>
+        ai.models.generateContent({
+          model,
+          contents: [{ role: 'user', parts: [{ text: `Melhore este texto: "${text}"` }] }],
+          config: {
+            systemInstruction: `Você é um assistente profissional especializado em redação de currículos. Melhore profissionalmente o texto para a seção de ${context}. Seja direto, use verbos de ação e mantenha um tom executivo.`,
+          },
+        })
+      ), 20_000, 'Gemini'
     );
     return response.text?.trim() || text;
   } catch (error) {

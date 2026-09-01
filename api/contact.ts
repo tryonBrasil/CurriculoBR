@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createRateLimiter } from './_rateLimiter';
 import { timingSafeEqual } from 'crypto';
+import { getDb } from './_firebaseAdmin';
 
 /**
  * /api/contact
@@ -23,20 +24,6 @@ function safeCompareBearer(received: string | undefined, secret: string): boolea
   } catch { return false; }
 }
 
-let adminReady = false;
-async function getDb() {
-  const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-  const { getFirestore } = await import('firebase-admin/firestore');
-  if (!adminReady && !getApps().length) {
-    const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    if (!projectId || !clientEmail || !privateKey) throw new Error('Firebase Admin não configurado.');
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-    adminReady = true;
-  }
-  return getFirestore();
-}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const siteUrl = process.env.SITE_URL || 'https://curriculo-go.vercel.app';
@@ -77,6 +64,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // ── POST ──────────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
     const { action } = req.body ?? {};
+
+    // Marcar como lida (admin)
+    if (action === 'read') {
+      const ownerSecret = process.env.OWNER_SECRET;
+      if (!ownerSecret || !safeCompareBearer(req.headers.authorization, ownerSecret)) {
+        return res.status(401).json({ error: 'Não autorizado.' });
+      }
+      const { id } = req.body;
+      if (!id || typeof id !== 'string') return res.status(400).json({ error: 'id obrigatório.' });
+      try {
+        const db = await getDb();
+        await db.collection('contact_messages').doc(id.trim().slice(0, 64)).update({ lida: true });
+        return res.status(200).json({ ok: true });
+      } catch (e: any) {
+        return res.status(500).json({ error: e.message });
+      }
+    }
 
     // Deletar mensagem (admin)
     if (action === 'delete') {

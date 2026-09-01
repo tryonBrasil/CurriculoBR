@@ -1,4 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createRateLimiter } from './_rateLimiter';
+
+// check-pix é chamado a cada 5s pelo frontend durante polling.
+// Permitimos 30 chamadas por IP a cada 10 min (6 por minuto — suficiente para polling normal).
+const rateLimit = createRateLimiter(30, 10 * 60 * 1000);
+import { getDb } from './_firebaseAdmin';
 
 /**
  * GET /api/check-pix?payment_id=xxx&uid=yyy
@@ -23,20 +29,6 @@ function getExpiresAt(plan: string): string | null {
 }
 
 // ── Firebase Admin (lazy init) ─────────────────────────────────────────────
-let adminReady = false;
-async function getDb() {
-  const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-  const { getFirestore } = await import('firebase-admin/firestore');
-  if (!adminReady && !getApps().length) {
-    const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    if (!projectId || !clientEmail || !privateKey) throw new Error('Firebase Admin não configurado.');
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-    adminReady = true;
-  }
-  return getFirestore();
-}
 
 async function savePremiumToFirestore(uid: string, plan: string, paymentId: string) {
   try {
@@ -56,6 +48,13 @@ async function savePremiumToFirestore(uid: string, plan: string, paymentId: stri
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  const { allowed, retryAfter } = rateLimit(req);
+  if (!allowed) {
+    res.setHeader('Retry-After', String(retryAfter));
+    return res.status(429).json({ error: 'Muitas requisições. Aguarde antes de verificar novamente.' });
+  }
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const { payment_id, uid } = req.query;

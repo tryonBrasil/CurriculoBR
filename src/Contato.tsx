@@ -78,6 +78,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nome *</label>
               <input
                 type="text" required
+                autoComplete="name"
                 value={form.nome}
                 onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
                 maxLength={100}
@@ -90,6 +91,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">E-mail *</label>
               <input
                 type="email" required
+                autoComplete="email"
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 placeholder="seu@email.com"

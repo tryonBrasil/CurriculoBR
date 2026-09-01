@@ -40,28 +40,7 @@ function getExpiresAt(plan: string, activatedAt: number): Date | null {
 }
 
 // ── Firebase Admin ──────────────────────────────────────────────────────────
-let adminReady = false;
-
-async function getDb() {
-  const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-  const { getFirestore } = await import('firebase-admin/firestore');
-
-  if (!adminReady && !getApps().length) {
-    const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-    if (!projectId || !clientEmail || !privateKey) {
-      throw new Error(
-        'Firebase Admin não configurado. Adicione FIREBASE_ADMIN_PROJECT_ID, ' +
-        'FIREBASE_ADMIN_CLIENT_EMAIL e FIREBASE_ADMIN_PRIVATE_KEY no Vercel.'
-      );
-    }
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-    adminReady = true;
-  }
-  return getFirestore();
-}
+import { getDb } from './_firebaseAdmin';
 
 // Rate limit: 1 sync por minuto por uid (evita flood)
 const syncLimiter = new Map<string, number>();
@@ -214,21 +193,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     catch (e: any) { return res.status(503).json({ error: e.message }); }
 
     try {
-      const snap    = await db.collection(CLIENTS_COLLECTION).orderBy('lastSeen', 'desc').get();
-      const clients = snap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+      const PAGE_SIZE   = 50;
+      const cursor      = req.query.cursor as string | undefined; // lastSeen do último doc da página anterior
 
-      const stats = {
-        total:    clients.length,
-        vip:      clients.filter((c: any) => c.isVip).length,
-        expired:  clients.filter((c: any) => c.isExpired && !c.isVip).length,
-        free:     clients.filter((c: any) => !c.isVip && !c.isExpired && !c.plan).length,
-        lifetime: clients.filter((c: any) => c.plan === 'lifetime' && c.isVip).length,
-        yearly:   clients.filter((c: any) => c.plan === 'yearly'   && c.isVip).length,
-        monthly:  clients.filter((c: any) => c.plan === 'monthly'  && c.isVip).length,
-        avulso:   clients.filter((c: any) => (c.plan === 'avulso' || c.plan === 'weekly') && c.isVip).length,
-      };
+      let query = db.collection(CLIENTS_COLLECTION)
+        .orderBy('lastSeen', 'desc')
+        .limit(PAGE_SIZE + 1); // busca +1 para saber se tem próxima página
 
-      return res.status(200).json({ clients, stats });
+      if (cursor) {
+        query = query.startAfter(cursor);
+      }
+
+      const snap    = await query.get();
+      const hasMore = snap.docs.length > PAGE_SIZE;
+      const docs    = hasMore ? snap.docs.slice(0, PAGE_SIZE) : snap.docs;
+      const clients = docs.map((d: any) => ({ id: d.id, ...d.data() }));
+      const nextCursor = hasMore ? (clients[clients.length - 1] as any).lastSeen ?? null : null;
+
+      // Estatísticas gerais (somente na primeira página)
+      let stats = null;
+      if (!cursor) {
+        const allSnap = await db.collection(CLIENTS_COLLECTION).get();
+        const all = allSnap.docs.map((d: any) => d.data());
+        stats = {
+          total:    all.length,
+          vip:      all.filter((c: any) => c.isVip).length,
+          expired:  all.filter((c: any) => c.isExpired && !c.isVip).length,
+          free:     all.filter((c: any) => !c.isVip && !c.isExpired && !c.plan).length,
+          lifetime: all.filter((c: any) => c.plan === 'lifetime' && c.isVip).length,
+          yearly:   all.filter((c: any) => c.plan === 'yearly'   && c.isVip).length,
+          monthly:  all.filter((c: any) => c.plan === 'monthly'  && c.isVip).length,
+          avulso:   all.filter((c: any) => (c.plan === 'avulso' || c.plan === 'weekly') && c.isVip).length,
+        };
+      }
+
+      return res.status(200).json({ clients, stats, hasMore, nextCursor });
     } catch (e: any) {
       return res.status(500).json({ error: 'Erro ao listar clientes: ' + e.message });
     }

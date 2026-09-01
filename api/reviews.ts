@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { timingSafeEqual } from 'crypto';
+import { getDb } from './_firebaseAdmin';
 
 /**
  * /api/reviews
@@ -36,20 +37,6 @@ function getIP(req: VercelRequest): string {
 }
 
 // Firebase Admin
-let adminReady = false;
-async function getDb() {
-  const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-  const { getFirestore } = await import('firebase-admin/firestore');
-  if (!adminReady && !getApps().length) {
-    const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-    if (!projectId || !clientEmail || !privateKey) throw new Error('Firebase Admin não configurado.');
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-    adminReady = true;
-  }
-  return getFirestore();
-}
 
 // Filtro básico anti-spam (palavras proibidas)
 const BLOCKED = ['puta','viado','merda','caralho','porra','foda','buceta','cu ','vsf','fdp','safado'];

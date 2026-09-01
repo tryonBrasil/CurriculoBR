@@ -251,25 +251,19 @@ async function buildDocx(data: ResumeData): Promise<Blob> {
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 </Relationships>`;
 
-  // Usar JSZip se disponível (carregado via CDN no index.html)
+  // JSZip carregado via <script> no index.html — sem import dinâmico externo
   const JSZip = (window as any).JSZip;
-  if (JSZip) {
-    const zip = new JSZip();
-    zip.file('[Content_Types].xml', contentTypes);
-    zip.file('_rels/.rels', rels);
-    zip.file('word/document.xml', documentXml);
-    zip.file('word/_rels/document.xml.rels', wordRels);
-    return await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  }
+  if (!JSZip) throw new Error('JSZip não carregado. Recarregue a página e tente novamente.');
 
-  // Fallback: importar JSZip dinamicamente
-  const { default: JZ } = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js' as any);
-  const zip2 = new JZ();
-  zip2.file('[Content_Types].xml', contentTypes);
-  zip2.file('_rels/.rels', rels);
-  zip2.file('word/document.xml', documentXml);
-  zip2.file('word/_rels/document.xml.rels', wordRels);
-  return await zip2.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', contentTypes);
+  zip.file('_rels/.rels', rels);
+  zip.file('word/document.xml', documentXml);
+  zip.file('word/_rels/document.xml.rels', wordRels);
+  return await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
 }
 
 // ── Export público ────────────────────────────────────────────────────────────

@@ -57,11 +57,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify({
         transaction_amount: price,
-        description,
+        description: `${description} | plan:${resolvedPlan}${safeUid ? ' uid:' + safeUid : ''}`,
         payment_method_id: 'pix',
         date_of_expiration: expiresAt,
         payer: { email: payerEmail },
-        metadata: { product: 'curriculogo-premium', plan: resolvedPlan },
+        metadata: { product: 'curriculogo-premium', plan: resolvedPlan, ...(safeUid ? { uid: safeUid } : {}) },
       }),
     });
 

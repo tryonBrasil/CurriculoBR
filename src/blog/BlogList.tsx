@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BLOG_POSTS } from './blogData';
 import AdUnit from '../components/AdUnit';
 
@@ -12,42 +12,6 @@ const CATEGORIES = ['Todos', 'Iniciantes', 'Dicas', 'Conteúdo', 'Mercado', 'ATS
 
 const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo }) => {
   const [activeCategory, setActiveCategory] = useState('Todos');
-
-  // ─── SEO: atualiza canonical e structured data para /blog ────────────────
-  useEffect(() => {
-    const BASE = 'https://curriculo-go.vercel.app';
-
-    // Canonical dinâmico
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.rel = 'canonical';
-      document.head.appendChild(canonical);
-    }
-    canonical.href = `${BASE}/blog`;
-
-    // Structured data — BreadcrumbList para o blog
-    const existing = document.getElementById('blog-list-jsonld');
-    if (existing) existing.remove();
-    const script = document.createElement('script');
-    script.id   = 'blog-list-jsonld';
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Início',  item: `${BASE}/`    },
-        { '@type': 'ListItem', position: 2, name: 'Blog',    item: `${BASE}/blog` },
-      ],
-    });
-    document.head.appendChild(script);
-
-    return () => {
-      document.getElementById('blog-list-jsonld')?.remove();
-      // Restaura canonical para home ao sair
-      if (canonical) canonical.href = `${BASE}/`;
-    };
-  }, []);
 
   const filtered = activeCategory === 'Todos'
     ? BLOG_POSTS
@@ -114,6 +78,11 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
           ))}
         </div>
 
+        {/* Ad — top */}
+        <div className="mb-10">
+          <AdUnit slotId="" format="horizontal" />
+        </div>
+
         {/* Featured post */}
         {featured && (
           <div
@@ -140,11 +109,6 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
             </div>
           </div>
         )}
-
-        {/* Ad — between featured post and article grid */}
-        <div className="mb-10">
-          <AdUnit slotId="1289104587" format="horizontal" />
-        </div>
 
         {/* Article grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -178,7 +142,7 @@ const BlogList: React.FC<BlogListProps> = ({ onVoltar, onPost, onCriarCurriculo 
               {/* Ad after 4th article */}
               {idx === 3 && (
                 <div className="md:col-span-2 lg:col-span-3">
-                  <AdUnit slotId="3547931830" format="horizontal" />
+                  <AdUnit slotId="" format="horizontal" />
                 </div>
               )}
             </React.Fragment>

@@ -50,17 +50,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     process.env.SITE_URL ||
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : null);
-
-  if (!baseUrl) {
-    console.error('create-preference: nenhuma variável de URL configurada (SITE_URL, VERCEL_PROJECT_PRODUCTION_URL ou VERCEL_URL).');
-    return res.status(500).json({ error: 'URL do site não configurada. Defina SITE_URL nas variáveis de ambiente do Vercel.' });
-  }
+      : 'https://curriculo-go.vercel.app'); // fallback seguro; SITE_URL deve estar definido em produção
 
   // Ignora qualquer price/amount enviado pelo cliente — preço definido exclusivamente no servidor
-  const { plan = 'avulso' } = req.body ?? {};
+  const { plan = 'avulso', uid } = req.body ?? {};
+  const safeUid = (typeof uid === 'string' && /^[A-Za-z0-9_-]{10,128}$/.test(uid)) ? uid : null;
   const resolvedPlan = (['avulso','monthly','yearly','lifetime','weekly'].includes(plan) ? plan : 'avulso') as string;
   const { price, title, description } = PLANS[resolvedPlan];
 

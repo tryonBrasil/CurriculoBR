@@ -24,6 +24,12 @@ service cloud.firestore {
     }
   }
 
+    // payments_anonymous: somente backend (Admin SDK)
+    match /payments_anonymous/{payId} {
+      allow read, write: if false;
+    }
+
+    // contact_messages: somente backend (Admin SDK)
     match /contact_messages/{msgId} {
       allow read, write: if false;
     }

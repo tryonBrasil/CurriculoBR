@@ -1,7 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-
-const CONSENT_KEY = 'curriculogo_cookie_consent';
-const CONSENT_EVENT = 'curriculogo_consent_changed';
+import React, { useEffect, useRef } from 'react';
 
 interface AdUnitProps {
   slotId: string;
@@ -11,62 +8,51 @@ interface AdUnitProps {
   style?: React.CSSProperties;
 }
 
-const AdUnit: React.FC<AdUnitProps> = ({
-  slotId,
-  format = 'auto',
-  responsive = true,
+const AdUnit: React.FC<AdUnitProps> = ({ 
+  slotId, 
+  format = 'auto', 
+  responsive = true, 
   className = '',
-  style,
+  style 
 }) => {
   const adRef = useRef<HTMLModElement>(null);
-  const pushed = useRef(false);
 
-  const [consent, setConsent] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem(CONSENT_KEY);
-  });
-
-  // Escuta mudança de consentimento
   useEffect(() => {
-    const handler = () => setConsent(localStorage.getItem(CONSENT_KEY));
-    window.addEventListener(CONSENT_EVENT, handler);
-    return () => window.removeEventListener(CONSENT_EVENT, handler);
-  }, []);
-
-  // Empurra o anúncio ao AdSense assim que o componente monta.
-  // O anúncio é exibido SEMPRE — não personalizado por padrão (NPA),
-  // personalizado somente após o usuário aceitar os cookies.
-  // Isso garante que o revisor do Google veja os anúncios na primeira visita.
-  useEffect(() => {
-    if (!slotId || typeof window === 'undefined') return;
-    if (pushed.current) return;
-    pushed.current = true;
-
-    try {
-      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-      ((window as any).adsbygoogle as any[]).push({});
-    } catch (e) {
-      console.error('AdSense Error:', e);
+    // 1. Só executa se houver o slotId e se o script do Google já existir na janela
+    if (typeof window !== 'undefined' && slotId) {
+      try {
+        // Verifica se o elemento já foi processado pelo Google (evita o erro 'All ins elements must be empty')
+        // O AdSense adiciona um atributo 'data-adsbygoogle-status' após processar
+        if (adRef.current && !adRef.current.getAttribute('data-adsbygoogle-status')) {
+          const adsbygoogle = (window as any).adsbygoogle || [];
+          adsbygoogle.push({});
+        }
+      } catch (e) {
+        console.error("AdSense Error:", e);
+      }
     }
-  }, [slotId]);
+  }, [slotId]); // Re-executa se o slot mudar (útil se você alternar tipos de ads)
 
   if (!slotId) return null;
 
   return (
-    <div
+    <div 
       className={`ad-container my-6 text-center overflow-hidden min-h-[100px] flex flex-col items-center justify-center ${className}`}
+      // A key ajuda o React a entender que este é um elemento novo se o slot mudar
+      key={slotId} 
     >
       <span className="text-[10px] text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-2 block w-full text-center">
         Publicidade
       </span>
+      
       <ins
         ref={adRef}
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', minWidth: '250px', ...style }}
-        data-ad-client="ca-pub-8618931854003885"
+        data-ad-client="ca-pub-7391569489136877"
         data-ad-slot={slotId}
         data-ad-format={format}
-        data-full-width-responsive={responsive ? 'true' : 'false'}
+        data-full-width-responsive={responsive ? "true" : "false"}
       ></ins>
     </div>
   );

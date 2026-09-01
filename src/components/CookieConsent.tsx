@@ -14,24 +14,14 @@ const CookieConsent: React.FC = () => {
     }
   }, []);
 
-  const dispatchConsentEvent = () =>
-    window.dispatchEvent(new Event('curriculogo_consent_changed'));
-
   const accept = () => {
     localStorage.setItem(COOKIE_KEY, 'accepted');
-    // Habilita anúncios personalizados após aceite
-    if (typeof window !== 'undefined') {
-      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-      ((window as any).adsbygoogle as any).requestNonPersonalizedAds = 0;
-    }
     setVisible(false);
-    dispatchConsentEvent();
   };
 
   const decline = () => {
     localStorage.setItem(COOKIE_KEY, 'declined');
     setVisible(false);
-    dispatchConsentEvent();
   };
 
   if (!visible) return null;

@@ -12,11 +12,12 @@ interface PremiumModalProps {
 
 type Screen = 'choose-plan' | 'choose-pay' | 'pix-loading' | 'pix-qr' | 'pix-done' | 'pix-expired' | 'card-loading';
 
-const PIX_POLL_MS = 5_000;
+const PIX_POLL_MS       = 5_000;
+const MAX_POLL_ATTEMPTS = 72; // 72 × 5s = 6 minutos máximo de polling
 
 const PLANS = {
   avulso:   { label: 'Avulso',   emoji: '⚡', price: 9.90,  period: '7 dias premium · sem renovação automática' },
-  monthly:  { label: 'Mensal',   emoji: '🚀', price: 14.90, period: 'por mês · cancele a qualquer hora' },
+  monthly:  { label: 'Mensal',   emoji: '🚀', price: 14.90, period: '30 dias premium · sem renovação automática' },
   yearly:   { label: 'Anual',    emoji: '🌟', price: 59.90, period: '12 meses · paga menos que 4 cafés' },
   lifetime: { label: 'Vitalício',emoji: '👑', price: 29.90, period: 'paga uma vez · acesso para sempre' },
 } as const;
@@ -65,8 +66,9 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
   const [pixExpiresAt, setPixExpiresAt] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState('');
   const [copied, setCopied] = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollRef      = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollAttempts = useRef(0);
 
   useEffect(() => () => {
     if (pollRef.current)  clearInterval(pollRef.current);
@@ -89,7 +91,15 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
 
   const startPolling = useCallback((paymentId: string, plan: PremiumPlan) => {
     if (pollRef.current) clearInterval(pollRef.current);
+    pollAttempts.current = 0;
     const check = async () => {
+      pollAttempts.current++;
+      if (pollAttempts.current > MAX_POLL_ATTEMPTS) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        setError('Tempo de verificação esgotado. Se pagou, aguarde alguns minutos e o acesso será liberado automaticamente.');
+        setScreen('choose-pay');
+        return;
+      }
       try {
         const uidParam = uid ? `&uid=${encodeURIComponent(uid)}` : '';
         const res = await fetch(`/api/check-pix?payment_id=${paymentId}${uidParam}`);
@@ -109,12 +119,12 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
     };
     check();
     pollRef.current = setInterval(check, PIX_POLL_MS);
-  }, [onUnlocked, uid]);
+  }, [onUnlocked]);
 
   const handlePixCheckout = async () => {
     setError(''); setScreen('pix-loading');
     try {
-      const res = await fetch('/api/create-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan }) });
+      const res = await fetch('/api/create-pix', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan, ...(uid ? { uid } : {}) }) });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         const msg = res.status === 429 ? (err.error || 'Muitas tentativas. Aguarde alguns minutos.') : (err.error || 'Erro ao gerar Pix.');
@@ -129,7 +139,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
   const handleCardCheckout = async () => {
     setError(''); setScreen('card-loading');
     try {
-      const res = await fetch('/api/create-preference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan }) });
+      const res = await fetch('/api/create-preference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan: selectedPlan, ...(uid ? { uid } : {}) }) });
       if (!res.ok) {
         let msg = 'Erro ao conectar com o servidor de pagamento.';
         try {

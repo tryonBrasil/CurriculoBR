@@ -34,31 +34,7 @@ function safeCompareBearer(received: string | undefined, secret: string): boolea
 const VIP_COLLECTION = 'vip_blocks';
 
 // ── Firebase Admin (lazy init, compatível com Vercel Serverless) ──────────────
-let adminInitialized = false;
-
-async function getFirestoreAdmin() {
-  // firebase-admin: adicione ao package.json → "firebase-admin": "^12.0.0"
-  const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-  const { getFirestore } = await import('firebase-admin/firestore');
-
-  if (!adminInitialized && !getApps().length) {
-    const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-    const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-    if (!projectId || !clientEmail || !privateKey) {
-      throw new Error(
-        'Firebase Admin não configurado. ' +
-        'Adicione FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL e FIREBASE_ADMIN_PRIVATE_KEY no Vercel.'
-      );
-    }
-
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-    adminInitialized = true;
-  }
-
-  return getFirestore();
-}
+import { getDb } from './_firebaseAdmin';
 
 // ── Rate limiting simples (in-memory, suficiente para Vercel por região) ──────
 const adminAttempts = new Map<string, { count: number; resetAt: number }>();

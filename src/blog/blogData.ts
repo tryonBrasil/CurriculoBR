@@ -203,7 +203,7 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: 'habilidades-mais-valorizadas-mercado-2025',
-    title: 'As Habilidades Mais Valorizadas pelo Mercado em 2026',
+    title: 'As Habilidades Mais Valorizadas pelo Mercado em 2025',
     description: 'Descubra quais competências técnicas e comportamentais os recrutadores mais buscam e como destacá-las no seu currículo.',
     category: 'Mercado',
     readTime: '7 min',
@@ -733,107 +733,6 @@ export const BLOG_POSTS: BlogPost[] = [
 
       <h2>Conclusão</h2>
       <p>Currículo e LinkedIn são complementares, não substitutos. O currículo abre portas em candidaturas ativas; o LinkedIn te encontra mesmo quando você não está procurando. Manter os dois atualizados e consistentes é um hábito profissional que faz grande diferença ao longo da carreira.</p>
-    `,
-  },
-
-  // ─── Artigo: Currículo ATS ────────────────────────────────────────────────
-  {
-    slug: 'curriculo-ats',
-    title: 'Currículo ATS: O Que É e Como Criar um Modelo Compatível',
-    description: 'Aprenda o que é currículo ATS, como os sistemas de rastreamento funcionam e como formatar seu CV para passar pela triagem automática e chegar ao recrutador.',
-    category: 'ATS & Tech',
-    readTime: '10 min',
-    date: '10 de março de 2026',
-    content: `
-      <p>Você envia dezenas de currículos e não recebe nenhuma resposta? O problema pode não ser sua qualificação — pode ser o <strong>formato do seu currículo</strong>. Hoje, a maioria das grandes empresas usa sistemas chamados ATS para filtrar candidatos antes de qualquer humano ler seu CV. Se o seu currículo não for compatível, ele é descartado automaticamente.</p>
-
-      <p>Neste guia completo você vai entender o que é um <strong>currículo ATS</strong>, como esses sistemas funcionam, e — o mais importante — como formatar e escrever seu CV para passar pela triagem e chegar às mãos de um recrutador.</p>
-
-      <h2>O Que é ATS?</h2>
-      <p>ATS significa <em>Applicant Tracking System</em> — sistema de rastreamento de candidatos. É um software que as empresas usam para receber, organizar e filtrar currículos de forma automática. Em vez de um recrutador ler cada CV individualmente, o ATS faz uma pré-seleção com base em palavras-chave, estrutura e formato.</p>
-      <p>Estudos indicam que <strong>mais de 90% das grandes empresas</strong> usam algum tipo de ATS no processo seletivo. No Brasil, plataformas como Gupy, Kenoby, Greenhouse e Lever são amplamente adotadas. Isso significa que, na prática, seu currículo precisa "convencer" uma máquina antes de convencer um humano.</p>
-
-      <h2>Como o ATS Lê Seu Currículo?</h2>
-      <p>O ATS realiza basicamente três operações no seu currículo:</p>
-      <ol>
-        <li><strong>Extrai o texto</strong> do documento (por isso elementos gráficos são problemáticos — o sistema não os lê)</li>
-        <li><strong>Identifica seções</strong> como experiência, educação e habilidades pelo título de cada bloco</li>
-        <li><strong>Pontua o CV</strong> com base na correspondência entre o conteúdo e as palavras-chave da descrição da vaga</li>
-      </ol>
-      <p>Quanto maior a correspondência, maior a pontuação e maior a chance de avançar no processo. Por isso <strong>personalizar o currículo para cada vaga</strong> faz uma diferença real e mensurável.</p>
-
-      <h2>Formato do Currículo ATS: O Que Fazer e O Que Evitar</h2>
-
-      <h3>✅ O Que Fazer</h3>
-      <ul>
-        <li><strong>Fontes simples:</strong> Arial, Calibri, Verdana ou Georgia. Tamanho entre 10 e 12 pontos para o corpo do texto.</li>
-        <li><strong>Seções com títulos padrão:</strong> "Experiência Profissional", "Formação Acadêmica", "Habilidades", "Idiomas". Use exatamente esses títulos — o ATS os reconhece por padrão.</li>
-        <li><strong>PDF ou .docx:</strong> O PDF é o formato mais compatível na maioria dos ATS. Evite enviar imagens (JPG, PNG) ou arquivos exóticos.</li>
-        <li><strong>Ordem cronológica inversa:</strong> Liste a experiência mais recente primeiro — é o padrão esperado e o que o sistema procura.</li>
-        <li><strong>Palavras-chave da vaga:</strong> Leia o anúncio com atenção e use os mesmos termos que a empresa utiliza.</li>
-      </ul>
-
-      <h3>❌ O Que Evitar</h3>
-      <ul>
-        <li><strong>Tabelas e colunas complexas:</strong> Muitos ATS lêem o texto de forma linear, embaralhando todo o conteúdo de tabelas.</li>
-        <li><strong>Cabeçalhos e rodapés automáticos:</strong> Alguns sistemas ignoram completamente o conteúdo em cabeçalho/rodapé do Word.</li>
-        <li><strong>Gráficos de habilidades:</strong> Barras de progresso e ícones visuais não são lidos — o sistema não sabe que você tem "80% de Excel".</li>
-        <li><strong>Fontes decorativas ou manuscritas:</strong> Dificultam a extração de texto e podem causar erros de leitura.</li>
-        <li><strong>Texto dentro de imagens:</strong> O ATS não consegue ler texto embutido em fotos ou elementos gráficos.</li>
-        <li><strong>Currículo salvo como imagem:</strong> JPG ou PNG são completamente invisíveis para qualquer sistema ATS.</li>
-      </ul>
-
-      <h2>Como Incluir Palavras-Chave no Currículo ATS</h2>
-      <p>Essa é a parte mais importante da otimização para ATS — e a mais subestimada pelos candidatos. Veja como fazer corretamente:</p>
-
-      <h3>1. Leia a descrição da vaga como um mapa</h3>
-      <p>Identifique os requisitos obrigatórios, as ferramentas mencionadas e os verbos de ação usados. Esses são exatamente os termos que o ATS vai procurar no seu currículo.</p>
-
-      <h3>2. Use os termos exatos da vaga</h3>
-      <p>Se a vaga pede "Excel avançado", escreva "Excel avançado" — não apenas "pacote Office" ou "planilhas". O ATS faz correspondência exata de texto com mais frequência do que você imagina.</p>
-
-      <h3>3. Distribua as palavras-chave naturalmente</h3>
-      <p>Não crie uma lista genérica no final com todas as palavras-chave. Distribua-as no resumo profissional, nas descrições de cada experiência e na seção de habilidades. O ATS valoriza mais quando as palavras aparecem em contexto real.</p>
-
-      <h3>4. Inclua siglas e formas por extenso</h3>
-      <p>Use tanto a sigla quanto o nome completo: "SEO (Search Engine Optimization)", "IA (Inteligência Artificial)", "RH (Recursos Humanos)". Diferentes sistemas procuram variações diferentes do mesmo termo.</p>
-
-      <h2>Estrutura Ideal do Currículo ATS</h2>
-      <p>Um currículo compatível com ATS deve seguir esta ordem de seções:</p>
-      <ol>
-        <li><strong>Dados pessoais e de contato</strong> — nome, e-mail, telefone, LinkedIn, cidade</li>
-        <li><strong>Resumo profissional</strong> — 3 a 4 linhas com suas principais qualificações e objetivo claro</li>
-        <li><strong>Experiência profissional</strong> — cargo, empresa, período e responsabilidades em bullet points</li>
-        <li><strong>Formação acadêmica</strong> — curso, instituição e ano de conclusão</li>
-        <li><strong>Habilidades</strong> — lista de competências técnicas, ferramentas e soft skills relevantes</li>
-        <li><strong>Idiomas</strong> — língua e nível (básico, intermediário, avançado, fluente)</li>
-        <li><strong>Cursos e certificações</strong> — opcional, mas muito valorizado</li>
-      </ol>
-
-      <h2>Currículo ATS e Visual Bonito: Dá Para Ter os Dois?</h2>
-      <p>Sim — desde que você use um modelo desenvolvido com compatibilidade ATS em mente. Um currículo pode ser visualmente atraente <em>e</em> compatível com ATS ao mesmo tempo. A chave está em usar elementos de design que não interfiram na extração de texto: cores sutis no cabeçalho, separadores simples, hierarquia tipográfica clara.</p>
-      <p>Evite apenas modelos com layout de duas colunas muito elaboradas, caixas de texto sobrepostas ou gráficos de skills em barras. Esses elementos parecem bonitos visualmente, mas podem confundir ou bloquear a leitura do ATS.</p>
-
-      <h2>Como Testar se Seu Currículo Passa no ATS</h2>
-      <p>Uma forma simples de testar é copiar todo o texto do seu currículo e colar em um editor de texto simples como o Bloco de Notas. Se o resultado ficar bagunçado ou inlegível, é sinal de que o ATS também terá dificuldade para processar o documento. Se o texto fluir de forma lógica e organizada, você está no caminho certo.</p>
-      <p>Outra opção é usar a <strong>análise ATS integrada do CurriculoGO</strong>: o sistema analisa o seu currículo e aponta quais seções estão bem formatadas e quais precisam de ajuste — tudo em português e gratuitamente.</p>
-
-      <h2>Perguntas Frequentes sobre Currículo ATS</h2>
-
-      <h3>Foto no currículo ATS: coloco ou não?</h3>
-      <p>Para a leitura do ATS, a foto não interfere — ela simplesmente é ignorada pelo sistema. A decisão de incluir ou não depende da cultura da empresa e do setor. Em processos seletivos modernos, especialmente em empresas de tecnologia e startups, a tendência é não incluir foto para evitar viés inconsciente na triagem.</p>
-
-      <h3>O ATS descarta meu currículo automaticamente?</h3>
-      <p>Depende da configuração de cada empresa. Alguns ATS apenas organizam os currículos por pontuação e um recrutador decide quem avança. Outros têm filtros automáticos que descartam CVs abaixo de um determinado score sem intervenção humana. Vale a pena otimizar o currículo tanto para o ATS quanto para a leitura humana — os dois critérios importam.</p>
-
-      <h3>Preciso de um currículo diferente para cada vaga?</h3>
-      <p>Idealmente, sim — ao menos o resumo profissional e a seção de habilidades devem ser ajustados para cada candidatura. Você não precisa reescrever tudo do zero: basta adaptar as palavras-chave e reordenar as experiências para priorizar as mais relevantes para aquela vaga específica.</p>
-
-      <h3>Qual a diferença entre currículo ATS e currículo normal?</h3>
-      <p>O currículo ATS usa formatação simples, seções nomeadas de forma padrão e palavras-chave alinhadas com a vaga — tudo para facilitar a leitura automatizada. Um currículo "normal" pode ter design elaborado, gráficos e colunas que prejudicam a extração de texto. O ideal é ter um modelo que funciona bem nos dois cenários.</p>
-
-      <h2>Conclusão</h2>
-      <p>Um currículo ATS não precisa ser genérico ou sem personalidade. Ele precisa ser <strong>estratégico</strong>: formato limpo que o sistema consiga processar, palavras-chave que correspondam à vaga, e conteúdo forte que convença o recrutador depois que o ATS liberar seu passe. Use o CurriculoGO para criar um currículo que faz exatamente isso — com análise ATS integrada para garantir que você está no caminho certo antes de enviar.</p>
     `,
   },
 ];

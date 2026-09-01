@@ -3,6 +3,7 @@ import { ResumeData, TemplateId, Experience, Education, Language, Course, Projec
 import { INITIAL_RESUME_DATA, MOCK_RESUME_DATA } from './constants';
 import Input from './components/Input';
 import ResumePreview from './components/ResumePreview';
+import { SectionErrorBoundary } from './components/ErrorBoundary';
 import { exportToDocx } from './services/exportService';
 import Toast from './components/Toast';
 import TemplateThumbnail from './components/TemplateThumbnail';
@@ -131,6 +132,11 @@ const LegalPageLayout: React.FC<{ title: string; children: React.ReactNode; onHo
     <main className="flex-1 p-8 md:p-12 overflow-y-auto">
       <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 leading-relaxed">
           {children}
+          <div className="mt-12 border-t border-slate-100 dark:border-slate-700 pt-8">
+             {/* AdSense: substitua "" pelo ID do bloco em https://adsense.google.com → Anúncios → Por bloco */}
+                {/* AdSense: adicione o slotId do bloco em https://adsense.google.com → Anúncios → Por bloco de anúncio */}
+               <AdUnit slotId="" format="horizontal" />
+          </div>
       </div>
     </main>
   </div>
@@ -146,10 +152,7 @@ export default function App() {
   const [fontSize, setFontSize] = useState(12);
   const [fontFamily, setFontFamily] = useState<string>("'Inter', sans-serif");
   const [isEnhancing, setIsEnhancing] = useState<string | null>(null);
-  // FIX 1: Começa FECHADO em todos os dispositivos.
-  // Um useEffect abre automaticamente no desktop (≥768px) após o mount.
-  // No mobile nunca abre automaticamente — só via botão "Estilos".
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [highlightedStep, setHighlightedStep] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
@@ -207,27 +210,6 @@ export default function App() {
       .then(d => setCommunityReviews(d.reviews ?? []))
       .catch(() => {});
   }, []);
-
-  // Bug 3 fix: escuta evento 'premium-activated' disparado por usePremium após verificação
-  // de pagamento por cartão — garante toast correto e syncClientToServer no retorno do MP
-  useEffect(() => {
-    const handlePremiumActivated = (e: Event) => {
-      const { plan } = (e as CustomEvent<{ plan: string; paymentId: string }>).detail;
-      const PLAN_MSGS: Record<string, string> = {
-        avulso:   '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!',
-        monthly:  '🚀 Plano Mensal ativado! Todos os templates desbloqueados!',
-        yearly:   '🌟 Plano Anual ativado! Todos os templates desbloqueados!',
-        lifetime: '👑 Premium Vitalício ativado! Todos os templates desbloqueados para sempre!',
-      };
-      showToast(PLAN_MSGS[plan] ?? '⚡ Premium ativado!', 'success');
-      window.dispatchEvent(new Event('storage'));
-      if (user?.uid) {
-        syncClientToServer({ uid: user.uid, email: user.email, displayName: user.displayName, photoURL: user.photoURL });
-      }
-    };
-    window.addEventListener('premium-activated', handlePremiumActivated);
-    return () => window.removeEventListener('premium-activated', handlePremiumActivated);
-  }, [user, syncClientToServer]);
 
   const handleSubmitReview = async () => {
     setReviewError('');
@@ -324,6 +306,9 @@ export default function App() {
   const [ownerError, setOwnerError]                 = useState('');
   const [ownerAuthenticated, setOwnerAuthenticated] = useState(false);
   const [ownerMessages, setOwnerMessages]             = useState<any[]>([]);
+  const [clientsCursor, setClientsCursor]             = useState<string | null>(null);
+  const [clientsHasMore, setClientsHasMore]           = useState(false);
+  const [clientsLoadingMore, setClientsLoadingMore]   = useState(false);
   const [ownerMessagesLoading, setOwnerMessagesLoading] = useState(false);
   const [ownerTab, setOwnerTab]                     = useState<'acesso' | 'bloqueados' | 'clientes' | 'depoimentos' | 'mensagens'>('acesso');
   const ownerLongPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -349,11 +334,6 @@ export default function App() {
   const [clientLoading, setClientLoading]           = useState(false);
   const [clientSearch, setClientSearch]             = useState('');
   const [clientFilter, setClientFilter]             = useState<'all' | 'vip' | 'expired' | 'blocked' | 'free'>('all');
-
-  // FIX 1 (cont): abre o painel de estilos por padrão somente em telas de desktop
-  useEffect(() => {
-    if (window.innerWidth >= 768) setIsSidebarOpen(true);
-  }, []);
 
   // Atalho de teclado para o painel admin
   useEffect(() => {
@@ -400,29 +380,10 @@ export default function App() {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorScrollRef = useRef<HTMLDivElement>(null);
 
-  // ─── Mapa de title/description por rota (para SEO de SPA) ───────────────
-  const PAGE_META: Record<string, { title: string; description: string }> = {
-    '/':                         { title: 'CurriculoGO — Gerador de Currículos Profissionais Grátis', description: 'Crie seu currículo profissional em minutos. Comece grátis com 3 modelos ou desbloqueie 12 templates premium a partir de R$9,90. Análise ATS com IA, download em PDF.' },
-    '/editor':                   { title: 'Editor de Currículo Online Grátis | CurriculoGO', description: 'Edite seu currículo online em tempo real. Escolha entre 15 modelos profissionais, personalize fonte e cor, e exporte em PDF gratuitamente.' },
-    '/carta-de-apresentacao':    { title: 'Carta de Apresentação Profissional | CurriculoGO', description: 'Crie uma carta de apresentação profissional com IA integrada. Personalizada para cada vaga, em minutos.' },
-    '/blog':                     { title: 'Blog de Dicas de Currículo | CurriculoGO', description: 'Guias práticos sobre currículo, mercado de trabalho e carreira. Dicas para criar um CV que abre portas.' },
-    '/sobre':                    { title: 'Sobre o CurriculoGO | Criador de Currículos Online', description: 'Conheça o CurriculoGO, a ferramenta gratuita para criar currículos profissionais online.' },
-    '/contato':                  { title: 'Contato | CurriculoGO', description: 'Entre em contato com a equipe do CurriculoGO. Estamos aqui para ajudar.' },
-    '/privacidade':              { title: 'Política de Privacidade | CurriculoGO', description: 'Veja como o CurriculoGO protege seus dados pessoais.' },
-    '/termos':                   { title: 'Termos de Uso | CurriculoGO', description: 'Leia os termos de uso do CurriculoGO.' },
-  };
-
   const navigateTo = useCallback((path: string, viewState: typeof view) => {
     window.history.pushState({}, '', path);
     setView(viewState);
     window.scrollTo(0, 0);
-    // Atualiza title/description para pages não-artigo (artigos são gerenciados pelo BlogPost.tsx)
-    const meta = PAGE_META[path];
-    if (meta) {
-      document.title = meta.title;
-      const descEl = document.querySelector("meta[name='description']") as HTMLMetaElement;
-      if (descEl) descEl.content = meta.description;
-    }
   }, []);
 
   useEffect(() => {
@@ -601,6 +562,8 @@ export default function App() {
   // ── Clients Management ──────────────────────────────────────────────
   const handleLoadClients = async () => {
     setClientsLoading(true);
+    setClientsCursor(null);
+    setClientsHasMore(false);
     try {
       const res = await fetch('/api/admin-clients', {
         headers: { 'Authorization': `Bearer ${ownerSecret}` },
@@ -609,10 +572,31 @@ export default function App() {
       const data = await res.json();
       setClientsList(data.clients || []);
       setClientsStats(data.stats || null);
+      setClientsHasMore(data.hasMore ?? false);
+      setClientsCursor(data.nextCursor ?? null);
     } catch (e: any) {
       showToast(e.message || 'Erro ao carregar clientes.', 'error');
     } finally {
       setClientsLoading(false);
+    }
+  };
+
+  const handleLoadMoreClients = async () => {
+    if (!clientsCursor || clientsLoadingMore) return;
+    setClientsLoadingMore(true);
+    try {
+      const res = await fetch(`/api/admin-clients?cursor=${encodeURIComponent(clientsCursor)}`, {
+        headers: { 'Authorization': `Bearer ${ownerSecret}` },
+      });
+      if (!res.ok) throw new Error('Erro ao carregar mais clientes.');
+      const data = await res.json();
+      setClientsList(prev => [...prev, ...(data.clients || [])]);
+      setClientsHasMore(data.hasMore ?? false);
+      setClientsCursor(data.nextCursor ?? null);
+    } catch (e: any) {
+      showToast(e.message || 'Erro ao carregar mais.', 'error');
+    } finally {
+      setClientsLoadingMore(false);
     }
   };
 
@@ -1071,13 +1055,12 @@ export default function App() {
     setPreviewScale(Math.min(0.95, Math.max(0.35, scale)));
   }, []);
 
-  // FIX 3: mobileView adicionado — ao trocar para 'preview' no mobile o container
-  // sai de display:none e o fitToScreen precisa recalcular o scale do currículo.
+  // Recalcula o fit quando muda de view ou a sidebar abre/fecha (com delay p/ aguardar o CSS transition)
   useEffect(() => {
     if (view !== 'editor') return;
     const timer = setTimeout(fitToScreen, 350);
     return () => clearTimeout(timer);
-  }, [view, isSidebarOpen, mobileView, fitToScreen]);
+  }, [view, isSidebarOpen, fitToScreen]);
 
   // Ouve resize da janela — separado do sidebar para não perder eventos durante transições
   useEffect(() => {
@@ -1381,6 +1364,8 @@ export default function App() {
                     </div>
                   </div>
                 )}
+              </>
+            )}
 
                 {/* ── Tab: Clientes ── */}
                 {ownerTab === 'clientes' && (
@@ -1570,6 +1555,20 @@ export default function App() {
                         </div>
                       );
                     })()}
+
+                    {/* Botão carregar mais */}
+                    {clientsHasMore && (
+                      <button
+                        onClick={handleLoadMoreClients}
+                        disabled={clientsLoadingMore}
+                        className="w-full mt-2 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-xs font-bold transition-all"
+                      >
+                        {clientsLoadingMore
+                          ? <><i className="fas fa-circle-notch fa-spin mr-1"></i> Carregando...</>
+                          : <><i className="fas fa-chevron-down mr-1"></i> Carregar mais 50</>
+                        }
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -1664,23 +1663,33 @@ export default function App() {
                           <div key={msg.id} className="bg-slate-800 rounded-xl p-3 border border-slate-700">
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <div>
-                                <p className="text-sm font-bold text-white leading-tight">{msg.nome}</p>
+                                <p className="text-sm font-bold text-white leading-tight flex items-center gap-1.5">{msg.nome}{!msg.lida && <span className="text-[9px] bg-amber-500 text-black font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">Nova</span>}</p>
                                 <p className="text-[11px] text-amber-400">{msg.email}</p>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 <span className="text-[10px] text-slate-500">{msg.createdAt ? new Date(msg.createdAt).toLocaleDateString('pt-BR') : ''}</span>
-                                <button onClick={() => handleDeleteMessage(msg.id)} title="Excluir" className="text-slate-500 hover:text-red-400 transition-colors text-xs"><i className="fas fa-trash"></i></button>
+                                <button onClick={() => handleDeleteMessage(msg.id)} title="Excluir mensagem" aria-label="Excluir mensagem" className="text-slate-500 hover:text-red-400 transition-colors text-xs"><i className="fas fa-trash" aria-hidden="true"></i></button>
                               </div>
                             </div>
                             <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{msg.mensagem}</p>
+                            {!msg.lida && (
+                              <button
+                                onClick={async () => {
+                                  await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ownerSecret}` }, body: JSON.stringify({ action: 'read', id: msg.id }) });
+                                  setOwnerMessages(m => m.map(x => x.id === msg.id ? { ...x, lida: true } : x));
+                                }}
+                                aria-label="Marcar como lida"
+                                className="mt-2 text-[10px] text-amber-400 hover:text-amber-300 font-bold"
+                              >
+                                ✓ Marcar como lida
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
                 )}
-              </>
-            )}
           </div>
         </div>
       )}
@@ -1704,13 +1713,9 @@ export default function App() {
             uid={user?.uid ?? null}
             onUnlocked={(plan) => {
               setIsPremiumModalOpen(false);
-              const PLAN_MSGS: Record<string, string> = {
-                avulso:   '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!',
-                monthly:  '🚀 Plano Mensal ativado! Todos os templates desbloqueados!',
-                yearly:   '🌟 Plano Anual ativado! Todos os templates desbloqueados!',
-                lifetime: '👑 Premium Vitalício ativado! Todos os templates desbloqueados para sempre!',
-              };
-              const msg = PLAN_MSGS[plan] ?? '⚡ Premium ativado! Todos os templates desbloqueados!';
+              const msg = plan === 'lifetime'
+                ? '👑 Premium Vitalício ativado! Todos os templates desbloqueados para sempre!'
+                : '⚡ 7 dias Premium ativados! Todos os templates desbloqueados!';
               showToast(msg, 'success');
               window.dispatchEvent(new Event('storage'));
               // Sincroniza novo status VIP com o servidor para aparecer no painel do dono
@@ -2158,6 +2163,11 @@ export default function App() {
                 )}
               </div>
 
+              {/* AdUnit */}
+              <div className="mt-6">
+                {/* AdSense: adicione o slotId do bloco em https://adsense.google.com → Anúncios → Por bloco de anúncio */}
+               <AdUnit slotId="" format="horizontal" />
+              </div>
             </div>
           </div>
         </main>
@@ -2250,6 +2260,10 @@ export default function App() {
               <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🤖 IA do Google</span>
             </div>
 
+            <div className="mt-12 max-w-3xl mx-auto">
+               {/* AdSense: adicione o slotId do bloco em https://adsense.google.com → Anúncios → Por bloco de anúncio */}
+               <AdUnit slotId="" format="horizontal" />
+            </div>
           </div>
         </main>
 
@@ -2282,7 +2296,6 @@ export default function App() {
               <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9 ⭐</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p></div>
             </div>
           </div>
-
         </section>
 
         {/* ── ATS Feature Highlight ── */}
@@ -2542,107 +2555,6 @@ export default function App() {
           </div>
         </section>
 
-
-        {/* ── Guia Rápido + FAQ — conteúdo editorial para o AdSense ── */}
-        <section className="relative z-10 py-20 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-          <div className="max-w-4xl mx-auto">
-
-            {/* Guia rápido */}
-            <div className="mb-16">
-              <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">Guia Rápido</span>
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-1 mb-2 uppercase tracking-tight">Como Fazer um Currículo que Chama Atenção</h2>
-              <p className="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
-                Um currículo bem feito é a diferença entre ser chamado para a entrevista ou ficar de fora. Veja os pontos essenciais que todo recrutador observa nos primeiros segundos de leitura.
-              </p>
-              <div className="grid md:grid-cols-2 gap-6">
-                {[
-                  {
-                    num: '01',
-                    title: 'Objetivo Profissional Direto',
-                    text: 'Escreva 2 a 3 linhas específicas sobre o cargo que você busca e o que você oferece. Evite frases genéricas como "busco crescimento". O recrutador leva menos de 10 segundos para decidir se continua lendo.',
-                    color: 'text-blue-600',
-                    bg: 'bg-blue-50 dark:bg-blue-900/20',
-                  },
-                  {
-                    num: '02',
-                    title: 'Experiências com Resultados',
-                    text: 'Descreva cada experiência com verbos de ação e, sempre que possível, com números: "Reduzi o tempo de atendimento em 30%" é muito mais impactante do que "Trabalhei no atendimento ao cliente".',
-                    color: 'text-teal-600',
-                    bg: 'bg-teal-50 dark:bg-teal-900/20',
-                  },
-                  {
-                    num: '03',
-                    title: 'Habilidades Relevantes para a Vaga',
-                    text: 'Adapte a seção de habilidades para cada candidatura. Leia o anúncio da vaga e inclua exatamente as palavras-chave que o recrutador — e o sistema ATS — estão procurando.',
-                    color: 'text-violet-600',
-                    bg: 'bg-violet-50 dark:bg-violet-900/20',
-                  },
-                  {
-                    num: '04',
-                    title: 'Design Limpo e Legível',
-                    text: 'Fontes legíveis, hierarquia visual clara e no máximo uma página (ou duas para seniores). Evite cores excessivas, fotos grandes e informações irrelevantes como RG, CPF ou pretensão salarial.',
-                    color: 'text-orange-600',
-                    bg: 'bg-orange-50 dark:bg-orange-900/20',
-                  },
-                ].map(item => (
-                  <div key={item.num} className={`${item.bg} rounded-2xl p-6 border border-white/50 dark:border-slate-700`}>
-                    <span className={`text-3xl font-black ${item.color} opacity-40 block mb-2`}>{item.num}</span>
-                    <h3 className="font-black text-slate-900 dark:text-white mb-2 text-base">{item.title}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{item.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Anúncio dentro do conteúdo editorial */}
-            <div className="max-w-3xl mx-auto mb-16">
-              <AdUnit slotId="4709503090" format="horizontal" />
-            </div>
-
-            {/* FAQ */}
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">FAQ</span>
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-1 mb-10 uppercase tracking-tight">Perguntas Frequentes</h2>
-              <div className="space-y-6">
-                {[
-                  {
-                    q: 'O CurriculoGO é realmente gratuito?',
-                    a: 'Sim. Você pode criar, editar e baixar seu currículo em PDF com 3 modelos profissionais completamente grátis, sem precisar criar conta ou informar e-mail. Os planos pagos desbloqueiam 12 templates premium adicionais e recursos avançados.',
-                  },
-                  {
-                    q: 'Preciso me cadastrar para usar?',
-                    a: 'Não. O CurriculoGO funciona direto no navegador, sem cadastro. Seus dados ficam salvos localmente no seu dispositivo. Opcionalmente, você pode criar uma conta gratuita para salvar seus currículos na nuvem e acessá-los de qualquer lugar.',
-                  },
-                  {
-                    q: 'O que é análise ATS e por que ela importa?',
-                    a: 'ATS (Applicant Tracking System) são sistemas de triagem automática usados por empresas para filtrar currículos antes de um humano os ver. Estima-se que mais de 70% dos currículos são eliminados por esses sistemas. A análise ATS do CurriculoGO usa IA para pontuar e otimizar seu currículo para passar por esses filtros.',
-                  },
-                  {
-                    q: 'Posso editar meu currículo depois de criar?',
-                    a: 'Sim, sempre. O editor salva automaticamente seu progresso no navegador. Se criar uma conta gratuita, pode salvar versões diferentes na nuvem e editar de qualquer dispositivo a qualquer momento.',
-                  },
-                  {
-                    q: 'Qual o formato de download disponível?',
-                    a: 'O download é feito em PDF de alta qualidade, pronto para envio por e-mail ou upload em plataformas de emprego como LinkedIn, Gupy, Vagas.com e InfoJobs. Também é possível exportar em formato Word (.docx) para edições adicionais.',
-                  },
-                  {
-                    q: 'Os modelos passam pela triagem ATS das empresas?',
-                    a: 'Sim. Todos os templates do CurriculoGO foram desenvolvidos com estrutura compatível com sistemas ATS: texto selecionável, hierarquia de títulos legível por máquina e sem elementos que confundem os algoritmos, como tabelas complexas ou caixas de texto sobrepostas.',
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700">
-                    <h3 className="font-black text-slate-900 dark:text-white mb-2 flex items-start gap-3">
-                      <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                      {item.q}
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pl-9">{item.a}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         <footer className="relative z-10 py-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center">
           <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 mb-4">
              <button onClick={() => navigateTo('/sobre', 'sobre')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Sobre</button>
@@ -2815,7 +2727,7 @@ export default function App() {
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                       {premiumExpired
                         ? 'Reative por R$ 9,90 (7 dias) ou garanta o vitalício por R$ 29,90. Sem renovação automática. ✌️'
-                        : '7 dias por R$ 9,90 ou vitalício por R$ 29,90 — sem assinatura, sem cadastro. ✌️'}
+                        : '7 dias por R$ 9,90 · vitalício por R$ 29,90 — paga uma vez, acessa para sempre. ✌️'}
                     </p>
                   </div>
                   <button onClick={() => { setPremiumModalTemplate(''); setIsPremiumModalOpen(true); }} className={`shrink-0 px-8 py-4 text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all ${premiumExpired ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
@@ -2827,6 +2739,26 @@ export default function App() {
 
           </div>
         </main>
+      </div>
+    );
+  }
+
+  // Página 404 — view desconhecida
+  const KNOWN_VIEWS = ['home','editor','templates','sobre','contato','privacy','terms','blog','blog-post','cover-letter-page'];
+  if (!KNOWN_VIEWS.includes(view)) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <p className="text-8xl font-black text-slate-200 dark:text-slate-700 mb-4">404</p>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white mb-3">Página não encontrada</h1>
+          <p className="text-slate-500 dark:text-slate-400 mb-8">A página que você buscou não existe ou foi movida.</p>
+          <button
+            onClick={() => navigateTo('/', 'home')}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-colors"
+          >
+            <i className="fas fa-home mr-2"></i>Voltar ao início
+          </button>
+        </div>
       </div>
     );
   }
@@ -2993,14 +2925,15 @@ export default function App() {
         <button
           onClick={handleExportDocx}
           title="Exportar como Word (.docx)"
+          aria-label="Exportar como Word (.docx)"
           className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
         >
           <i className="fas fa-file-word text-base"></i>
           <span className="text-[9px] font-black uppercase tracking-wide">Word</span>
         </button>
-        {/* Templates / Estilos — FIX 5: toggle (antes só abria, nunca fechava) */}
+        {/* Templates / Estilos */}
         <button
-          onClick={() => setIsSidebarOpen(v => !v)}
+          onClick={() => setIsSidebarOpen(true)}
           className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${isSidebarOpen ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/20' : 'text-slate-400 dark:text-slate-500'}`}
         >
           <i className="fas fa-palette text-base"></i>
@@ -3018,8 +2951,7 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* FIX 7: pb-20 (80px) > h-16 (64px) da bottom nav; md:pb-0 preserva desktop */}
-        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto pb-20 md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto pb-16 md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
            
            <div className="relative shrink-0">
            <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2 tabs-scroll-container">
@@ -3348,8 +3280,7 @@ export default function App() {
               background: isDarkMode
                 ? 'radial-gradient(ellipse at 60% 40%, #1e293b 0%, #0f172a 100%)'
                 : 'radial-gradient(ellipse at 60% 40%, #e2e8f0 0%, #cbd5e1 100%)',
-              // FIX 4: 80px garante que o rodapé do currículo não fique atrás da bottom nav (64px)
-              padding: '32px 24px 80px',
+              padding: '32px 24px 48px',
             }}
           >
             {/* Wrapper que dá a ilusão do papel na mesa */}
@@ -3402,13 +3333,15 @@ export default function App() {
                     fontFamily,
                   }}
                 >
-                  <ResumePreview
+                  <SectionErrorBoundary>
+              <ResumePreview
                     data={data}
                     template={template}
                     fontSize={fontSize}
                     onSectionClick={handleSectionClick}
                     onReorder={(newOrder) => updateData(prev => ({ ...prev, sectionOrder: newOrder }))}
                   />
+              </SectionErrorBoundary>
                 </div>
               </div>
 
@@ -3440,15 +3373,15 @@ export default function App() {
           </button>
         )}
 
-        {/* Overlay — FIX 2: z-[65] > bottom nav z-[60] */}
+        {/* Overlay para fechar o bottom sheet no mobile */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/40 z-[65] md:hidden"
+            className="fixed inset-0 bg-black/40 z-[55] md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
-        {/* SIDEBAR — FIX 2: z-[70] > bottom nav z-[60], sidebar nunca fica atrás da nav */}
-        <div className={`no-print bg-white dark:bg-slate-900 flex flex-col shrink-0 z-[70] transition-all duration-300 ease-in-out shadow-2xl overflow-hidden
+        {/* SIDEBAR: drawer lateral no desktop, bottom sheet no mobile */}
+        <div className={`no-print bg-white dark:bg-slate-900 flex flex-col shrink-0 z-[56] transition-all duration-300 ease-in-out shadow-2xl overflow-hidden
           md:border-l md:border-slate-100 md:dark:border-slate-800
           fixed bottom-0 left-0 right-0 rounded-t-3xl md:rounded-none md:relative md:bottom-auto md:left-auto md:right-auto
           ${isSidebarOpen
@@ -3474,8 +3407,7 @@ export default function App() {
                 <i className="fas fa-times text-xs"></i>
               </button>
            </div>
-           {/* FIX 2: pb-20 no mobile → conteúdo da sidebar não some atrás da bottom nav */}
-           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-7 pb-20 md:pb-8">
+           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-6 py-4 md:py-6 space-y-6 md:space-y-7 pb-8">
               <section>
                  <div className="flex justify-between items-center mb-3">
                     <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Tamanho da Fonte</h3>

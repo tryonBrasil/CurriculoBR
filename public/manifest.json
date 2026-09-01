@@ -1,0 +1,26 @@
+{
+  "name": "CurriculoGO — Currículo Profissional",
+  "short_name": "CurriculoGO",
+  "description": "Crie seu currículo profissional grátis com IA do Google Gemini. 15 templates, PDF, Word e análise ATS.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0d1b6e",
+  "lang": "pt-BR",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/curriculogo-icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-hires.png",       "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    { "src": "/og-image.png", "sizes": "1200x630", "type": "image/png", "form_factor": "wide" }
+  ],
+  "categories": ["productivity", "utilities", "business"],
+  "shortcuts": [
+    {
+      "name": "Criar Currículo",
+      "url": "/",
+      "description": "Abrir o editor de currículo"
+    }
+  ]
+}
