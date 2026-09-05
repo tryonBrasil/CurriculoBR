@@ -42,6 +42,17 @@ O webhook garante que o premium é ativado mesmo se o usuário fechar o modal an
 2. Cole o conteúdo de `firestore.rules`
 3. Publicar
 
+## Segurança da chave Gemini (OBRIGATÓRIO)
+A `VITE_GEMINI_API_KEY` fica visível no bundle do browser — isso é necessário para o SDK funcionar no lado do cliente. Para evitar uso indevido:
+
+1. Acesse https://aistudio.google.com/app/apikey
+2. Clique na sua chave → **Edit**
+3. Em **Application restrictions**, selecione **HTTP referrers (websites)**
+4. Adicione: `https://curriculo-go.vercel.app/*`
+5. Salvar
+
+Sem isso, qualquer pessoa pode copiar a chave do devtools e usar na conta de vocês.
+
 ## Verificar se está funcionando
 - [ ] Criar currículo, gerar PDF ✓
 - [ ] Criar conta Google, salvar na nuvem ✓

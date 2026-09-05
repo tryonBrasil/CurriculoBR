@@ -2916,10 +2916,10 @@ export default function App() {
         {/* PDF — destaque central */}
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-5 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wide transition-all shadow-lg shadow-blue-500/30"
+          className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white transition-all shadow-lg shadow-blue-500/30"
         >
-          <i className="fas fa-file-pdf"></i>
-          <span>PDF</span>
+          <i className="fas fa-file-pdf text-base"></i>
+          <span className="text-[9px] font-black uppercase tracking-wide">PDF</span>
         </button>
         {/* Word / DOCX */}
         <button

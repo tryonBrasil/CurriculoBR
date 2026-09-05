@@ -86,39 +86,9 @@
     <!-- ═══════════════════════════════════════════ -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7391569489136877" crossorigin="anonymous"></script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind compilado pelo Vite (não usar CDN) -->
     <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              slate: {
-                850: '#1e293b',
-                900: '#0f172a',
-                950: '#020617',
-              },
-              brand: {
-                50:  '#f0f4ff',
-                100: '#dce8ff',
-                200: '#b3cfff',
-                300: '#7aabff',
-                400: '#3d85ff',
-                500: '#0d5fff',
-                600: '#0047e0',
-                700: '#0036b3',
-                800: '#002a8a',
-                900: '#0d1b6e',
-              },
-              teal: {
-                400: '#2dd4bf',
-                500: '#14b8a6',
-                600: '#0d9488',
-              }
-            }
-          }
-        }
-      }
+      /* Configurações do Tailwind aplicadas via tailwind.config.js no build */
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
@@ -142,6 +112,18 @@
     @keyframes zoom-in-95 { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     .zoom-in-95 { animation: zoom-in-95 0.2s ease-out; }
   </style>
+  <!-- Dark mode: aplica classe 'dark' antes do primeiro paint para evitar flash -->
+  <script>
+    (function(){
+      try {
+        var s = localStorage.getItem('cbr_resume_v3');
+        if (s) {
+          var p = JSON.parse(s);
+          if (p.isDarkMode) document.documentElement.classList.add('dark');
+        }
+      } catch(e) {}
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <!-- Google Analytics 4 — substitua G-XXXXXXXXXX pelo seu Measurement ID -->

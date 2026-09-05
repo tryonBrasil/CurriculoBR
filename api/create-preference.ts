@@ -34,6 +34,11 @@ const PLANS: Record<string, { price: number; title: string; description: string 
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const siteUrl = process.env.SITE_URL || 'https://curriculo-go.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', siteUrl);
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   // Rate limit: 3 criações de preferência por IP a cada 10 minutos
