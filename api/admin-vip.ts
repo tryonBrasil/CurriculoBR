@@ -73,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!uid) return res.status(400).json({ error: 'uid inválido.' });
 
     try {
-      const db  = await getFirestoreAdmin();
+      const db  = await getDb();
       const doc = await db.collection(VIP_COLLECTION).doc(uid).get();
       return res.status(200).json({ blocked: doc.exists });
     } catch (e: any) {
@@ -100,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   let db: any;
   try {
-    db = await getFirestoreAdmin();
+    db = await getDb();
   } catch (e: any) {
     return res.status(503).json({ error: e.message });
   }

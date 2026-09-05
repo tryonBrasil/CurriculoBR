@@ -211,7 +211,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const nextCursor = hasMore ? (clients[clients.length - 1] as any).lastSeen ?? null : null;
 
       // Estatísticas gerais (somente na primeira página)
-      let stats = null;
+      interface ClientStats {
+        total: number; vip: number; expired: number; free: number;
+        lifetime: number; yearly: number; monthly: number; avulso: number;
+      }
+      let stats: ClientStats | null = null;
       if (!cursor) {
         const allSnap = await db.collection(CLIENTS_COLLECTION).get();
         const all = allSnap.docs.map((d: any) => d.data());
