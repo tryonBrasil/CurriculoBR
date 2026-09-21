@@ -739,7 +739,7 @@ export default function App() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Currículo — ${(data.personalInfo.fullName || 'CurriculoGO').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</title>
+  <title>Currículo — ${(data.personalInfo.fullName || 'CurrículoGO').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</title>
   ${styles}
   <style>
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
@@ -1163,7 +1163,7 @@ export default function App() {
               </div>
               <div>
                 <h3 className="text-sm font-black text-white uppercase tracking-widest">Painel do Dono</h3>
-                <p className="text-[10px] text-slate-500">CurriculoGO · Admin</p>
+                <p className="text-[10px] text-slate-500">CurrículoGO · Admin</p>
               </div>
               <button onClick={() => { setIsOwnerModalOpen(false); setOwnerAuthenticated(false); }} className="ml-auto text-slate-600 hover:text-slate-300 transition-colors">
                 <i className="fas fa-times text-xs"></i>
@@ -1779,10 +1779,10 @@ export default function App() {
         {globalOverlays}
         <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300">
             <p className="text-xs text-slate-400">Última atualização: 25 de fevereiro de 2026</p>
-            <p>A sua privacidade é importante para nós. Esta Política descreve como o <strong>CurriculoGO</strong> coleta, usa e protege suas informações, em conformidade com a <strong>Lei Geral de Proteção de Dados — LGPD (Lei nº 13.709/2018)</strong>.</p>
+            <p>A sua privacidade é importante para nós. Esta Política descreve como o <strong>CurrículoGO</strong> coleta, usa e protege suas informações, em conformidade com a <strong>Lei Geral de Proteção de Dados — LGPD (Lei nº 13.709/2018)</strong>.</p>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Dados que Você Fornece</h3>
-                <p>Os dados pessoais inseridos nos formulários (nome, e-mail, telefone, histórico profissional, etc.) são processados <strong>exclusivamente no seu navegador</strong>. São salvos no <code>localStorage</code> do seu dispositivo e <strong>não são transmitidos nem armazenados em servidores</strong> do CurriculoGO.</p>
+                <p>Os dados pessoais inseridos nos formulários (nome, e-mail, telefone, histórico profissional, etc.) são processados <strong>exclusivamente no seu navegador</strong>. São salvos no <code>localStorage</code> do seu dispositivo e <strong>não são transmitidos nem armazenados em servidores</strong> do CurrículoGO.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">2. Inteligência Artificial (Google Gemini)</h3>
@@ -1790,7 +1790,7 @@ export default function App() {
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">3. Cookies e Publicidade (Google AdSense)</h3>
-                <p>O CurriculoGO utiliza o <strong>Google AdSense</strong> para exibir anúncios, mantendo o serviço gratuito. O Google usa cookies (incluindo o cookie <strong>DART</strong>) para veicular anúncios personalizados com base nas suas visitas a este e outros sites. Você pode gerenciar suas preferências de anúncios em <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">google.com/settings/ads</a>.</p>
+                <p>O CurrículoGO utiliza o <strong>Google AdSense</strong> para exibir anúncios, mantendo o serviço gratuito. O Google usa cookies (incluindo o cookie <strong>DART</strong>) para veicular anúncios personalizados com base nas suas visitas a este e outros sites. Você pode gerenciar suas preferências de anúncios em <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">google.com/settings/ads</a>.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">4. Dados de Navegação</h3>
@@ -1826,18 +1826,18 @@ export default function App() {
         {globalOverlays}
         <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300">
             <p className="text-xs text-slate-400">Última atualização: 25 de fevereiro de 2026</p>
-            <p>Ao acessar e usar o <strong>CurriculoGO</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de utilizar nossos serviços.</p>
+            <p>Ao acessar e usar o <strong>CurrículoGO</strong>, você concorda com os seguintes Termos de Uso. Leia atentamente antes de utilizar nossos serviços.</p>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">1. Uso do Serviço</h3>
-                <p>O CurriculoGO é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usá-lo para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.</p>
+                <p>O CurrículoGO é um serviço com plano gratuito e recursos premium para criação de currículos profissionais. Você pode usá-lo para fins pessoais e profissionais legítimos. É proibido usar o serviço para fins ilegais ou que violem direitos de terceiros.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">2. Responsabilidade pelo Conteúdo</h3>
-                <p>Você é o único responsável pelo conteúdo inserido no seu currículo. O CurriculoGO não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações são verdadeiras e de sua autoria.</p>
+                <p>Você é o único responsável pelo conteúdo inserido no seu currículo. O CurrículoGO não verifica a veracidade das informações fornecidas. Ao usar nossa plataforma, você declara que as informações são verdadeiras e de sua autoria.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">3. Propriedade Intelectual</h3>
-                <p>Os templates, designs e código-fonte do CurriculoGO são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Não é permitido copiar ou redistribuir os templates em outros produtos sem autorização expressa.</p>
+                <p>Os templates, designs e código-fonte do CurrículoGO são propriedade intelectual de seus desenvolvedores. Os currículos gerados por você pertencem a você. Não é permitido copiar ou redistribuir os templates em outros produtos sem autorização expressa.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">4. Inteligência Artificial</h3>
@@ -1845,7 +1845,7 @@ export default function App() {
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">5. Publicidade</h3>
-                <p>O CurriculoGO exibe anúncios do Google AdSense para se manter gratuito. Os anúncios são gerenciados pelo Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.</p>
+                <p>O CurrículoGO exibe anúncios do Google AdSense para se manter gratuito. Os anúncios são gerenciados pelo Google. Não nos responsabilizamos pelo conteúdo dos anúncios exibidos.</p>
             </section>
             <section>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">6. Disponibilidade e Isenção de Garantias</h3>
@@ -1971,8 +1971,8 @@ export default function App() {
               onTouchEnd={handleLogoTouchEnd}
               onTouchCancel={handleLogoTouchEnd}
             >
-              <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+              <img src="/logo.png" alt="CurrículoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurrículoGO</span>
             </span>
           </div>
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
@@ -2184,8 +2184,8 @@ export default function App() {
         <header className="relative z-10 h-32 flex items-center justify-between px-8 md:px-20">
           <div className="logo-hero-wrapper">
             <span className="inline-flex items-center gap-3">
-              <img src="/logo.png" alt="CurriculoGO" className="logo-hero h-20 w-auto object-contain drop-shadow-lg" />
-              <span className="font-black text-[2rem] md:text-[2.6rem] tracking-tight leading-none" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+              <img src="/logo.png" alt="CurrículoGO" className="logo-hero h-20 w-auto object-contain drop-shadow-lg" />
+              <span className="font-black text-[2rem] md:text-[2.6rem] tracking-tight leading-none" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurrículoGO</span>
             </span>
           </div>
           <div className="flex gap-3 items-center">
@@ -2376,7 +2376,7 @@ export default function App() {
           <div className="max-w-5xl mx-auto">
             <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-3 text-sm">Depoimentos</p>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white text-center mb-2 uppercase tracking-tight">Quem já conquistou sua vaga</h3>
-            <p className="text-center text-sm text-slate-400 mb-10">Histórias reais de quem usou o CurriculoGO para se destacar</p>
+            <p className="text-center text-sm text-slate-400 mb-10">Histórias reais de quem usou o CurrículoGO para se destacar</p>
 
             {/* Depoimentos fixos */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -2427,7 +2427,7 @@ export default function App() {
             <div className="mt-8 border-t border-slate-200 dark:border-slate-700 pt-10">
               {!reviewFormOpen && !reviewSent && (
                 <div className="text-center">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Você usou o CurriculoGO e conseguiu sua vaga? <span className="font-black text-slate-700 dark:text-white">Conta pra gente! 🎉</span></p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Você usou o CurrículoGO e conseguiu sua vaga? <span className="font-black text-slate-700 dark:text-white">Conta pra gente! 🎉</span></p>
                   <button
                     onClick={() => setReviewFormOpen(true)}
                     className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg hover:shadow-xl active:scale-95"
@@ -2491,7 +2491,7 @@ export default function App() {
                     <div className="relative">
                       <textarea
                         value={reviewText} onChange={e => setReviewText(e.target.value.slice(0, 400))}
-                        placeholder="Conte como o CurriculoGO te ajudou... (mínimo 20 caracteres) *"
+                        placeholder="Conte como o CurrículoGO te ajudou... (mínimo 20 caracteres) *"
                         rows={4}
                         className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all resize-none"
                       />
@@ -2511,7 +2511,7 @@ export default function App() {
                       : <><i className="fas fa-paper-plane"></i> Enviar depoimento</>
                     }
                   </button>
-                  <p className="text-center text-[10px] text-slate-400 mt-3">Seu depoimento será publicado após uma breve revisão pelo time do CurriculoGO.</p>
+                  <p className="text-center text-[10px] text-slate-400 mt-3">Seu depoimento será publicado após uma breve revisão pelo time do CurrículoGO.</p>
                 </div>
               )}
             </div>
@@ -2563,7 +2563,7 @@ export default function App() {
              <button onClick={() => navigateTo('/privacidade', 'privacy')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Política de Privacidade</button>
              <button onClick={() => navigateTo('/termos', 'terms')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Termos e Condições</button>
           </div>
-          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2026 CurriculoGO · Sua Carreira, Agora 🚀</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2026 CurrículoGO · Sua Carreira, Agora 🚀</p>
         </footer>
       </div>
     );
@@ -2585,8 +2585,8 @@ export default function App() {
               onTouchEnd={handleLogoTouchEnd}
               onTouchCancel={handleLogoTouchEnd}
             >
-              <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+              <img src="/logo.png" alt="CurrículoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurrículoGO</span>
             </span>
             <p className="text-[10px] text-slate-400 font-medium hidden sm:block mt-0.5">Escolha seu estilo ✨</p>
           </div>
@@ -2784,8 +2784,8 @@ export default function App() {
       <nav className="no-print h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigateTo('/', 'home')}>
           <span className="logo-nav inline-flex items-center gap-2">
-            <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-            <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+            <img src="/logo.png" alt="CurrículoGO" className="h-10 w-auto object-contain" />
+            <span className="font-black text-[1.15rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurrículoGO</span>
           </span>
         </div>
         
