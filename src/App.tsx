@@ -2419,12 +2419,12 @@ export default function App() {
             <div className="mt-8 border-t border-slate-200 dark:border-slate-700 pt-10">
               {!reviewFormOpen && !reviewSent && (
                 <div className="text-center">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Você usou o CurrículoGO e conseguiu sua vaga? <span className="font-black text-slate-700 dark:text-white">Conta pra gente! 🎉</span></p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Já usou o CurrículoGO? <span className="font-black text-slate-700 dark:text-white">Compartilhe sua experiência com a comunidade! 🎉</span></p>
                   <button
                     onClick={() => setReviewFormOpen(true)}
                     className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg hover:shadow-xl active:scale-95"
                   >
-                    <i className="fas fa-star"></i> Compartilhar minha experiência
+                    <i className="fas fa-star"></i> Compartilhar experiência
                   </button>
                 </div>
               )}
