@@ -33,10 +33,10 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
       "description": post.description,
       "datePublished": post.date,
       "dateModified": post.date,
-      "author": { "@type": "Organization", "name": "CurriculoGO" },
+      "author": { "@type": "Organization", "name": "CurrículoGO" },
       "publisher": {
         "@type": "Organization",
-        "name": "CurriculoGO",
+        "name": "CurrículoGO",
         "url": "https://curriculo-go.vercel.app/",
         "logo": { "@type": "ImageObject", "url": "https://curriculo-go.vercel.app/og-image.png" }
       },
@@ -62,7 +62,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
   const postIndex = BLOG_POSTS.findIndex(p => p.slug === slug);
   const related = BLOG_POSTS.filter((_, i) => i !== postIndex).slice(0, 3);
   const shareUrl = `https://curriculo-go.vercel.app/blog/${post.slug}`;
-  const shareText = encodeURIComponent(`${post.title} — CurriculoGO`);
+  const shareText = encodeURIComponent(`${post.title} — CurrículoGO`);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
@@ -76,8 +76,8 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             </button>
             <button onClick={onBlog} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <span className="logo-nav inline-flex items-center gap-2">
-                <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-              <span className="font-black text-[1.1rem] tracking-tight " style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+                <img src="/logo.png" alt="CurrículoGO" className="h-10 w-auto object-contain" />
+              <span className="font-black text-[1.1rem] tracking-tight " style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurrículoGO</span>
               </span>
               <span className="font-black text-sm uppercase tracking-widest text-slate-400 italic">/ Blog</span>
             </button>
@@ -169,7 +169,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
             Crie seu currículo agora
           </h2>
           <p className="text-blue-100 text-sm mb-6">
-            Use o CurriculoGO — comece grátis, profissional e com IA integrada.
+            Use o CurrículoGO — comece grátis, profissional e com IA integrada.
           </p>
           <button
             onClick={onCriarCurriculo}
@@ -214,7 +214,7 @@ const BlogPost: React.FC<BlogPostProps> = ({ slug, onVoltar, onBlog, onPost, onC
           <button onClick={onVoltar} className="hover:text-blue-600 transition-colors">Início</button>
           <button onClick={onBlog} className="hover:text-blue-600 transition-colors">Blog</button>
         </div>
-        <p>© {new Date().getFullYear()} CurriculoGO. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurrículoGO. Todos os direitos reservados.</p>
       </footer>
     </div>
   );
