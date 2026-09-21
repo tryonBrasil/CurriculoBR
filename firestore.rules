@@ -17,19 +17,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Depoimentos — qualquer um pode criar (pending), ninguém lê/edita diretamente
-    // O backend (Admin SDK) faz tudo via server-side
+    // Depoimentos — somente o backend (Admin SDK) acessa diretamente
     match /reviews/{reviewId} {
       allow read, write: if false;
     }
-  }
 
-    // payments_anonymous: somente backend (Admin SDK)
+    // Pagamentos anônimos — somente o backend (Admin SDK)
     match /payments_anonymous/{payId} {
       allow read, write: if false;
     }
 
-    // contact_messages: somente backend (Admin SDK)
+    // Mensagens de contato — somente o backend (Admin SDK)
     match /contact_messages/{msgId} {
       allow read, write: if false;
     }
