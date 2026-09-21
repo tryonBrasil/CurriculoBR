@@ -2177,390 +2177,269 @@ export default function App() {
 
   if (view === 'home') {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col relative overflow-hidden transition-colors duration-300">
+      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex flex-col transition-colors duration-300">
         {globalOverlays}
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] aspect-square bg-blue-50 dark:bg-blue-900/20 rounded-full blur-[120px] opacity-60"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] aspect-square bg-indigo-50 dark:bg-indigo-900/20 rounded-full blur-[120px] opacity-60"></div>
-        <header className="relative z-10 h-32 flex items-center justify-between px-8 md:px-20">
-          <div className="logo-hero-wrapper">
-            <span className="inline-flex items-center gap-3">
-              <img src="/logo.png" alt="CurrículoGO" className="logo-hero h-20 w-auto object-contain drop-shadow-lg" />
-              <span className="font-black text-[2rem] md:text-[2.6rem] tracking-tight leading-none" style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurrículoGO</span>
-            </span>
-          </div>
-          <div className="flex gap-3 items-center">
-             <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-               <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-             </button>
-            <button onClick={() => { updateData(MOCK_RESUME_DATA); navigateTo('/', 'editor'); }} className="hidden md:block text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">Ver Exemplo</button>
 
-            {/* Login / avatar na home */}
-            {user ? (
-              <button
-                onClick={handleOpenCloudResumes}
-                className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-800 transition-all shadow-sm"
-                title="Meus currículos"
-              >
-                {user.photoURL
-                  ? <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full" />
-                  : <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black">{(user.displayName || user.email || 'U')[0].toUpperCase()}</div>
-                }
-                <span className="text-sm font-black text-slate-500 dark:text-slate-400 ">Meus Currículos</span>
-                <i className="fas fa-cloud text-[9px] text-emerald-500"></i>
+        {/* Header */}
+        <header className="relative z-20 border-b border-slate-100 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur">
+          <div className="max-w-7xl mx-auto h-20 px-5 sm:px-8 flex items-center justify-between">
+            <button onClick={() => navigateTo('/', 'home')} className="flex items-center gap-2.5" aria-label="CurrículoGO">
+              <img src="/logo.png" alt="" className="h-11 w-auto object-contain" />
+              <span className="font-black text-xl tracking-tight bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent">CurrículoGO</span>
+            </button>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Alternar tema">
+                <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
               </button>
-            ) : (
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-full border-2 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-800 font-black text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 uppercase tracking-wide transition-all shadow-sm"
-              >
-                <i className="fas fa-cloud text-emerald-500 text-sm"></i>
-                Salvar na Nuvem
+              <button onClick={() => { updateData(MOCK_RESUME_DATA); navigateTo('/', 'editor'); }} className="hidden sm:inline-flex px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                Ver exemplo
               </button>
-            )}
+              {user ? (
+                <button onClick={handleOpenCloudResumes} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-blue-400 transition-colors" title="Meus currículos">
+                  {user.photoURL
+                    ? <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full" />
+                    : <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">{(user.displayName || user.email || 'U')[0].toUpperCase()}</div>}
+                  <span className="hidden sm:inline text-sm font-bold text-slate-700 dark:text-slate-200">Meus currículos</span>
+                </button>
+              ) : (
+                <button onClick={() => setIsAuthModalOpen(true)} className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors">
+                  <i className="fas fa-cloud text-emerald-500"></i> Salvar na nuvem
+                </button>
+              )}
+            </div>
           </div>
         </header>
-        <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-24 text-center">
-          <div className="max-w-5xl w-full space-y-8">
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
-              <span className="inline-flex items-center gap-2 py-2 px-4 bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse"></span>
-                ⚡ Grátis agora. Sem cadastro. Sem enrolação. Só resultado.
+
+        {/* Hero */}
+        <main className="relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_80%_10%,rgba(37,99,235,0.10),transparent_32%),radial-gradient(circle_at_10%_80%,rgba(14,165,233,0.08),transparent_28%)]"></div>
+          <section className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-16 sm:pb-20">
+            <div className="max-w-4xl mx-auto text-center">
+              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-100 dark:border-blue-900">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Crie seu currículo gratuitamente
               </span>
-              <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                Seu currículo novo,<br className="hidden md:block"/>
-                <span style={{ background: 'linear-gradient(135deg, #1d4ed8, #0ea5e9)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent', fontStyle: 'italic' }}>em minutos.</span> <span>🚀</span>
-              </h2>
-              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed">
-                IA do Google Gemini + 15 designs prontos para impressionar. Pronto em minutos — não em horas.
+
+              <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] text-slate-950 dark:text-white">
+                Um currículo profissional,
+                <span className="block mt-1 bg-gradient-to-r from-blue-700 to-sky-500 bg-clip-text text-transparent">feito em poucos minutos.</span>
+              </h1>
+
+              <p className="mt-6 max-w-2xl mx-auto text-base sm:text-lg leading-8 text-slate-600 dark:text-slate-300">
+                Crie seu currículo com modelos profissionais, exporte em PDF e use recursos de IA para melhorar seus textos e destacar suas habilidades.
               </p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <button onClick={() => navigateTo('/', 'templates')} className="group text-white px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-[1.05] active:scale-[0.98] transition-all shadow-2xl flex items-center gap-3" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb 60%, #0d9488)' }}>
-                Criar meu Currículo 🎯 <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-              </button>
-              <button onClick={() => setIsImportModalOpen(true)} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-2 border-slate-200 dark:border-slate-700 px-10 py-5 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl flex items-center gap-3">
-                📄 Importar PDF <i className="fas fa-file-import text-slate-400"></i>
-              </button>
-            </div>
 
-            <div className="mt-4">
-               <button onClick={() => navigateTo('/carta-de-apresentacao', 'cover-letter-page')} className="text-slate-400 hover:text-blue-600 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto group">
-                 ✉️ Quer uma Carta de Apresentação que chame atenção? <i className="fas fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
-               </button>
-            </div>
-
-            {/* Trust bar */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🎯 Abre e Já Usa</span>
-              <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🔒 Seus Dados Só Seus</span>
-              <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">📄 PDF Grátis Agora</span>
-              <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700 hidden sm:block"></span>
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-colors">🤖 IA do Google</span>
-            </div>
-
-            <div className="mt-12 max-w-3xl mx-auto">
-               {/* AdSense: adicione o slotId do bloco em https://adsense.google.com → Anúncios → Por bloco de anúncio */}
-               <AdUnit slotId="" format="horizontal" />
-            </div>
-          </div>
-        </main>
-
-        {/* ── Features / Benefícios ── */}
-        <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-center text-sm font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-12">Tudo que você precisa. Nada do que te irrita. 🎯</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { emoji: '🎨', icon: 'fa-file-alt', title: '15 Modelos', desc: 'Do clássico ao arrojado — template certo para cada vaga' },
-                { emoji: '🤖', icon: 'fa-wand-magic-sparkles', title: 'IA do Gemini', desc: 'Gera textos, sugere habilidades e aumenta seu score ATS' },
-                { emoji: '📄', icon: 'fa-file-pdf', title: 'PDF Grátis', desc: 'Baixe agora em alta qualidade — sem pagar, sem informar e-mail' },
-                { emoji: '🙈', icon: 'fa-user-slash', title: 'Abre e Usa', desc: 'Sem criar conta, sem confirmar e-mail. Abriu, editou, baixou. Simples.' },
-              ].map(f => (
-                <div key={f.icon} className="flex flex-col items-center text-center gap-3 p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-lg hover:-translate-y-2 transition-all duration-300 cursor-default group">
-                  <div className="text-3xl group-hover:scale-125 transition-transform duration-300">{f.emoji}</div>
-                  <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide">{f.title}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 max-w-4xl mx-auto">
-              {[
-                { value: '15', label: 'Modelos disponíveis', icon: '🎨' },
-                { value: '3', label: 'Modelos gratuitos', icon: '💚' },
-                { value: 'PDF + Word', label: 'Exportação', icon: '📄' },
-                { value: 'IA', label: 'Recursos inteligentes', icon: '✨' },
-              ].map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 px-3 py-4 sm:px-5 sm:py-5 shadow-sm">
-                  <div className="text-2xl mb-1">{stat.icon}</div>
-                  <p className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400">{stat.value}</p>
-                  <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-1 leading-tight">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── ATS Feature Highlight ── */}
-        <section className="relative z-10 py-16 px-6 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-[-20%] right-[-10%] w-[40%] aspect-square rounded-full blur-[100px] opacity-30" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}></div>
-          </div>
-          <div className="max-w-5xl mx-auto relative z-10">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <span className="inline-block px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">Exclusivo</span>
-                <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-4 leading-tight">Score ATS com Inteligência Artificial</h3>
-                <p className="text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                  Descubra como seu currículo se sai frente a sistemas de triagem automática (ATS) usados por grandes empresas. Nossa IA analisa, pontua e dá feedback acionável — gratuitamente.
-                </p>
-                <div className="space-y-3">
-                  {[
-                    { icon: 'fa-chart-bar', text: 'Score de 0 a 100 com análise detalhada', color: 'text-violet-600' },
-                    { icon: 'fa-tags', text: 'Palavras-chave detectadas no seu currículo', color: 'text-blue-600' },
-                    { icon: 'fa-arrow-trend-up', text: 'Melhorias prioritárias e acionáveis', color: 'text-green-600' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center shrink-0">
-                        <i className={`fas ${item.icon} ${item.color} text-sm`}></i>
-                      </div>
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.text}</p>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={() => navigateTo('/', 'templates')} className="mt-8 bg-violet-600 hover:bg-violet-700 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-xl inline-flex items-center gap-3">
-                  <i className="fas fa-brain"></i> Experimente Agora
+              <div className="mt-9 flex flex-col sm:flex-row justify-center gap-3">
+                <button onClick={() => navigateTo('/', 'templates')} className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/20 transition-all">
+                  Criar meu currículo <i className="fas fa-arrow-right text-xs"></i>
+                </button>
+                <button onClick={() => setIsImportModalOpen(true)} className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm hover:border-blue-400 hover:text-blue-600 transition-all">
+                  <i className="fas fa-file-import"></i> Importar currículo em PDF
                 </button>
               </div>
-              <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-3xl p-6 shadow-2xl">
-                <div className="bg-white/10 rounded-2xl p-5 backdrop-blur-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-white font-black text-xs uppercase tracking-widest">Análise ATS</p>
-                    <span className="bg-green-400 text-green-900 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">Excelente</span>
-                  </div>
-                  <div className="flex items-center gap-5 mb-5">
-                    <div className="relative w-20 h-20 shrink-0">
-                      <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                        <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="6"/>
-                        <circle cx="40" cy="40" r="34" fill="none" stroke="#4ade80" strokeWidth="6"
-                          strokeDasharray={`${(87/100) * 2 * Math.PI * 34} ${2 * Math.PI * 34}`} strokeLinecap="round"/>
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-black text-white">87</span>
-                        <span className="text-[8px] text-white/60">/100</span>
-                      </div>
+
+              <button onClick={() => navigateTo('/carta-de-apresentacao', 'cover-letter-page')} className="mt-5 text-sm font-semibold text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">
+                Também posso criar sua carta de apresentação <i className="fas fa-arrow-right ml-1 text-xs"></i>
+              </button>
+
+              <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span><i className="fas fa-check text-emerald-500 mr-1.5"></i>Sem cadastro obrigatório</span>
+                <span><i className="fas fa-check text-emerald-500 mr-1.5"></i>PDF e Word</span>
+                <span><i className="fas fa-check text-emerald-500 mr-1.5"></i>Modelos profissionais</span>
+                <span><i className="fas fa-check text-emerald-500 mr-1.5"></i>Recursos com IA</span>
+              </div>
+
+              <div className="mt-10 max-w-3xl mx-auto">
+                <AdUnit slotId="" format="horizontal" />
+              </div>
+            </div>
+          </section>
+
+          {/* Benefits */}
+          <section className="border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/70">
+            <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+              <div className="max-w-2xl mx-auto text-center mb-10">
+                <p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">Tudo em um só lugar</p>
+                <h2 className="mt-2 text-2xl sm:text-3xl font-black tracking-tight">Ferramentas para deixar seu currículo mais forte</h2>
+              </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { icon: 'fa-layer-group', title: 'Modelos profissionais', desc: 'Escolha entre diferentes estilos para combinar com seu perfil.' },
+                  { icon: 'fa-wand-magic-sparkles', title: 'IA para seus textos', desc: 'Melhore resumo, experiências e habilidades com sugestões inteligentes.' },
+                  { icon: 'fa-file-pdf', title: 'Exportação fácil', desc: 'Baixe seu currículo pronto para enviar às empresas.' },
+                  { icon: 'fa-user-lock', title: 'Comece sem cadastro', desc: 'Você pode criar e editar seu currículo antes de entrar em uma conta.' },
+                ].map(f => (
+                  <div key={f.title} className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
+                      <i className={`fas ${f.icon}`}></i>
                     </div>
-                    <div>
-                      <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold mb-2">Palavras-chave</p>
-                      <div className="flex flex-wrap gap-1">
-                        {['React', 'TypeScript', 'Liderança', 'Agile'].map(kw => (
-                          <span key={kw} className="bg-white/20 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">{kw}</span>
-                        ))}
-                      </div>
-                    </div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">{f.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{f.desc}</p>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-[9px] font-black text-white/50 uppercase tracking-widest">Melhorias</p>
-                    {['Adicione mais métricas quantificáveis', 'Inclua certificações relevantes'].map((tip, i) => (
-                      <div key={i} className="flex items-center gap-2 bg-white/10 rounded-lg px-3 py-2">
-                        <i className="fas fa-arrow-right text-amber-400 text-[9px]"></i>
-                        <span className="text-white/80 text-[10px]">{tip}</span>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ATS */}
+          <section className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
+              <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+                <div>
+                  <span className="inline-flex px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 text-xs font-bold border border-violet-100 dark:border-violet-900">Recurso de IA</span>
+                  <h2 className="mt-4 text-3xl sm:text-4xl font-black tracking-tight">Entenda como seu currículo pode passar pelos sistemas ATS</h2>
+                  <p className="mt-4 text-slate-600 dark:text-slate-300 leading-7">Analise seu currículo, encontre palavras-chave importantes e receba sugestões práticas para melhorar sua apresentação profissional.</p>
+                  <button onClick={() => navigateTo('/', 'templates')} className="mt-7 inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-colors">
+                    <i className="fas fa-brain"></i> Conhecer o recurso
+                  </button>
+                </div>
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-6 sm:p-8">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                    <span className="font-bold">Exemplo de análise ATS</span>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">87/100</span>
+                  </div>
+                  <div className="mt-6 grid grid-cols-2 gap-3">
+                    {['Palavras-chave', 'Experiência', 'Estrutura', 'Clareza'].map((label, i) => (
+                      <div key={label} className="rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4">
+                        <p className="text-xs text-slate-500">{label}</p>
+                        <p className="mt-1 text-lg font-black text-slate-900 dark:text-white">{[92, 84, 88, 86][i]}%</p>
                       </div>
                     ))}
                   </div>
+                  <div className="mt-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-sm text-blue-800 dark:text-blue-200">
+                    <i className="fas fa-lightbulb mr-2"></i> Sugestão: adicione resultados mensuráveis às suas experiências profissionais.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ── Testimonials ── */}
-        <section className="relative z-10 py-16 px-4 sm:px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400 mb-3">Depoimentos</p>
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white text-center mb-2 tracking-tight">O que a comunidade diz</h3>
-            <p className="text-center text-sm text-slate-400 mb-10 max-w-xl mx-auto">Relatos enviados por pessoas que escolheram compartilhar sua experiência com o CurrículoGO.</p>
-
-            {communityReviews.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
-                {communityReviews.slice(0, 6).map((t: any, i: number) => {
-                  const stars = Math.max(1, Math.min(5, Number(t.stars) || 5));
-                  const initial = String(t.name ?? '?').trim().charAt(0).toUpperCase() || '?';
-                  return (
-                    <article key={t.id ?? i} className="testimonial-card bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
-                      <div className="flex items-center gap-1 mb-4" aria-label={`${stars} de 5 estrelas`}>
-                        {[...Array(stars)].map((_, j) => <i key={j} className="fas fa-star text-amber-400 text-xs" aria-hidden="true"></i>)}
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5 italic">“{t.text}”</p>
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0">{initial}</div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-black text-slate-800 dark:text-white truncate">{t.name}</p>
-                          <p className="text-[10px] text-slate-400 truncate">{[t.role, t.city].filter(Boolean).join(' · ')}</p>
+          {/* Testimonials */}
+          <section className="border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/70">
+            <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+              <div className="text-center mb-10">
+                <p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">Experiências</p>
+                <h2 className="mt-2 text-2xl sm:text-3xl font-black">O que a comunidade compartilha</h2>
+              </div>
+              {communityReviews.length > 0 ? (
+                <div className="grid md:grid-cols-3 gap-4">
+                  {communityReviews.slice(0, 6).map((t: any, i: number) => {
+                    const stars = Math.max(1, Math.min(5, Number(t.stars) || 5));
+                    const initial = String(t.name ?? '?').trim().charAt(0).toUpperCase() || '?';
+                    return (
+                      <article key={t.id ?? i} className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center gap-1 mb-4" aria-label={`${stars} de 5 estrelas`}>
+                          {[...Array(stars)].map((_, j) => <i key={j} className="fas fa-star text-amber-400 text-xs" aria-hidden="true"></i>)}
                         </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="max-w-xl mx-auto mb-10 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/60 p-7 sm:p-9 text-center">
-                <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                  <i className="fas fa-comments" aria-hidden="true"></i>
+                        <p className="text-sm leading-6 text-slate-600 dark:text-slate-300 mb-5">“{t.text}”</p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">{initial}</div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold truncate">{t.name}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{[t.role, t.city].filter(Boolean).join(' · ')}</p>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-                <h4 className="font-black text-slate-800 dark:text-white mb-1">Seja o primeiro a avaliar</h4>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Ainda não há depoimentos publicados. Sua experiência pode ajudar outras pessoas.</p>
-              </div>
-            )}
+              ) : (
+                <div className="max-w-xl mx-auto p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+                  <i className="fas fa-comments text-blue-500 text-2xl mb-3"></i>
+                  <h3 className="font-bold">Seja o primeiro a avaliar</h3>
+                  <p className="mt-1 text-sm text-slate-500">Ainda não há depoimentos publicados.</p>
+                </div>
+              )}
 
-            {/* CTA: Deixar depoimento */}
-            <div className="mt-8 border-t border-slate-200 dark:border-slate-700 pt-10">
               {!reviewFormOpen && !reviewSent && (
-                <div className="text-center">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Já usou o CurrículoGO? <span className="font-black text-slate-700 dark:text-white">Compartilhe sua experiência com a comunidade! 🎉</span></p>
-                  <button
-                    onClick={() => setReviewFormOpen(true)}
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg hover:shadow-xl active:scale-95"
-                  >
+                <div className="text-center mt-8">
+                  <button onClick={() => setReviewFormOpen(true)} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors">
                     <i className="fas fa-star"></i> Compartilhar experiência
                   </button>
                 </div>
               )}
 
               {reviewSent && (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i className="fas fa-check text-green-500 text-2xl"></i>
-                  </div>
-                  <h4 className="font-black text-slate-900 dark:text-white text-lg mb-2">Depoimento enviado! 🎉</h4>
-                  <p className="text-slate-500 text-sm mb-4">Obrigado! Seu depoimento será publicado após uma breve revisão.</p>
-                  <button onClick={() => { setReviewSent(false); setReviewFormOpen(false); }} className="text-xs text-blue-500 hover:text-blue-700 font-bold uppercase tracking-widest">Fechar</button>
+                <div className="text-center mt-8">
+                  <i className="fas fa-check-circle text-emerald-500 text-2xl"></i>
+                  <p className="mt-2 font-bold">Depoimento enviado!</p>
+                  <button onClick={() => { setReviewSent(false); setReviewFormOpen(false); }} className="mt-2 text-sm text-blue-600 font-semibold">Fechar</button>
                 </div>
               )}
 
               {reviewFormOpen && !reviewSent && (
-                <div className="max-w-xl mx-auto bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="max-w-xl mx-auto mt-8 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                   <div className="flex items-center justify-between mb-5">
-                    <h4 className="font-black text-slate-900 dark:text-white">Sua experiência 💬</h4>
-                    <button onClick={() => setReviewFormOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
-                      <i className="fas fa-times text-xs"></i>
-                    </button>
+                    <h3 className="font-bold">Sua experiência</h3>
+                    <button onClick={() => setReviewFormOpen(false)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500" aria-label="Fechar"><i className="fas fa-times text-xs"></i></button>
                   </div>
-
-                  {/* Estrelas */}
                   <div className="mb-4">
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Avaliação</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Avaliação</p>
                     <div className="flex gap-1">
-                      {[1,2,3,4,5].map(s => (
-                        <button key={s} onClick={() => setReviewStars(s)} className="text-2xl transition-transform hover:scale-110 active:scale-95">
-                          <i className={`fas fa-star ${s <= reviewStars ? 'text-amber-400' : 'text-slate-200 dark:text-slate-600'}`}></i>
-                        </button>
-                      ))}
+                      {[1,2,3,4,5].map(s => <button key={s} onClick={() => setReviewStars(s)} className="text-2xl"><i className={`fas fa-star ${s <= reviewStars ? 'text-amber-400' : 'text-slate-200 dark:text-slate-600'}`}></i></button>)}
                     </div>
                   </div>
-
-                  {/* Campos */}
                   <div className="space-y-3 mb-4">
-                    <input
-                      value={reviewName} onChange={e => setReviewName(e.target.value)} maxLength={60}
-                      placeholder="Seu nome *"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all"
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      <input
-                        value={reviewRole} onChange={e => setReviewRole(e.target.value)} maxLength={60}
-                        placeholder="Cargo / área"
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all"
-                      />
-                      <input
-                        value={reviewCity} onChange={e => setReviewCity(e.target.value)} maxLength={60}
-                        placeholder="Cidade"
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all"
-                      />
+                    <input value={reviewName} onChange={e => setReviewName(e.target.value)} maxLength={60} placeholder="Seu nome *" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input value={reviewRole} onChange={e => setReviewRole(e.target.value)} maxLength={60} placeholder="Cargo / área" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500" />
+                      <input value={reviewCity} onChange={e => setReviewCity(e.target.value)} maxLength={60} placeholder="Cidade" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500" />
                     </div>
-                    <div className="relative">
-                      <textarea
-                        value={reviewText} onChange={e => setReviewText(e.target.value.slice(0, 400))}
-                        placeholder="Conte como o CurrículoGO te ajudou... (mínimo 20 caracteres) *"
-                        rows={4}
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all resize-none"
-                      />
-                      <span className="absolute bottom-2 right-3 text-[10px] text-slate-400">{reviewText.length}/400</span>
-                    </div>
+                    <textarea value={reviewText} onChange={e => setReviewText(e.target.value.slice(0, 400))} placeholder="Conte como o CurrículoGO te ajudou... (mínimo 20 caracteres) *" rows={4} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500 resize-none" />
                   </div>
-
                   {reviewError && <p className="text-xs text-red-500 font-medium mb-3">⚠️ {reviewError}</p>}
-
-                  <button
-                    onClick={handleSubmitReview}
-                    disabled={reviewLoading}
-                    className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 text-white rounded-xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-                  >
-                    {reviewLoading
-                      ? <><i className="fas fa-circle-notch fa-spin"></i> Enviando...</>
-                      : <><i className="fas fa-paper-plane"></i> Enviar depoimento</>
-                    }
+                  <button onClick={handleSubmitReview} disabled={reviewLoading} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl font-bold text-sm transition-colors">
+                    {reviewLoading ? <><i className="fas fa-circle-notch fa-spin mr-2"></i>Enviando...</> : <><i className="fas fa-paper-plane mr-2"></i>Enviar depoimento</>}
                   </button>
-                  <p className="text-center text-[10px] text-slate-400 mt-3">Seu depoimento será publicado após uma breve revisão pelo time do CurrículoGO.</p>
+                  <p className="text-center text-[10px] text-slate-400 mt-3">Seu depoimento será publicado após revisão.</p>
                 </div>
               )}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Blog section on home */}
-        <section className="relative z-10 py-16 px-6 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">Blog</span>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1 uppercase tracking-tight">Dicas para seu Currículo</h3>
-              </div>
-              <button onClick={() => navigateTo('/blog', 'blog')} className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest hidden md:block">
-                Ver todos <i className="fas fa-arrow-right ml-1"></i>
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { slug: 'como-fazer-curriculo-sem-experiencia', title: 'Como Fazer um Currículo Sem Experiência', cat: 'Iniciantes' },
-                { slug: 'erros-mais-comuns-no-curriculo', title: '10 Erros Mais Comuns no Currículo', cat: 'Dicas' },
-                { slug: 'o-que-e-ats-e-como-passar-pela-triagem', title: 'O Que é ATS e Como Passar pela Triagem', cat: 'ATS & Tech' },
-              ].map(post => (
-                <div
-                  key={post.slug}
-                  onClick={() => { setBlogSlug(post.slug); navigateTo(`/blog/${post.slug}`, 'blog-post'); }}
-                  className="cursor-pointer group bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 hover:border-blue-400 hover:shadow-lg transition-all duration-200"
-                >
-                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2 block">{post.cat}</span>
-                  <h4 className="font-black text-slate-900 dark:text-white text-sm leading-tight group-hover:text-blue-600 transition-colors">{post.title}</h4>
-                  <p className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase mt-4">Ler artigo →</p>
+          {/* Blog */}
+          <section className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <div className="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+              <div className="flex items-end justify-between mb-8">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">Conteúdo</p>
+                  <h2 className="mt-2 text-2xl sm:text-3xl font-black">Dicas para melhorar seu currículo</h2>
                 </div>
-              ))}
+                <button onClick={() => navigateTo('/blog', 'blog')} className="hidden sm:inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800">Ver todos <i className="fas fa-arrow-right text-xs"></i></button>
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  { slug: 'como-fazer-curriculo-sem-experiencia', title: 'Como fazer um currículo sem experiência', cat: 'Iniciantes' },
+                  { slug: 'erros-mais-comuns-no-curriculo', title: '10 erros comuns no currículo', cat: 'Dicas' },
+                  { slug: 'o-que-e-ats-e-como-passar-pela-triagem', title: 'O que é ATS e como funciona a triagem', cat: 'ATS' },
+                ].map(post => (
+                  <button key={post.slug} onClick={() => { setBlogSlug(post.slug); navigateTo(`/blog/${post.slug}`, 'blog-post'); }} className="text-left p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 transition-colors">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">{post.cat}</span>
+                    <h3 className="mt-3 font-bold leading-6 text-slate-900 dark:text-white">{post.title}</h3>
+                    <span className="inline-block mt-5 text-sm font-bold text-blue-600">Ler artigo <i className="fas fa-arrow-right ml-1 text-xs"></i></span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="mt-6 text-center md:hidden">
-              <button onClick={() => navigateTo('/blog', 'blog')} className="text-xs font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest">
-                Ver todos os artigos <i className="fas fa-arrow-right ml-1"></i>
-              </button>
-            </div>
-          </div>
-        </section>
+          </section>
+        </main>
 
-        <footer className="relative z-10 py-8 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-center">
-          <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 mb-4">
-             <button onClick={() => navigateTo('/sobre', 'sobre')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Sobre</button>
-             <button onClick={() => navigateTo('/blog', 'blog')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Blog</button>
-             <button onClick={() => navigateTo('/contato', 'contato')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Contato</button>
-             <button onClick={() => navigateTo('/privacidade', 'privacy')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Política de Privacidade</button>
-             <button onClick={() => navigateTo('/termos', 'terms')} className="text-xs font-bold uppercase text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors">Termos e Condições</button>
+        <footer className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+          <div className="max-w-7xl mx-auto px-5 sm:px-8 py-8">
+            <div className="flex flex-wrap justify-center gap-x-7 gap-y-3 text-sm font-semibold text-slate-500 dark:text-slate-400">
+              <button onClick={() => navigateTo('/sobre', 'sobre')} className="hover:text-blue-600">Sobre</button>
+              <button onClick={() => navigateTo('/blog', 'blog')} className="hover:text-blue-600">Blog</button>
+              <button onClick={() => navigateTo('/contato', 'contato')} className="hover:text-blue-600">Contato</button>
+              <button onClick={() => navigateTo('/privacidade', 'privacy')} className="hover:text-blue-600">Política de Privacidade</button>
+              <button onClick={() => navigateTo('/termos', 'terms')} className="hover:text-blue-600">Termos e Condições</button>
+            </div>
+            <p className="text-center text-xs text-slate-400 mt-5">© 2026 CurrículoGO · Sua carreira, agora.</p>
           </div>
-          <p className="text-[10px] text-slate-400 dark:text-slate-600">© 2026 CurrículoGO · Sua Carreira, Agora 🚀</p>
         </footer>
       </div>
     );
   }
-
   if (view === 'templates') {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col transition-colors duration-300">
