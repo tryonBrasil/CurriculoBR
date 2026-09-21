@@ -2888,7 +2888,7 @@ export default function App() {
       </nav>
 
       {/* ===== BOTTOM NAVIGATION BAR — mobile only ===== */}
-      <div className="md:hidden no-print fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-around px-2 h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="md:hidden no-print fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-around px-1 sm:px-2 min-h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {/* Editar */}
         <button
           onClick={() => setMobileView('editor')}
@@ -2943,7 +2943,7 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto pb-16 md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className={`no-print w-full md:w-[480px] lg:w-[520px] flex flex-col border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-30 shrink-0 transition-all duration-300 absolute md:relative inset-0 md:inset-auto pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 ${mobileView === 'editor' ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
            
            <div className="relative shrink-0">
            <div className="flex overflow-x-auto border-b border-slate-50 dark:border-slate-800 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 px-2 tabs-scroll-container">
@@ -3225,10 +3225,10 @@ export default function App() {
           <div className="no-print h-11 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
             {/* Esquerda: label + template ativo */}
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-slate-500 dark:text-slate-400 hidden sm:block whitespace-nowrap">Pré-visualização A4</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Pré-visualização A4</span>
               <span className=" text-slate-200 dark:text-slate-700">·</span>
               <span className="text-sm font-black text-blue-600 dark:text-blue-400 hidden sm:block truncate">{template.replace(/_/g,' ')}</span>
-              <span className="text-sm font-bold text-slate-400 sm:hidden">{template.replace(/_/g,' ')}</span>
+              <span className="text-xs font-bold text-slate-400 sm:hidden truncate max-w-[90px]">{template.replace(/_/g,' ')}</span>
             </div>
 
             {/* Centro: controles de zoom */}
@@ -3272,7 +3272,7 @@ export default function App() {
               background: isDarkMode
                 ? 'radial-gradient(ellipse at 60% 40%, #1e293b 0%, #0f172a 100%)'
                 : 'radial-gradient(ellipse at 60% 40%, #e2e8f0 0%, #cbd5e1 100%)',
-              padding: '32px 24px 48px',
+              padding: '24px 16px calc(48px + 4rem + env(safe-area-inset-bottom))',
             }}
           >
             {/* Wrapper que dá a ilusão do papel na mesa */}
