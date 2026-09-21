@@ -7,28 +7,28 @@ const rateLimit = createRateLimiter(3, 10 * 60 * 1000);
 const PLANS: Record<string, { price: number; title: string; description: string }> = {
   avulso: {
     price:       9.90,
-    title:       'CurriculoGO Premium — 7 Dias de Acesso',
+    title:       'CurrículoGO Premium — 7 Dias de Acesso',
     description: 'Desbloqueio de todos os templates premium por 7 dias. Sem renovação automática.',
   },
   monthly: {
     price:       14.90,
-    title:       'CurriculoGO Premium — Mensal',
+    title:       'CurrículoGO Premium — Mensal',
     description: 'Desbloqueio de todos os templates premium por 30 dias.',
   },
   yearly: {
     price:       59.90,
-    title:       'CurriculoGO Premium — Anual',
+    title:       'CurrículoGO Premium — Anual',
     description: 'Desbloqueio de todos os templates premium por 1 ano. Equivale a R$4,99/mês.',
   },
   lifetime: {
     price:       29.90,
-    title:       'CurriculoGO Premium — Acesso Vitalício',
+    title:       'CurrículoGO Premium — Acesso Vitalício',
     description: 'Desbloqueio de todos os templates premium para sempre neste dispositivo.',
   },
   // Compatibilidade com plano antigo
   weekly: {
     price:       9.90,
-    title:       'CurriculoGO Premium — 7 Dias de Acesso',
+    title:       'CurrículoGO Premium — 7 Dias de Acesso',
     description: 'Desbloqueio de todos os templates premium por 7 dias.',
   },
 };
