@@ -419,3 +419,108 @@ h4 {
         scroll-behavior: auto !important;
     }
 }
+
+
+/* =========================================================
+   CURRICULONEXT — PROFESSIONAL UI POLISH
+   ========================================================= */
+
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --accent: #4f46e5;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --border-soft: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+}
+
+body {
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(37,99,235,.06), transparent 28rem),
+    radial-gradient(circle at 90% 10%, rgba(79,70,229,.05), transparent 26rem),
+    #f8fafc;
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(37,99,235,.10), transparent 28rem),
+    radial-gradient(circle at 90% 10%, rgba(79,70,229,.08), transparent 26rem),
+    #0b1120;
+}
+
+/* Consistência visual para cartões, painéis e controles */
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background-color .2s ease,
+    transform .2s ease;
+}
+
+button {
+  font-weight: 700;
+}
+
+input, textarea, select {
+  border-color: var(--border-soft);
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+input:hover, textarea:hover, select:hover {
+  border-color: #cbd5e1;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.10) !important;
+}
+
+/* Botões primários: mais sofisticados e menos "chapados" */
+.bg-blue-600 {
+  box-shadow: 0 8px 20px rgba(37,99,235,.16);
+}
+
+.bg-blue-600:hover {
+  box-shadow: 0 12px 26px rgba(37,99,235,.22);
+}
+
+/* Cards claros */
+.bg-white {
+  box-shadow: 0 1px 2px rgba(15,23,42,.03);
+}
+
+/* Melhor separação visual em telas grandes */
+@media (min-width: 1024px) {
+  main {
+    letter-spacing: -0.005em;
+  }
+}
+
+/* Mobile: reduzir excesso de sombras e melhorar toque */
+@media (max-width: 640px) {
+  .bg-white {
+    box-shadow: 0 1px 2px rgba(15,23,42,.025);
+  }
+
+  button {
+    min-height: 42px;
+  }
+}
+
+/* Acessibilidade: não animar excessivamente para quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .rounded-xl,
+  .rounded-2xl,
+  .rounded-3xl,
+  button,
+  input,
+  textarea,
+  select {
+    transition: none !important;
+  }
+}
