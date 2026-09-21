@@ -1,4 +1,4 @@
-# CurriculoGO — Guia de Deploy e Configuração
+# CurrículoGO — Guia de Deploy e Configuração
 
 ## Variáveis de Ambiente (Vercel)
 Acesse: Vercel → Seu projeto → Settings → Environment Variables
