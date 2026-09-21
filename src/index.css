@@ -421,106 +421,105 @@ h4 {
 }
 
 
-/* =========================================================
-   CURRICULONEXT — PROFESSIONAL UI POLISH
-   ========================================================= */
 
-:root {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --accent: #4f46e5;
-  --surface: #ffffff;
-  --surface-soft: #f8fafc;
-  --border-soft: #e2e8f0;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
+/* ─────────────────────────────────────────────────────────
+   CurrículoNext — visual system
+   ───────────────────────────────────────────────────────── */
+:root{
+  --primary:#2563eb;
+  --primary-dark:#1d4ed8;
+  --page:#f6f8fc;
+  --surface:#fff;
+  --border:#e2e8f0;
+  --text:#0f172a;
+  --muted:#64748b;
 }
-
-body {
-  color: var(--text-main);
-  background:
-    radial-gradient(circle at 10% 0%, rgba(37,99,235,.06), transparent 28rem),
-    radial-gradient(circle at 90% 10%, rgba(79,70,229,.05), transparent 26rem),
-    #f8fafc;
+html{background:var(--page)}
+body{
+  margin:0;
+  color:var(--text);
+  background:var(--page);
+  font-family:'Inter',sans-serif;
+  overflow-x:hidden;
 }
+.dark body{background:#0f172a;color:#f8fafc}
 
-.dark body {
-  background:
-    radial-gradient(circle at 10% 0%, rgba(37,99,235,.10), transparent 28rem),
-    radial-gradient(circle at 90% 10%, rgba(79,70,229,.08), transparent 26rem),
-    #0b1120;
+/* Não aplicar sombra/tamanho globalmente a TODAS as divs/cards.
+   Isso estava deixando componentes visualmente pesados e conflitantes. */
+button,a,input,textarea,select{ -webkit-tap-highlight-color:transparent; }
+button,[role="button"]{touch-action:manipulation}
+button{font-weight:700}
+input,textarea,select{
+  border-color:var(--border);
+  transition:border-color .15s ease,box-shadow .15s ease;
 }
-
-/* Consistência visual para cartões, painéis e controles */
-.rounded-xl,
-.rounded-2xl,
-.rounded-3xl {
-  transition:
-    border-color .2s ease,
-    box-shadow .2s ease,
-    background-color .2s ease,
-    transform .2s ease;
+input:focus,textarea:focus,select:focus{
+  border-color:#60a5fa!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;
 }
-
-button {
-  font-weight: 700;
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
+  outline:3px solid rgba(37,99,235,.28);
+  outline-offset:2px;
 }
+h1,h2,h3,h4{line-height:1.15;text-wrap:balance}
+p{line-height:1.6}
 
-input, textarea, select {
-  border-color: var(--border-soft);
-  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+/* Scrollbars */
+.custom-scrollbar{scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
+.custom-scrollbar::-webkit-scrollbar{width:6px;height:6px}
+.custom-scrollbar::-webkit-scrollbar-track{background:transparent}
+.custom-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb{background:#475569}
+
+/* Apenas superfícies explicitamente marcadas como cards */
+.ui-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 4px 18px rgba(15,23,42,.05);
 }
+.dark .ui-card{background:#1e293b;border-color:#334155}
 
-input:hover, textarea:hover, select:hover {
-  border-color: #cbd5e1;
-}
+/* Evita que gradientes decorativos cubram texto */
+.noise-overlay::after{pointer-events:none}
 
-input:focus, textarea:focus, select:focus {
-  border-color: #60a5fa !important;
-  box-shadow: 0 0 0 4px rgba(37,99,235,.10) !important;
-}
-
-/* Botões primários: mais sofisticados e menos "chapados" */
-.bg-blue-600 {
-  box-shadow: 0 8px 20px rgba(37,99,235,.16);
-}
-
-.bg-blue-600:hover {
-  box-shadow: 0 12px 26px rgba(37,99,235,.22);
-}
-
-/* Cards claros */
-.bg-white {
-  box-shadow: 0 1px 2px rgba(15,23,42,.03);
-}
-
-/* Melhor separação visual em telas grandes */
-@media (min-width: 1024px) {
-  main {
-    letter-spacing: -0.005em;
+/* Impressão do currículo */
+@media print{
+  @page{size:A4;margin:0}
+  html,body{
+    margin:0!important;padding:0!important;
+    background:#fff!important;overflow:visible!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
   }
+  .no-print,nav,aside,footer,button,.adsbygoogle,.no-print-sidebar,.toast-container{
+    display:none!important;
+  }
+  .print-container{
+    display:block!important;
+    position:relative!important;
+    width:210mm!important;height:297mm!important;
+    margin:0 auto!important;padding:0!important;
+    transform:none!important;
+    background:#fff!important;box-shadow:none!important;
+    page-break-after:avoid!important;page-break-inside:avoid!important;
+  }
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
 
-/* Mobile: reduzir excesso de sombras e melhorar toque */
-@media (max-width: 640px) {
-  .bg-white {
-    box-shadow: 0 1px 2px rgba(15,23,42,.025);
-  }
-
-  button {
-    min-height: 42px;
-  }
+/* Mobile */
+@media(max-width:640px){
+  body{font-size:15px}
+  button{min-height:42px}
+  .testimonial-card:hover,.chip:hover{transform:none;box-shadow:none}
 }
 
-/* Acessibilidade: não animar excessivamente para quem prefere menos movimento */
-@media (prefers-reduced-motion: reduce) {
-  .rounded-xl,
-  .rounded-2xl,
-  .rounded-3xl,
-  button,
-  input,
-  textarea,
-  select {
-    transition: none !important;
+/* Acessibilidade */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
   }
 }
