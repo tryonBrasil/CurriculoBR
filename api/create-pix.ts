@@ -13,11 +13,11 @@ const PRICES: Record<string, number> = {
 };
 
 const DESCRIPTIONS: Record<string, string> = {
-  avulso:   'CurriculoGO Premium — 7 Dias de Acesso',
-  monthly:  'CurriculoGO Premium — Mensal',
-  yearly:   'CurriculoGO Premium — Anual',
-  lifetime: 'CurriculoGO Premium — Acesso Vitalício',
-  weekly:   'CurriculoGO Premium — 7 Dias de Acesso',
+  avulso:   'CurrículoGO Premium — 7 Dias de Acesso',
+  monthly:  'CurrículoGO Premium — Mensal',
+  yearly:   'CurrículoGO Premium — Anual',
+  lifetime: 'CurrículoGO Premium — Acesso Vitalício',
+  weekly:   'CurrículoGO Premium — 7 Dias de Acesso',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
