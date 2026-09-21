@@ -2286,14 +2286,19 @@ export default function App() {
               ))}
             </div>
 
-            <div className="mt-12 flex flex-col md:flex-row items-center justify-center gap-8 text-center">
-              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">+<AnimatedCounter target={15000} /> 🎉</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Currículos gerados</p></div>
-              <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400"><AnimatedCounter target={15} /> 🎨</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos exclusivos</p></div>
-              <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">3 💚</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Modelos gratuitos</p></div>
-              <div className="hidden md:block w-px h-12 bg-slate-200 dark:bg-slate-700"></div>
-              <div className="hover:scale-110 transition-transform cursor-default"><p className="text-3xl font-black text-blue-600 dark:text-blue-400">4.9 ⭐</p><p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">Avaliação média</p></div>
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 max-w-4xl mx-auto">
+              {[
+                { value: '15', label: 'Modelos disponíveis', icon: '🎨' },
+                { value: '3', label: 'Modelos gratuitos', icon: '💚' },
+                { value: 'PDF + Word', label: 'Exportação', icon: '📄' },
+                { value: 'IA', label: 'Recursos inteligentes', icon: '✨' },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 px-3 py-4 sm:px-5 sm:py-5 shadow-sm">
+                  <div className="text-2xl mb-1">{stat.icon}</div>
+                  <p className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400">{stat.value}</p>
+                  <p className="text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-1 leading-tight">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -2372,54 +2377,41 @@ export default function App() {
         </section>
 
         {/* ── Testimonials ── */}
-        <section className="relative z-10 py-16 px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+        <section className="relative z-10 py-16 px-4 sm:px-6 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="max-w-5xl mx-auto">
-            <p className="text-center text-[10px] font-black uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-3 text-sm">Depoimentos</p>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white text-center mb-2 uppercase tracking-tight">Quem já conquistou sua vaga</h3>
-            <p className="text-center text-sm text-slate-400 mb-10">Histórias reais de quem usou o CurrículoGO para se destacar</p>
+            <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400 mb-3">Depoimentos</p>
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white text-center mb-2 tracking-tight">O que a comunidade diz</h3>
+            <p className="text-center text-sm text-slate-400 mb-10 max-w-xl mx-auto">Relatos enviados por pessoas que escolheram compartilhar sua experiência com o CurrículoGO.</p>
 
-            {/* Depoimentos fixos */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              {[
-                { name: 'Ana Paula S.', role: 'Analista de Marketing', city: 'São Paulo, SP', text: 'Criei meu currículo em 20 minutos com o template Aurora Dark. Na semana seguinte já estava sendo chamada para entrevistas. Melhor ferramenta que já usei!', stars: 5, avatar: 'A', color: 'from-pink-500 to-rose-600' },
-                { name: 'Ricardo M.', role: 'Dev Frontend', city: 'Belo Horizonte, MG', text: 'O template Tech Dark é perfeito para desenvolvedores. A análise ATS com IA me ajudou a otimizar o currículo e consegui 3 entrevistas em uma semana.', stars: 5, avatar: 'R', color: 'from-blue-500 to-cyan-600' },
-                { name: 'Fernanda T.', role: 'Professora', city: 'Recife, PE', text: 'Sem experiência em design, criei um currículo lindo com o Soft Pastel. A IA gerou meu resumo profissional em segundos. Recomendo demais!', stars: 5, avatar: 'F', color: 'from-violet-500 to-purple-600' },
-              ].map((t, i) => (
-                <div key={i} className="testimonial-card bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(t.stars)].map((_, j) => <i key={j} className="fas fa-star text-amber-400 text-xs"></i>)}
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-5 italic">"{t.text}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>{t.avatar}</div>
-                    <div>
-                      <p className="font-black text-slate-900 dark:text-white text-sm">{t.name}</p>
-                      <p className="text-xs text-slate-400 font-medium">{t.role} · {t.city}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Depoimentos da comunidade (aprovados) */}
-            {communityReviews.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                {communityReviews.map((t: any) => (
-                  <div key={t.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-blue-100 dark:border-slate-700 shadow-sm relative">
-                    <span className="absolute top-3 right-3 text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full">Verificado</span>
-                    <div className="flex items-center gap-1 mb-4">
-                      {[...Array(t.stars)].map((_: any, j: number) => <i key={j} className="fas fa-star text-amber-400 text-xs"></i>)}
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-5 italic">"{t.text}"</p>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>{t.avatar}</div>
-                      <div>
-                        <p className="font-black text-slate-900 dark:text-white text-sm">{t.name}</p>
-                        <p className="text-xs text-slate-400 font-medium">{[t.role, t.city].filter(Boolean).join(' · ')}</p>
+            {communityReviews.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+                {communityReviews.slice(0, 6).map((t: any, i: number) => {
+                  const stars = Math.max(1, Math.min(5, Number(t.stars) || 5));
+                  const initial = String(t.name ?? '?').trim().charAt(0).toUpperCase() || '?';
+                  return (
+                    <article key={t.id ?? i} className="testimonial-card bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-100 dark:border-slate-700 shadow-sm">
+                      <div className="flex items-center gap-1 mb-4" aria-label={`${stars} de 5 estrelas`}>
+                        {[...Array(stars)].map((_, j) => <i key={j} className="fas fa-star text-amber-400 text-xs" aria-hidden="true"></i>)}
                       </div>
-                    </div>
-                  </div>
-                ))}
+                      <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5 italic">“{t.text}”</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0">{initial}</div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-slate-800 dark:text-white truncate">{t.name}</p>
+                          <p className="text-[10px] text-slate-400 truncate">{[t.role, t.city].filter(Boolean).join(' · ')}</p>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="max-w-xl mx-auto mb-10 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/60 p-7 sm:p-9 text-center">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <i className="fas fa-comments" aria-hidden="true"></i>
+                </div>
+                <h4 className="font-black text-slate-800 dark:text-white mb-1">Seja o primeiro a avaliar</h4>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Ainda não há depoimentos publicados. Sua experiência pode ajudar outras pessoas.</p>
               </div>
             )}
 
