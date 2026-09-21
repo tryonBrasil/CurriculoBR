@@ -1,6 +1,6 @@
 {
-  "name": "CurriculoGO — Currículo Profissional",
-  "short_name": "CurriculoGO",
+  "name": "CurrículoGO — Currículo Profissional",
+  "short_name": "CurrículoGO",
   "description": "Crie seu currículo profissional grátis com IA do Google Gemini. 15 templates, PDF, Word e análise ATS.",
   "start_url": "/",
   "display": "standalone",
