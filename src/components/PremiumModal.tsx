@@ -205,7 +205,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ onClose, templateLabel, onU
 
               {/* Comparativo */}
               <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 mb-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Por que CurriculoGO?</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Por que CurrículoGO?</p>
                 {[['❌','Zety cobra R$150/mês depois do trial'],['❌','LiveCareer bloqueia o download e pede cartão'],['✅','Sem renovação automática. Sem pegadinha.'],['✅','Pague e use na hora. Simples assim.']].map(([icon, text], i) => (
                   <div key={i} className="flex items-center gap-2 mb-1">
                     <span className="text-sm w-5 shrink-0">{icon}</span>
