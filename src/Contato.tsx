@@ -47,8 +47,8 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
           </button>
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <span className="logo-nav inline-flex items-center gap-2">
-            <img src="/logo.png" alt="CurriculoGO" className="h-10 w-auto object-contain" />
-            <span className="font-black text-[1.1rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurriculoGO</span>
+            <img src="/logo.png" alt="CurrículoGO" className="h-10 w-auto object-contain" />
+            <span className="font-black text-[1.1rem] tracking-tight" style={{ background: 'linear-gradient(135deg, #0d1b6e, #2563eb, #0d9488)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>CurrículoGO</span>
           </span>
         </div>
       </header>
@@ -149,7 +149,7 @@ const Contato: React.FC<ContatoProps> = ({ onVoltar }) => {
       </main>
 
       <footer className="border-t border-slate-200 dark:border-slate-700 mt-16 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} CurriculoGO. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} CurrículoGO. Todos os direitos reservados.</p>
       </footer>
     </div>
   );
