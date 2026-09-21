@@ -345,3 +345,77 @@ body {
 .logo-hero img { filter: drop-shadow(0 4px 12px rgba(13, 27, 110, 0.25)); }
 .brand-gradient { background: var(--brand-gradient); }
 .brand-text { background: var(--brand-gradient-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+
+/* ── UI polish: mobile, accessibility and reduced motion ── */
+html {
+    scroll-behavior: smooth;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+[role="button"] {
+    touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    text-wrap: balance;
+}
+
+@media (max-width: 640px) {
+    .logo-nav {
+        padding: 5px 9px 5px 7px;
+        border-radius: 13px;
+    }
+
+    .logo-nav img {
+        max-height: 34px;
+    }
+
+    .logo-nav span {
+        font-size: 1rem;
+    }
+
+    .testimonial-card:hover {
+        transform: none;
+    }
+
+    .chip:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
